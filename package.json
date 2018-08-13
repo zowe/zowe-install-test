@@ -1,0 +1,28 @@
+{
+  "name": "zowe-install-test",
+  "version": "0.8.4",
+  "description": "Sanity test for Zowe installation",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gizafoundation/zowe-install-test.git"
+  },
+  "author": "",
+  "license": "EPL-2.0",
+  "bugs": {
+    "url": "https://github.com/gizafoundation/zowe-install-test/issues"
+  },
+  "homepage": "https://github.com/gizafoundation/zowe-install-test#readme",
+  "devDependencies": {
+    "axios": "^0.18.0",
+    "chai": "^4.1.2",
+    "debug": "^3.1.0",
+    "lodash": "^4.17.10",
+    "mocha": "^5.2.0",
+    "mocha-jenkins-reporter": "^0.3.12",
+    "node-ssh": "^5.1.2"
+  },
+  "scripts": {
+    "test": "mocha"
+  }
+}
