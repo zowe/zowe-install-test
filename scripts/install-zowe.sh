@@ -19,15 +19,36 @@
 ################################################################################
 # constants
 SCRIPT_NAME=$(basename "$0")
+DEFAULT_CI_ZOSMF_PORT=10443
 DEFAULT_CI_ZOWE_ROOT_DIR=/zaas1/zowe
 DEFAULT_CI_INSTALL_DIR=/zaas1/zowe-install
+DEFAULT_CI_APIM_CATELOG_PORT=7552
+DEFAULT_CI_APIM_DISCOVERY_PORT=7553
+DEFAULT_CI_APIM_GATEWAY_PORT=7554
+DEFAULT_CI_EXPLORER_HTTP_PORT=7080
+DEFAULT_CI_EXPLORER_HTTPS_PORT=7443
+DEFAULT_CI_ZLUX_HTTP_PORT=8543
+DEFAULT_CI_ZLUX_HTTPS_PORT=8544
+DEFAULT_CI_ZLUX_ZSS_PORT=8542
+DEFAULT_CI_TERMINALS_SSH_PORT=22
+DEFAULT_CI_TERMINALS_TELNET_PORT=23
 CI_ZOWE_CONFIG_FILE=zowe-install.yaml
 CI_ZOWE_PAX=
 CI_SKIP_TEMP_FIXES=no
 CI_UNINSTALL=no
-CI_ZOSMF_URL=
+CI_ZOSMF_PORT=$DEFAULT_CI_ZOSMF_PORT
 CI_ZOWE_ROOT_DIR=$DEFAULT_CI_ZOWE_ROOT_DIR
 CI_INSTALL_DIR=$DEFAULT_CI_INSTALL_DIR
+CI_APIM_CATELOG_PORT=$DEFAULT_CI_APIM_CATELOG_PORT
+CI_APIM_DISCOVERY_PORT=$DEFAULT_CI_APIM_DISCOVERY_PORT
+CI_APIM_GATEWAY_PORT=$DEFAULT_CI_APIM_GATEWAY_PORT
+CI_EXPLORER_HTTP_PORT=$DEFAULT_CI_EXPLORER_HTTP_PORT
+CI_EXPLORER_HTTPS_PORT=$DEFAULT_CI_EXPLORER_HTTPS_PORT
+CI_ZLUX_HTTP_PORT=$DEFAULT_CI_ZLUX_HTTP_PORT
+CI_ZLUX_HTTPS_PORT=$DEFAULT_CI_ZLUX_HTTPS_PORT
+CI_ZLUX_ZSS_PORT=$DEFAULT_CI_ZLUX_ZSS_PORT
+CI_TERMINALS_SSH_PORT=$DEFAULT_CI_TERMINALS_SSH_PORT
+CI_TERMINALS_TELNET_PORT=$DEFAULT_CI_TERMINALS_TELNET_PORT
 
 # allow to exit by ctrl+c
 function finish {
@@ -151,46 +172,135 @@ function usage {
   echo "Usage: $SCRIPT_NAME [OPTIONS] package"
   echo
   echo "Options:"
-  echo "  -h  Display this help message."
-  echo "  -s  If skip the temporary fixes before and after installation. Optional, default is no."
-  echo "  -u  If uninstall Zowe first. Optional, default is no."
-  echo "  -m  z/OSMF URL for testing."
-  echo "  -t  Installation target folder. Optional, default is $DEFAULT_CI_ZOWE_ROOT_DIR."
-  echo "  -i  Installation working folder. Optional, default is $DEFAULT_CI_INSTALL_DIR."
+  echo "  -h|--help             Display this help message."
+  echo "  -s|--skip-fixes       If skip the temporary fixes before and after installation."
+  echo "                        Optional, default is no."
+  echo "  -u|--uninstall        If uninstall Zowe first."
+  echo "                        Optional, default is no."
+  echo "  --zosmf-port          z/OSMF port for testing."
+  echo "                        Optional, default is $DEFAULT_CI_ZOSMF_PORT."
+  echo "  -t|--target-dir       Installation target folder."
+  echo "                        Optional, default is $DEFAULT_CI_ZOWE_ROOT_DIR."
+  echo "  -i|--install-dir      Installation working folder."
+  echo "                        Optional, default is $DEFAULT_CI_INSTALL_DIR."
+  echo "  --apim-catelog-port   catalogHttpPort for api-mediation."
+  echo "                        Optional, default is $DEFAULT_CI_APIM_CATELOG_PORT."
+  echo "  --apim-discovery-port discoveryHttpPort for api-mediation."
+  echo "                        Optional, default is $DEFAULT_CI_APIM_DISCOVERY_PORT."
+  echo "  --apim-gateway-port   gatewayHttpsPort for api-mediation."
+  echo "                        Optional, default is $DEFAULT_CI_APIM_GATEWAY_PORT."
+  echo "  --explorer-http-port  httpPort for explorer-server."
+  echo "                        Optional, default is $DEFAULT_CI_EXPLORER_HTTP_PORT."
+  echo "  --explorer-https-port httpsPort for explorer-server."
+  echo "                        Optional, default is $DEFAULT_CI_EXPLORER_HTTPS_PORT."
+  echo "  --zlux-http-port      httpPort for zlux-server."
+  echo "                        Optional, default is $DEFAULT_CI_ZLUX_HTTP_PORT."
+  echo "  --zlux-https-port     httpsPort for zlux-server."
+  echo "                        Optional, default is $DEFAULT_CI_ZLUX_HTTPS_PORT."
+  echo "  --zlux-zss-port       zssPort for zlux-server."
+  echo "                        Optional, default is $DEFAULT_CI_ZLUX_ZSS_PORT."
+  echo "  --term-ssh-port       sshPort for MVD terminals."
+  echo "                        Optional, default is $DEFAULT_CI_TERMINALS_SSH_PORT."
+  echo "  --term-telnet-port    telnetPort for MVD terminals."
+  echo "                        Optional, default is $DEFAULT_CI_TERMINALS_TELNET_PORT."
   echo
 }
-while getopts ":hsum:t:i:" opt; do
-  case ${opt} in
-    h)
+
+POSITIONALINDEX=0
+POSITIONAL[$POSITIONALINDEX]=
+while [ $# -gt 0 ]; do
+  key="$1"
+
+  case $key in
+    -h|--help)
       usage
       exit 0
       ;;
-    s)
-      CI_SKIP_TEMP_FIXES=yes
+    -s|--skip-fixes)
+      CI_SKIP_TEMP_FIXES=YES
+      shift # past argument
       ;;
-    u)
-      CI_UNINSTALL=yes
+    -u|--uninstall)
+      CI_UNINSTALL=YES
+      shift # past argument
       ;;
-    m)
-      CI_ZOSMF_URL=$OPTARG
+    --zosmf-port)
+      CI_ZOSMF_PORT="$2"
+      shift # past argument
+      shift # past value
       ;;
-    t)
-      CI_ZOWE_ROOT_DIR=$OPTARG
+    -t|--target-dir)
+      CI_ZOWE_ROOT_DIR="$2"
+      shift # past argument
+      shift # past value
       ;;
-    i)
-      CI_INSTALL_DIR=$OPTARG
+    -i|--install-dir)
+      CI_INSTALL_DIR="$2"
+      shift # past argument
+      shift # past value
       ;;
-    \?)
-      echo "[${SCRIPT_NAME}][error] invalid option: -$OPTARG" >&2
-      exit 1
+    --apim-catelog-port)
+      CI_APIM_CATELOG_PORT="$2"
+      shift # past argument
+      shift # past value
       ;;
-    :)
-      echo "[${SCRIPT_NAME}][error] invalid option argument: -$OPTARG requires an argument" >&2
-      exit 1
+    --apim-discovery-port)
+      CI_APIM_DISCOVERY_PORT="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    --apim-gateway-port)
+      CI_APIM_GATEWAY_PORT="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    --explorer-http-port)
+      CI_EXPLORER_HTTP_PORT="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    --explorer-https-port)
+      CI_EXPLORER_HTTPS_PORT="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    --zlux-http-port)
+      CI_ZLUX_HTTP_PORT="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    --zlux-https-port)
+      CI_ZLUX_HTTPS_PORT="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    --zlux-zss-port)
+      CI_ZLUX_ZSS_PORT="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    --term-ssh-port)
+      CI_TERMINALS_SSH_PORT="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    --term-telnet-port)
+      CI_TERMINALS_TELNET_PORT="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    *)    # unknown option
+      if [ ! "$1" = "${1#-}" ]; then
+        echo "[${SCRIPT_NAME}][error] invalid option: $1" >&2
+        exit 1
+      fi 
+      POSITIONAL[$POSITIONALINDEX]="$1" # save it in an array for later
+      POSITIONALINDEX=$((POSITIONALINDEX + 1))
+      shift # past argument
       ;;
   esac
 done
-shift $((OPTIND-1))
+set -- "${POSITIONAL[@]}" # restore positional parameters
 CI_ZOWE_PAX=$1
 
 ################################################################################
@@ -218,10 +328,26 @@ fi
 ################################################################################
 echo "[${SCRIPT_NAME}] installation script started ..."
 echo "[${SCRIPT_NAME}]   - package file        : $CI_ZOWE_PAX"
-echo "[${SCRIPT_NAME}]   - installation target : $CI_ZOWE_ROOT_DIR"
-echo "[${SCRIPT_NAME}]   - temporary folder    : $CI_INSTALL_DIR"
 echo "[${SCRIPT_NAME}]   - skip temp files     : $CI_SKIP_TEMP_FIXES"
-echo "[${SCRIPT_NAME}]   - uninstall previo    : $CI_UNINSTALL"
+echo "[${SCRIPT_NAME}]   - uninstall previous  : $CI_UNINSTALL"
+echo "[${SCRIPT_NAME}]   - z/OSMF port         : $CI_ZOSMF_PORT"
+echo "[${SCRIPT_NAME}]   - temporary folder    : $CI_INSTALL_DIR"
+echo "[${SCRIPT_NAME}]   - install.            :"
+echo "[${SCRIPT_NAME}]     - rootDir           : $CI_ZOWE_ROOT_DIR"
+echo "[${SCRIPT_NAME}]   - api-mediation       :"
+echo "[${SCRIPT_NAME}]     - catalogHttpPort   : $CI_APIM_CATELOG_PORT"
+echo "[${SCRIPT_NAME}]     - discoveryHttpPort : $CI_APIM_DISCOVERY_PORT"
+echo "[${SCRIPT_NAME}]     - gatewayHttpsPort  : $CI_APIM_GATEWAY_PORT"
+echo "[${SCRIPT_NAME}]   - explorer-server     :"
+echo "[${SCRIPT_NAME}]     - httpPort          : $CI_EXPLORER_HTTP_PORT"
+echo "[${SCRIPT_NAME}]     - httpsPort         : $CI_EXPLORER_HTTPS_PORT"
+echo "[${SCRIPT_NAME}]   - zlux-server.        :"
+echo "[${SCRIPT_NAME}]     - httpPort          : $CI_ZLUX_HTTP_PORT"
+echo "[${SCRIPT_NAME}]     - httpsPort         : $CI_ZLUX_HTTPS_PORT"
+echo "[${SCRIPT_NAME}]     - zssPort           : $CI_ZLUX_ZSS_PORT"
+echo "[${SCRIPT_NAME}]   - terminals.          :"
+echo "[${SCRIPT_NAME}]     - sshPort           : $CI_TERMINALS_SSH_PORT"
+echo "[${SCRIPT_NAME}]     - telnetPort.       : $CI_TERMINALS_TELNET_PORT"
 echo
 
 if [[ "$CI_UNINSTALL" = "yes" ]]; then
@@ -267,7 +393,18 @@ fi
 # configure installation
 echo "[${SCRIPT_NAME}] configure installation yaml ..."
 cd $FULL_EXTRACTED_ZOWE_FOLDER/install
-sed "s#rootDir=.\+\$#rootDir=$CI_ZOWE_ROOT_DIR#" "${CI_ZOWE_CONFIG_FILE}" > "${CI_ZOWE_CONFIG_FILE}.tmp"
+cat "${CI_ZOWE_CONFIG_FILE}" | \
+  sed -e "/^install:/,\$s#rootDir=.*\$#rootDir=${CI_ZOWE_ROOT_DIR}#" | \
+  sed -e "/^api-mediation:/,\$s#catalogHttpPort=.*\$#catalogHttpPort=${CI_APIM_CATELOG_PORT}#" | \
+  sed -e "/^api-mediation:/,\$s#discoveryHttpPort=.*\$#discoveryHttpPort=${CI_APIM_DISCOVERY_PORT}#" | \
+  sed -e "/^api-mediation:/,\$s#gatewayHttpsPort=.*\$#gatewayHttpsPort=${CI_APIM_GATEWAY_PORT}#" | \
+  sed -e "/^explorer-server:/,\$s#httpPort=.*\$#httpPort=${CI_EXPLORER_HTTP_PORT}#" | \
+  sed -e "/^explorer-server:/,\$s#httpsPort=.*\$#httpsPort=${CI_EXPLORER_HTTPS_PORT}#" | \
+  sed -e "/^zlux-server:/,\$s#httpPort=.*\$#httpPort=${CI_ZLUX_HTTP_PORT}#" | \
+  sed -e "/^zlux-server:/,\$s#httpsPort=.*\$#httpsPort=${CI_EXPLORER_HTTPS_PORT}#" | \
+  sed -e "/^zlux-server:/,\$s#zssPort=.*\$#zssPort=${CI_ZLUX_ZSS_PORT}#" | \
+  sed -e "/^terminals:/,\$s#sshPort=.*\$#sshPort=${CI_TERMINALS_SSH_PORT}#" | \
+  sed -e "/^terminals:/,\$s#telnetPort=.*\$#telnetPort=${CI_TERMINALS_TELNET_PORT}#" > "${CI_ZOWE_CONFIG_FILE}.tmp"
 mv "${CI_ZOWE_CONFIG_FILE}.tmp" "${CI_ZOWE_CONFIG_FILE}"
 echo "[${SCRIPT_NAME}] current configuration is:"
 cat "${CI_ZOWE_CONFIG_FILE}"
@@ -278,7 +415,7 @@ if [ "$CI_SKIP_TEMP_FIXES" != "yes" ]; then
   cd $CI_INSTALL_DIR
   RUN_SCRIPT=temp-fixes-before-install.sh
   if [ -f "$RUN_SCRIPT" ]; then
-    run_script_with_timeout "${RUN_SCRIPT} ${CI_ZOWE_ROOT_DIR} ${FULL_EXTRACTED_ZOWE_FOLDER} ${CI_ZOSMF_URL}" 1800
+    run_script_with_timeout "${RUN_SCRIPT} ${CI_ZOWE_ROOT_DIR} ${FULL_EXTRACTED_ZOWE_FOLDER}" 1800
     EXIT_CODE=$?
     if [[ "$EXIT_CODE" != "0" ]]; then
       echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."

@@ -44,8 +44,6 @@ else
   echo "[${SCRIPT_NAME}] current server.env: $CURRENT_SERVER_ENV"
   echo "[${SCRIPT_NAME}] JAVA_HOME is set properly, no need to fix."
 fi
-echo "JAVA_HOME=$ZOWE_JAVA_HOME" >> server.env
-iconv -f IBM-1047 -t IBM-850 server.env > ./wlp/usr/servers/Atlas/server.env
 
 ################################################################################
 echo

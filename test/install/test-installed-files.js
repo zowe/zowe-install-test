@@ -23,17 +23,17 @@ before('prepare SSH connection', function() {
   const password = process.env.SSH_PASSWD;
 
   return ssh.connect({
-      host: process.env.SSH_HOST,
-      username: process.env.SSH_USER,
-      port: process.env.SSH_PORT,
-      password,
-      tryKeyboard: true,
-      onKeyboardInteractive: (name, instructions, instructionsLang, prompts, finish) => {
-        if (prompts.length > 0 && prompts[0].prompt.toLowerCase().includes('password')) {
-          finish([password]);
-        }
+    host: process.env.SSH_HOST,
+    username: process.env.SSH_USER,
+    port: process.env.SSH_PORT,
+    password,
+    tryKeyboard: true,
+    onKeyboardInteractive: (name, instructions, instructionsLang, prompts, finish) => {
+      if (prompts.length > 0 && prompts[0].prompt.toLowerCase().includes('password')) {
+        finish([password]);
       }
-    })
+    }
+  })
     .then(function() {
       debug('ssh connected');
     });

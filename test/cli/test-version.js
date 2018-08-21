@@ -14,7 +14,7 @@ const util = require('util');
 const exec = util.promisify(require('child_process').exec);
 
 describe('cli version', function() {
-  it.skip('command should return version without error', async function() {
+  it('command should return version without error', async function() {
     const result = await exec('bright --version');
 
     debug('result:', result);
@@ -23,6 +23,6 @@ describe('cli version', function() {
     expect(result).to.have.property('stderr');
 
     expect(result.stderr).to.be.empty;
-    expect(result.stdout).to.equal('1.0.1\n');
+    expect(result.stdout).to.match(/^1\.1\./);
   });
 });
