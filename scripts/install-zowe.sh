@@ -401,7 +401,7 @@ cat "${CI_ZOWE_CONFIG_FILE}" | \
   sed -e "/^explorer-server:/,\$s#httpPort=.*\$#httpPort=${CI_EXPLORER_HTTP_PORT}#" | \
   sed -e "/^explorer-server:/,\$s#httpsPort=.*\$#httpsPort=${CI_EXPLORER_HTTPS_PORT}#" | \
   sed -e "/^zlux-server:/,\$s#httpPort=.*\$#httpPort=${CI_ZLUX_HTTP_PORT}#" | \
-  sed -e "/^zlux-server:/,\$s#httpsPort=.*\$#httpsPort=${CI_EXPLORER_HTTPS_PORT}#" | \
+  sed -e "/^zlux-server:/,\$s#httpsPort=.*\$#httpsPort=${CI_ZLUX_HTTPS_PORT}#" | \
   sed -e "/^zlux-server:/,\$s#zssPort=.*\$#zssPort=${CI_ZLUX_ZSS_PORT}#" | \
   sed -e "/^terminals:/,\$s#sshPort=.*\$#sshPort=${CI_TERMINALS_SSH_PORT}#" | \
   sed -e "/^terminals:/,\$s#telnetPort=.*\$#telnetPort=${CI_TERMINALS_TELNET_PORT}#" > "${CI_ZOWE_CONFIG_FILE}.tmp"
