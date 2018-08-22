@@ -217,11 +217,11 @@ while [ $# -gt 0 ]; do
       exit 0
       ;;
     -s|--skip-fixes)
-      CI_SKIP_TEMP_FIXES=YES
+      CI_SKIP_TEMP_FIXES=yes
       shift # past argument
       ;;
     -u|--uninstall)
-      CI_UNINSTALL=YES
+      CI_UNINSTALL=yes
       shift # past argument
       ;;
     --zosmf-port)
