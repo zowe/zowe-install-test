@@ -17,19 +17,20 @@ let REQ;
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 before('verify environment variables', function() {
+  expect(process.env.SSH_HOST, 'SSH_HOST is not defined').to.not.be.empty;
   expect(process.env.SSH_USER, 'SSH_USER is not defined').to.not.be.empty;
   expect(process.env.SSH_PASSWD, 'SSH_PASSWD is not defined').to.not.be.empty;
-  expect(process.env.ZOWE_EXPLORER_SERVER, 'ZOWE_EXPLORER_SERVER is not defined').to.not.be.empty;
+  expect(process.env.ZOWE_EXPLORER_SERVER_HTTPS_PORT, 'ZOWE_EXPLORER_SERVER_HTTPS_PORT is not defined').to.not.be.empty;
 
   REQ = axios.create({
-    baseURL: process.env.ZOWE_EXPLORER_SERVER,
+    baseURL: `https://${process.env.SSH_HOST}:${process.env.ZOWE_EXPLORER_SERVER_HTTPS_PORT}`,
     timeout: 30000,
   });
 });
 
-describe('test explorer server ' + process.env.ZOWE_EXPLORER_SERVER, function() {
+describe(`test explorer server https://${process.env.SSH_HOST}:${process.env.ZOWE_EXPLORER_SERVER_HTTPS_PORT}`, function() {
   describe('GET /ibm/api/explorer/', function() {
-    it.skip('should return ok', function() {
+    it('should return ok', function() {
       let req = {
         method: 'get',
         url: '/ibm/api/explorer/',
@@ -45,12 +46,14 @@ describe('test explorer server ' + process.env.ZOWE_EXPLORER_SERVER, function() 
           debug('response', _.pick(res, ['status', 'statusText', 'headers', 'data']));
           expect(res).to.have.property('status');
           expect(res.status).to.equal(200);
+          expect(res.data).to.include('<html>');
+          expect(res.data).to.include('<title>REST API Documentation</title>');
         });
-    })
+    });
   });
 
   describe('GET /Atlas/api/jobs', function() {
-    it.skip('should have a job ZOWESVR', function() {
+    it('should have a job ZOWESVR', function() {
       let req = {
         method: 'get',
         url: '/Atlas/api/jobs',
@@ -70,7 +73,11 @@ describe('test explorer server ' + process.env.ZOWE_EXPLORER_SERVER, function() 
           debug('response', _.pick(res, ['status', 'statusText', 'headers', 'data']));
           expect(res).to.have.property('status');
           expect(res.status).to.equal(200);
+          expect(res.data).to.be.an('array');
+          expect(res.data).to.have.lengthOf(1);
+          expect(res.data[0]).to.have.all.keys('name', 'jobInstances');
+          expect(res.data[0].name).to.equal('ZOWESVR');
         });
     });
-  })
+  });
 });

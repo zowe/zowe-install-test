@@ -27,6 +27,7 @@ opts.push(disableConcurrentBuilds())
 
 // define custom build parameters
 def customParameters = []
+// >>>>>>>> parameters to control pipeline behavior
 customParameters.push(booleanParam(
   name: 'SKIP_RESET_IMAGE',
   description: 'If skip the "reset_test_image" step.',
@@ -42,6 +43,14 @@ customParameters.push(booleanParam(
   description: 'If skip the "temp_fixes_before/after_install" step.',
   defaultValue: false
 ))
+// >>>>>>>> parameters of artifactory
+customParameters.push(string(
+  name: 'ARTIFACTORY_SERVER',
+  description: 'Artifactory server, should be pre-defined in Jenkins configuration',
+  defaultValue: 'gizaArtifactory',
+  trim: true,
+  required: true
+))
 customParameters.push(string(
   name: 'ZOWE_ARTIFACTORY_PATTERN',
   description: 'Zowe artifactory download pattern',
@@ -55,6 +64,7 @@ customParameters.push(string(
   defaultValue: 'zowe-install-packaging-pipeline :: master',
   trim: true
 ))
+// >>>>>>>> parameters of installation config
 customParameters.push(string(
   name: 'ZOWE_ROOT_DIR',
   description: 'Zowe installation root directory',
@@ -70,33 +80,83 @@ customParameters.push(string(
   required: true
 ))
 customParameters.push(string(
-  name: 'ZOSMF_URL',
-  description: 'Test URL for z/OSMF service',
-  defaultValue: 'https://river.zowe.org:10443/zosmf/',
+  name: 'ZOSMF_PORT',
+  description: 'Port of z/OSMF service',
+  defaultValue: '10443',
   trim: true,
   required: true
 ))
 customParameters.push(string(
-  name: 'ZOWE_ZLUX_URL',
-  description: 'Test URL for Zowe zLux service',
-  defaultValue: 'https://river.zowe.org:8544/',
+  name: 'ZOWE_ZLUX_HTTP_PORT',
+  description: 'httpPort for Zowe zLux service',
+  defaultValue: '8543',
   trim: true,
   required: true
 ))
 customParameters.push(string(
-  name: 'ZOWE_EXPLORER_SERVER',
-  description: 'Test URL for Zowe explorer server',
-  defaultValue: 'https://river.zowe.org:7443/',
+  name: 'ZOWE_ZLUX_HTTPS_PORT',
+  description: 'httpsPort for Zowe zLux service',
+  defaultValue: '8544',
   trim: true,
   required: true
 ))
 customParameters.push(string(
-  name: 'ARTIFACTORY_SERVER',
-  description: 'Artifactory server, should be pre-defined in Jenkins configuration',
-  defaultValue: 'gizaArtifactory',
+  name: 'ZOWE_ZLUX_ZSS_PORT',
+  description: 'zssPort for Zowe zLux service',
+  defaultValue: '8542',
   trim: true,
   required: true
 ))
+customParameters.push(string(
+  name: 'ZOWE_EXPLORER_SERVER_HTTP_PORT',
+  description: 'httpPort for Zowe explorer server',
+  defaultValue: '7080',
+  trim: true,
+  required: true
+))
+customParameters.push(string(
+  name: 'ZOWE_EXPLORER_SERVER_HTTPS_PORT',
+  description: 'httpsPort for Zowe explorer server',
+  defaultValue: '7443',
+  trim: true,
+  required: true
+))
+customParameters.push(string(
+  name: 'ZOWE_API_MEDIATION_CATALOG_HTTP_PORT',
+  description: 'catalogHttpPort for Zowe API mediation',
+  defaultValue: '7552',
+  trim: true,
+  required: true
+))
+customParameters.push(string(
+  name: 'ZOWE_API_MEDIATION_DISCOVERY_HTTP_PORT',
+  description: 'discoveryHttpPort for Zowe API mediation',
+  defaultValue: '7553',
+  trim: true,
+  required: true
+))
+customParameters.push(string(
+  name: 'ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT',
+  description: 'gatewayHttpsPort for Zowe API mediation',
+  defaultValue: '7554',
+  trim: true,
+  required: true
+))
+customParameters.push(string(
+  name: 'ZOWE_MVD_SSH_PORT',
+  description: 'sshPort for Zowe MVD terminals',
+  defaultValue: '2022',
+  trim: true,
+  required: true
+))
+customParameters.push(string(
+  name: 'ZOWE_MVD_TELNET_PORT',
+  description: 'telnetPort for Zowe MVD terminals',
+  defaultValue: '2023',
+  trim: true,
+  required: true
+))
+// >>>>>>>> SSH access of testing server Ubuntu layer
 customParameters.push(string(
   name: 'TEST_IMAGE_HOST_SSH_HOST',
   description: 'Test image host IP',
@@ -106,7 +166,7 @@ customParameters.push(string(
 ))
 customParameters.push(string(
   name: 'TEST_IMAGE_HOST_SSH_PORT',
-  description: 'Test image host port',
+  description: 'Test image host SSH port',
   defaultValue: '22',
   trim: true,
   required: true
@@ -118,16 +178,17 @@ customParameters.push(credentials(
   defaultValue: 'ssh-zdt-test-image-host',
   required: true
 ))
+// >>>>>>>> SSH access of testing server zOSaaS layer
 customParameters.push(string(
   name: 'TEST_IMAGE_GUEST_SSH_HOST',
-  description: 'Test image host IP',
+  description: 'Test image guest IP',
   defaultValue: 'river.zowe.org',
   trim: true,
   required: true
 ))
 customParameters.push(string(
   name: 'TEST_IMAGE_GUEST_SSH_PORT',
-  description: 'Test image host port',
+  description: 'Test image guest SSH port',
   defaultValue: '2022',
   trim: true,
   required: true
@@ -144,7 +205,7 @@ opts.push(parameters(customParameters))
 // set build properties
 properties(opts)
 
-node ('ibm-jenkins-slave-nvm') {
+node ('ca-jenkins-agent') {
   currentBuild.result = 'SUCCESS'
 
   try {
@@ -229,7 +290,7 @@ EOF"""
             sleep time: 10, unit: 'MINUTES'
             // check if zD&T & z/OSMF are started
             timeout(120) {
-              sh "./scripts/is-website-ready.sh -r 720 -t 10 -c 20 ${params.ZOSMF_URL}"
+              sh "./scripts/is-website-ready.sh -r 720 -t 10 -c 20 https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOSMF_PORT}/zosmf/"
             }
           }
         }
@@ -265,23 +326,27 @@ EOF"""
           }
           sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
 cd ${params.INSTALL_DIR} && \
-  (iconv -f ISO8859-1 -t IBM-1047 install-zowe.sh > install-zowe.sh.new) && mv install-zowe.sh.new install-zowe.sh && chmod +x install-zowe.sh && \
-  ./install-zowe.sh -t ${params.ZOWE_ROOT_DIR} -i ${params.INSTALL_DIR}${skipTempFixes}${uninstallZowe} -m ${params.ZOSMF_URL} ${params.INSTALL_DIR}/zowe.pax || \
-  { echo "[install-zowe.sh] failed"; exit 1; }
+  (iconv -f ISO8859-1 -t IBM-1047 install-zowe.sh > install-zowe.sh.new) && mv install-zowe.sh.new install-zowe.sh && chmod +x install-zowe.sh
+./install-zowe.sh -t ${params.ZOWE_ROOT_DIR} -i ${params.INSTALL_DIR}${skipTempFixes}${uninstallZowe} --zosmf-port ${params.ZOSMF_PORT}\
+  --apim-catelog-port ${params.ZOWE_API_MEDIATION_CATALOG_HTTP_PORT} --apim-discovery-port ${params.ZOWE_API_MEDIATION_DISCOVERY_HTTP_PORT} --apim-gateway-port ${params.ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT}\
+  --explorer-http-port ${params.ZOWE_EXPLORER_SERVER_HTTP_PORT} --explorer-https-port ${params.ZOWE_EXPLORER_SERVER_HTTPS_PORT}\
+  --zlux-http-port ${params.ZOWE_ZLUX_HTTP_PORT} --zlux-https-port ${params.ZOWE_ZLUX_HTTPS_PORT} --zlux-zss-port ${params.ZOWE_ZLUX_ZSS_PORT}\
+  --term-ssh-port ${params.ZOWE_MVD_SSH_PORT} --term-telnet-port ${params.ZOWE_MVD_TELNET_PORT}\
+  ${params.INSTALL_DIR}/zowe.pax || { echo "[install-zowe.sh] failed"; exit 1; }
 echo "[install-zowe.sh] succeeds" && exit 0
 EOF"""
         }
-      }
 
-      // wait a while before testing zLux
-      sleep time: 2, unit: 'MINUTES'
-      // check if zLux is started
-      timeout(60) {
-        sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 ${params.ZOWE_ZLUX_URL}"
-      }
-      // check if explorer server is started
-      timeout(60) {
-        sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 ${params.ZOWE_EXPLORER_SERVER}"
+        // wait a while before testing zLux
+        sleep time: 2, unit: 'MINUTES'
+        // check if zLux is started
+        timeout(60) {
+          sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOWE_ZLUX_HTTPS_PORT}/"
+        }
+        // check if explorer server is started
+        timeout(60) {
+          sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 https://${USERNAME}:${PASSWORD}@${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOWE_EXPLORER_SERVER_HTTPS_PORT}/ibm/api/explorer/"
+        }
       }
     }
 
@@ -294,19 +359,21 @@ EOF"""
           sh """SSHPASS=${PASSWORD} sshpass -e sftp -o BatchMode=no -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -b - -P ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
 get ${params.INSTALL_DIR}/extracted/zowe-cli-bundle.zip
 EOF"""
+          // unzip is missing from container
+          sh 'sudo apt-get install unzip'
           // install CLI
           sh 'unzip zowe-cli-bundle.zip'
           sh 'npm install -g zowe-cli-1.*.tgz'
-          
+
           // run tests
           sh """ZOWE_ROOT_DIR=${params.ZOWE_ROOT_DIR} \
 SSH_HOST=${params.TEST_IMAGE_GUEST_SSH_HOST} \
 SSH_PORT=${params.TEST_IMAGE_GUEST_SSH_PORT} \
 SSH_USER=${USERNAME} \
 SSH_PASSWD=${PASSWORD} \
-ZOSMF_URL=${params.ZOSMF_URL} \
-ZOWE_ZLUX_URL=${params.ZOWE_ZLUX_URL} \
-ZOWE_EXPLORER_SERVER=${params.ZOWE_EXPLORER_SERVER} \
+ZOSMF_PORT=${params.ZOSMF_PORT} \
+ZOWE_ZLUX_HTTPS_PORT=${params.ZOWE_ZLUX_HTTPS_PORT} \
+ZOWE_EXPLORER_SERVER_HTTPS_PORT=${params.ZOWE_EXPLORER_SERVER_HTTPS_PORT} \
 npm test"""
         }
       }

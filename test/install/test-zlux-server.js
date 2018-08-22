@@ -17,17 +17,18 @@ let REQ;
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 before('verify environment variables', function() {
+  expect(process.env.SSH_HOST, 'SSH_HOST is not defined').to.not.be.empty;
   expect(process.env.SSH_USER, 'SSH_USER is not defined').to.not.be.empty;
   expect(process.env.SSH_PASSWD, 'SSH_PASSWD is not defined').to.not.be.empty;
-  expect(process.env.ZOWE_ZLUX_URL, 'ZOWE_ZLUX_URL is not defined').to.not.be.empty;
+  expect(process.env.ZOWE_ZLUX_HTTPS_PORT, 'ZOWE_ZLUX_HTTPS_PORT is not defined').to.not.be.empty;
 
   REQ = axios.create({
-    baseURL: process.env.ZOWE_ZLUX_URL,
+    baseURL: `https://${process.env.SSH_HOST}:${process.env.ZOWE_ZLUX_HTTPS_PORT}`,
     timeout: 20000,
   });
 });
 
-describe('test zLux server ' + process.env.ZOWE_ZLUX_URL, function() {
+describe(`test zLux server https://${process.env.SSH_HOST}:${process.env.ZOWE_ZLUX_HTTPS_PORT}`, function() {
   describe('GET /', function() {
     it('should return ok', function() {
       let req = {
@@ -43,6 +44,59 @@ describe('test zLux server ' + process.env.ZOWE_ZLUX_URL, function() {
           expect(res.status).to.equal(200);
           expect(res.data).to.include('Mainframe Virtual Desktop');
         });
-    })
+    });
+  });
+
+  describe('GET /ZLUX/plugins', function() {
+    it('/com.ibm.atlas.atlasJES/web/index.html should return ok', function() {
+      let req = {
+        method: 'get',
+        url: '/ZLUX/plugins/com.ibm.atlas.atlasJES/web/index.html'
+      };
+      debug('request', req);
+
+      return REQ.request(req)
+        .then(function(res) {
+          debug('response', _.pick(res, ['status', 'statusText', 'headers', 'data']));
+          expect(res).to.have.property('status');
+          expect(res.status).to.equal(200);
+          expect(res.data).to.include('<html>');
+          expect(res.data).to.include('<body>');
+        });
+    });
+
+    it('/com.ibm.atlas.atlasMVS/web/index.html should return ok', function() {
+      let req = {
+        method: 'get',
+        url: '/ZLUX/plugins/com.ibm.atlas.atlasMVS/web/index.html'
+      };
+      debug('request', req);
+
+      return REQ.request(req)
+        .then(function(res) {
+          debug('response', _.pick(res, ['status', 'statusText', 'headers', 'data']));
+          expect(res).to.have.property('status');
+          expect(res.status).to.equal(200);
+          expect(res.data).to.include('<html>');
+          expect(res.data).to.include('<body>');
+        });
+    });
+
+    it('/com.ibm.atlas.atlasUSS/web/index.html should return ok', function() {
+      let req = {
+        method: 'get',
+        url: '/ZLUX/plugins/com.ibm.atlas.atlasUSS/web/index.html'
+      };
+      debug('request', req);
+
+      return REQ.request(req)
+        .then(function(res) {
+          debug('response', _.pick(res, ['status', 'statusText', 'headers', 'data']));
+          expect(res).to.have.property('status');
+          expect(res.status).to.equal(200);
+          expect(res.data).to.include('<html>');
+          expect(res.data).to.include('<body>');
+        });
+    });
   });
 });

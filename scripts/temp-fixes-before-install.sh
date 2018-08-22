@@ -21,9 +21,9 @@
 SCRIPT_NAME=$(basename "$0")
 CI_ZOWE_ROOT_DIR=$1
 FULL_EXTRACTED_ZOWE_FOLDER=$2
-CI_ZOSMF_URL=$3
 echo "[${SCRIPT_NAME}] started ..."
-echo "[${SCRIPT_NAME}]        z/OSMF URL: $CI_ZOSMF_URL"
+echo "[${SCRIPT_NAME}]    CI_ZOWE_ROOT_DIR           : $CI_ZOWE_ROOT_DIR"
+echo "[${SCRIPT_NAME}]    FULL_EXTRACTED_ZOWE_FOLDER : $FULL_EXTRACTED_ZOWE_FOLDER"
 CI_PWD=$(pwd)
 
 ################################################################################
@@ -78,9 +78,7 @@ echo "[${SCRIPT_NAME}] starting IZUSVR1 ..."
 ($FULL_EXTRACTED_ZOWE_FOLDER/scripts/opercmd "S IZUSVR1") || exit 1
 sleep 20
 
-if [ -n "$CI_ZOSMF_URL" ]; then
-  echo "[${SCRIPT_NAME}] FIXME: we don't have tool to check if $CI_ZOSMF_URL is ready."
-fi
+echo "[${SCRIPT_NAME}] FIXME: we don't have tool to check if z/OSMF is ready."
 
 ################################################################################
 echo
