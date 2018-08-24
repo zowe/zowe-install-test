@@ -363,8 +363,6 @@ EOF"""
           sh """SSHPASS=${PASSWORD} sshpass -e sftp -o BatchMode=no -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -b - -P ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
 get ${params.INSTALL_DIR}/extracted/zowe-cli-bundle.zip
 EOF"""
-          // unzip is missing from container
-          sh 'sudo apt-get install unzip'
           // install CLI
           sh 'unzip zowe-cli-bundle.zip'
           sh 'npm install -g zowe-cli-1.*.tgz'
