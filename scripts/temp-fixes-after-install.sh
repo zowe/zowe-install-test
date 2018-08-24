@@ -20,7 +20,10 @@
 
 SCRIPT_NAME=$(basename "$0")
 CI_ZOWE_ROOT_DIR=$1
+CI_HOSTNAME=$2
 echo "[${SCRIPT_NAME}] started ..."
+echo "[${SCRIPT_NAME}]    CI_ZOWE_ROOT_DIR           : $CI_ZOWE_ROOT_DIR"
+echo "[${SCRIPT_NAME}]    CI_HOSTNAME                : $CI_HOSTNAME"
 
 ################################################################################
 # Error when starting explore-server:
@@ -44,6 +47,24 @@ else
   echo "[${SCRIPT_NAME}] current server.env: $CURRENT_SERVER_ENV"
   echo "[${SCRIPT_NAME}] JAVA_HOME is set properly, no need to fix."
 fi
+
+################################################################################
+# explorer JES/MVS/USS has internal host name, convert to public domain
+echo "[${SCRIPT_NAME}] checking hostname in explorer-* ..."
+ZDNT_HOSTNAME=S0W1.DAL-EBIS.IHOST.COM
+FILES_TO_UPDATE="explorer-JES explorer-USS explorer-MVS"
+for one in $FILES_TO_UPDATE; do
+  ZDNT_FILE=$CI_ZOWE_ROOT_DIR/${one}/web/index.html
+  echo "[${SCRIPT_NAME}]   - checking $ZDNT_FILE ..."
+  HAS_WRONG_HOSTNAME=$(grep $ZDNT_HOSTNAME $ZDNT_FILE)
+  if [ -z "$HAS_WRONG_HOSTNAME" ]; then
+    sed "s/${ZDNT_HOSTNAME}/${CI_HOSTNAME}/" $ZDNT_FILE > index.html.tmp
+    mv index.html.tmp $ZDNT_FILE
+    echo "[${SCRIPT_NAME}]     - updated."
+  else
+    echo "[${SCRIPT_NAME}]     - no need to update."
+  fi
+done
 
 ################################################################################
 echo

@@ -36,6 +36,7 @@ CI_ZOWE_CONFIG_FILE=zowe-install.yaml
 CI_ZOWE_PAX=
 CI_SKIP_TEMP_FIXES=no
 CI_UNINSTALL=no
+CI_HOSTNAME=
 CI_ZOSMF_PORT=$DEFAULT_CI_ZOSMF_PORT
 CI_ZOWE_ROOT_DIR=$DEFAULT_CI_ZOWE_ROOT_DIR
 CI_INSTALL_DIR=$DEFAULT_CI_INSTALL_DIR
@@ -177,6 +178,7 @@ function usage {
   echo "                        Optional, default is no."
   echo "  -u|--uninstall        If uninstall Zowe first."
   echo "                        Optional, default is no."
+  echo "  -n|--hostname         The server public domain/IP."
   echo "  --zosmf-port          z/OSMF port for testing."
   echo "                        Optional, default is $DEFAULT_CI_ZOSMF_PORT."
   echo "  -t|--target-dir       Installation target folder."
@@ -223,6 +225,11 @@ while [ $# -gt 0 ]; do
     -u|--uninstall)
       CI_UNINSTALL=yes
       shift # past argument
+      ;;
+    -n|--hostname)
+      CI_HOSTNAME="$2"
+      shift # past argument
+      shift # past value
       ;;
     --zosmf-port)
       CI_ZOSMF_PORT="$2"
@@ -311,6 +318,10 @@ if [ -z "$CI_ZOWE_PAX" ]; then
 fi
 if [ ! -f "$CI_ZOWE_PAX" ]; then
   echo "[${SCRIPT_NAME}][error] cannot find the package file."
+  exit 1
+fi
+if [ -z "$CI_HOSTNAME" ]; then
+  echo "[${SCRIPT_NAME}][error] server hostname/IP is required."
   exit 1
 fi
 # convert encoding if those files uploaded
@@ -452,7 +463,7 @@ if [ "$CI_SKIP_TEMP_FIXES" != "yes" ]; then
   cd $CI_INSTALL_DIR
   RUN_SCRIPT=temp-fixes-after-install.sh
   if [ -f "$RUN_SCRIPT" ]; then
-    run_script_with_timeout "${RUN_SCRIPT} ${CI_ZOWE_ROOT_DIR}" 1800
+    run_script_with_timeout "${RUN_SCRIPT} ${CI_ZOWE_ROOT_DIR} ${CI_HOSTNAME}" 1800
     EXIT_CODE=$?
     if [[ "$EXIT_CODE" != "0" ]]; then
       echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
