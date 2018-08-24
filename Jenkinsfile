@@ -145,14 +145,14 @@ customParameters.push(string(
 customParameters.push(string(
   name: 'ZOWE_MVD_SSH_PORT',
   description: 'sshPort for Zowe MVD terminals',
-  defaultValue: '2022',
+  defaultValue: '22',
   trim: true,
   required: true
 ))
 customParameters.push(string(
   name: 'ZOWE_MVD_TELNET_PORT',
   description: 'telnetPort for Zowe MVD terminals',
-  defaultValue: '2023',
+  defaultValue: '23',
   trim: true,
   required: true
 ))
