@@ -57,7 +57,7 @@ for one in $FILES_TO_UPDATE; do
   ZDNT_FILE=$CI_ZOWE_ROOT_DIR/${one}/web/index.html
   echo "[${SCRIPT_NAME}]   - checking $ZDNT_FILE ..."
   HAS_WRONG_HOSTNAME=$(grep $ZDNT_HOSTNAME $ZDNT_FILE)
-  if [ -z "$HAS_WRONG_HOSTNAME" ]; then
+  if [ -n "$HAS_WRONG_HOSTNAME" ]; then
     sed "s/${ZDNT_HOSTNAME}/${CI_HOSTNAME}/" $ZDNT_FILE > index.html.tmp
     mv index.html.tmp $ZDNT_FILE
     echo "[${SCRIPT_NAME}]     - updated."
