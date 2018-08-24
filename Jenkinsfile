@@ -205,7 +205,7 @@ opts.push(parameters(customParameters))
 // set build properties
 properties(opts)
 
-node ('ca-jenkins-agent') {
+node ('ibm-jenkins-slave-nvm') {
   currentBuild.result = 'SUCCESS'
 
   try {
