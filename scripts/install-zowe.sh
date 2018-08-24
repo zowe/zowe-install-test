@@ -81,7 +81,12 @@ function ensure_script_encoding {
   fi
 
   iconv -f $FROM_ENCODING -t $TO_ENCODING "${SCRIPT_TO_CHECK}" > "${SCRIPT_TO_CHECK}.new"
-  mv "${SCRIPT_TO_CHECK}.new" "${SCRIPT_TO_CHECK}" && chmod +x "${SCRIPT_TO_CHECK}"
+  REQUIRE_THIS_CONVERT=$(cat "${SCRIPT_TO_CHECK}.new" | grep '#!/')
+  if [ -n "$REQUIRE_THIS_CONVERT" ]; then
+    mv "${SCRIPT_TO_CHECK}.new" "${SCRIPT_TO_CHECK}" && chmod +x "${SCRIPT_TO_CHECK}"
+  else
+    rm "${SCRIPT_TO_CHECK}.new"
+  fi
 }
 
 ################################################################################
