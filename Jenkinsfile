@@ -347,6 +347,10 @@ EOF"""
         timeout(60) {
           sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 https://${USERNAME}:${PASSWORD}@${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOWE_EXPLORER_SERVER_HTTPS_PORT}/ibm/api/explorer/"
         }
+        // check if zD&T & z/OSMF are started again in case z/OSMF is restarted
+        timeout(60) {
+          sh "./scripts/is-website-ready.sh -r 720 -t 10 -c 20 https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOSMF_PORT}/zosmf/"
+        }
       }
     }
 
