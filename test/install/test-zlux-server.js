@@ -30,6 +30,27 @@ before('verify environment variables', function() {
 
 describe(`test zLux server https://${process.env.SSH_HOST}:${process.env.ZOWE_ZLUX_HTTPS_PORT}`, function() {
   describe('GET /', function() {
+    it('should redirect to /ZLUX/plugins/com.rs.mvd/web/', function() {
+      let req = {
+        method: 'get',
+        url: '/',
+        maxRedirects: 0,
+      };
+      debug('request', req);
+
+      return REQ.request(req)
+        .catch(function(err) {
+          debug('response err', err);
+          expect(err).to.have.property('response');
+          const res = err.response;
+          expect(res.status).to.equal(302);
+          expect(res.headers).to.have.property('location');
+          expect(res.headers.location).to.equal('/ZLUX/plugins/com.rs.mvd/web/');
+        });
+    });
+  });
+
+  describe('GET /', function() {
     it('should return ok', function() {
       let req = {
         method: 'get',

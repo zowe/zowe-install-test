@@ -16,12 +16,14 @@
   "devDependencies": {
     "axios": "^0.18.0",
     "chai": "^4.1.2",
+    "chromedriver": "^2.41.0",
     "debug": "^3.1.0",
     "eslint": "^5.2.0",
     "lodash": "^4.17.10",
     "mocha": "^5.2.0",
     "mocha-jenkins-reporter": "^0.3.12",
-    "node-ssh": "^5.1.2"
+    "node-ssh": "^5.1.2",
+    "selenium-webdriver": "^4.0.0-alpha.1"
   },
   "scripts": {
     "test": "mocha",
