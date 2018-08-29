@@ -51,27 +51,79 @@ describe('test MVD login page', function() {
 
   it('should show error with wrong login password', async function() {
     var loginForm = await driver.findElement(By.css('form.login-form'));
+    // fill in login form
     var usernameInput = await loginForm.findElement(By.css('input#usernameInput'));
-    var passwordInput = await loginForm.findElement(By.css('input#passwordInput'));
-    let loginButton = await driver.findElement(By.css('#\\#loginButton'));
+    await usernameInput.clear();
     await usernameInput.sendKeys(process.env.SSH_USER);
+    var passwordInput = await loginForm.findElement(By.css('input#passwordInput'));
+    await passwordInput.clear();
     await passwordInput.sendKeys('wrong+passdword!');
+    // submit login
+    let loginButton = await driver.findElement(By.css('#\\#loginButton'));
     await loginButton.click();
-    await driver.wait(async function() {
-        let error = await driver.findElement(By.css('p.login-error')).getText();
-        error = error.trim();
+    // wait for login error
+    await driver.wait(async() => {
+      let error = await driver.findElement(By.css('p.login-error')).getText();
+      error = error.trim();
 
-        if (error && error !== '&nbsp;') {
-          debug('login error message returned: %s', error);
-          return true;
-        }
-        return false;
-      },
-      DEFAULT_PAGE_LOADING_TIMEOUT
-    );
+      if (error && error !== '&nbsp;') {
+        debug('login error message returned: %s', error);
+        return true;
+      }
+      return false;
+    },
+    DEFAULT_PAGE_LOADING_TIMEOUT);
 
+    // save screenshot
     const file = await saveScreenshot(driver, testName, 'login-wrong-password');
     debug(`- login error returned, screenshot: ${file}`);
+
+    // make sure we got authentication error
+    let error = await driver.findElement(By.css('p.login-error')).getText();
+    error = error.trim();
+    expect(error).to.include('Authentication failed');
+  });
+
+  it('should login successfully with correct password', async function() {
+    var loginForm = await driver.findElement(By.css('form.login-form'));
+    // fill in login form
+    var usernameInput = await loginForm.findElement(By.css('input#usernameInput'));
+    await usernameInput.clear();
+    await usernameInput.sendKeys(process.env.SSH_USER);
+    var passwordInput = await loginForm.findElement(By.css('input#passwordInput'));
+    await passwordInput.clear();
+    await passwordInput.sendKeys(process.env.SSH_PASSWD);
+    // submit login
+    let loginButton = await driver.findElement(By.css('#\\#loginButton'));
+    await loginButton.click();
+    // wait for login error or successfully
+    await driver.wait(async() => {
+      let error = await driver.findElement(By.css('p.login-error')).getText();
+      error = error.trim();
+      if (error && error !== '&nbsp;') {
+        debug('login error message returned: %s', error);
+        // authentication failed, no need to wait anymore
+        return true;
+      }
+
+      const loginPanel = await driver.findElement(By.css('div.login-panel'));
+      const isDisplayed = await loginPanel.isDisplayed();
+      if (!isDisplayed) {
+        debug('login panel is hidden, login should be successfully');
+        return true;
+      }
+      return false;
+    },
+    DEFAULT_PAGE_LOADING_TIMEOUT);
+
+    // save screenshot
+    const file = await saveScreenshot(driver, testName, 'login-successfully');
+    debug(`- login successfully returned, screenshot: ${file}`);
+
+    // make sure we are not hitting login error
+    let error = await driver.findElement(By.css('p.login-error')).getText();
+    error = error.trim();
+    expect(error).to.be.oneOf(['', '&nbsp;']);
   });
 });
 
