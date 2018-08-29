@@ -13,7 +13,7 @@ const expect = require('chai').expect;
 const debug = require('debug')('test:e2e:login');
 const testName = path.basename(__filename, path.extname(__filename));
 
-const { until, By } = require('selenium-webdriver');
+const { By } = require('selenium-webdriver');
 
 const {
   DEFAULT_PAGE_LOADING_TIMEOUT,
@@ -36,7 +36,18 @@ before('verify environment variable and load login page', async function() {
   debug('- loading login page');
   await driver.get(`https://${process.env.SSH_HOST}:${process.env.ZOWE_ZLUX_HTTPS_PORT}/`);
   await driver.wait(
-    until.elementLocated(By.css('#\\#loginButton')),
+    // until.elementLocated(By.css('#\\#loginButton')),
+    async() => {
+      let isDisplayed = false;
+      try {
+        const loginButton = await driver.findElement(By.css('#\\#loginButton'));
+        isDisplayed = await loginButton.isDisplayed();
+      } catch (err) {
+        // don't care about errors, especially NoSuchElementError
+      }
+      await driver.sleep(300); // not too fast
+      return isDisplayed;
+    },
     DEFAULT_PAGE_LOADING_TIMEOUT
   );
   const file = await saveScreenshot(driver, testName, 'login');
@@ -44,18 +55,20 @@ before('verify environment variable and load login page', async function() {
 });
 
 describe('test MVD login page', function() {
+
   it('should redirect to login page', async function() {
     const title = await driver.getTitle();
     expect(title).to.be.equal('Mainframe Virtual Desktop');
   });
 
+
   it('should show error with wrong login password', async function() {
-    var loginForm = await driver.findElement(By.css('form.login-form'));
+    const loginForm = await driver.findElement(By.css('form.login-form'));
     // fill in login form
-    var usernameInput = await loginForm.findElement(By.css('input#usernameInput'));
+    let usernameInput = await loginForm.findElement(By.css('input#usernameInput'));
     await usernameInput.clear();
     await usernameInput.sendKeys(process.env.SSH_USER);
-    var passwordInput = await loginForm.findElement(By.css('input#passwordInput'));
+    let passwordInput = await loginForm.findElement(By.css('input#passwordInput'));
     await passwordInput.clear();
     await passwordInput.sendKeys('wrong+passdword!');
     // submit login
@@ -63,14 +76,19 @@ describe('test MVD login page', function() {
     await loginButton.click();
     // wait for login error
     await driver.wait(async() => {
-      let error = await driver.findElement(By.css('p.login-error')).getText();
-      error = error.trim();
+      let result = false;
 
-      if (error && error !== '&nbsp;') {
-        debug('login error message returned: %s', error);
-        return true;
+      if (!result) {
+        let error = await driver.findElement(By.css('p.login-error')).getText();
+        error = error.trim();
+        if (error && error !== '&nbsp;') {
+          debug('login error message returned: %s', error);
+          result = true;
+        }
       }
-      return false;
+
+      await driver.sleep(300); // not too fast
+      return result;
     },
     DEFAULT_PAGE_LOADING_TIMEOUT);
 
@@ -84,13 +102,14 @@ describe('test MVD login page', function() {
     expect(error).to.include('Authentication failed');
   });
 
+
   it('should login successfully with correct password', async function() {
-    var loginForm = await driver.findElement(By.css('form.login-form'));
+    const loginForm = await driver.findElement(By.css('form.login-form'));
     // fill in login form
-    var usernameInput = await loginForm.findElement(By.css('input#usernameInput'));
+    let usernameInput = await loginForm.findElement(By.css('input#usernameInput'));
     await usernameInput.clear();
     await usernameInput.sendKeys(process.env.SSH_USER);
-    var passwordInput = await loginForm.findElement(By.css('input#passwordInput'));
+    let passwordInput = await loginForm.findElement(By.css('input#passwordInput'));
     await passwordInput.clear();
     await passwordInput.sendKeys(process.env.SSH_PASSWD);
     // submit login
@@ -98,21 +117,29 @@ describe('test MVD login page', function() {
     await loginButton.click();
     // wait for login error or successfully
     await driver.wait(async() => {
-      let error = await driver.findElement(By.css('p.login-error')).getText();
-      error = error.trim();
-      if (error && error !== '&nbsp;') {
-        debug('login error message returned: %s', error);
-        // authentication failed, no need to wait anymore
-        return true;
+      let result = false;
+
+      if (!result) {
+        let error = await driver.findElement(By.css('p.login-error')).getText();
+        error = error.trim();
+        if (error && error !== '&nbsp;') {
+          debug('login error message returned: %s', error);
+          // authentication failed, no need to wait anymore
+          result = true;
+        }
       }
 
-      const loginPanel = await driver.findElement(By.css('div.login-panel'));
-      const isDisplayed = await loginPanel.isDisplayed();
-      if (!isDisplayed) {
-        debug('login panel is hidden, login should be successfully');
-        return true;
+      if (!result) {
+        const loginPanel = await driver.findElement(By.css('div.login-panel'));
+        const isDisplayed = await loginPanel.isDisplayed();
+        if (!isDisplayed) {
+          debug('login panel is hidden, login should be successfully');
+          result = true;
+        }
       }
-      return false;
+
+      await driver.sleep(300); // not too fast
+      return result;
     },
     DEFAULT_PAGE_LOADING_TIMEOUT);
 
@@ -126,6 +153,7 @@ describe('test MVD login page', function() {
     expect(error).to.be.oneOf(['', '&nbsp;']);
   });
 });
+
 
 after('quit webdriver', async function() {
   // quit webdriver
