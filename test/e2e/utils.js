@@ -8,10 +8,13 @@
  * Copyright IBM Corporation 2018
  */
 
+/*eslint no-console: ["error", { allow: ["log", "warn", "error"] }] */
+
 const _ = require('lodash');
 const fs = require('fs');
 const path = require('path');
 const util = require('util');
+const debug = require('debug')('test:e2e:utils');
 const { Capabilities, Builder, logging } = require('selenium-webdriver');
 const chrome = require('selenium-webdriver/chrome');
 const firefox = require('selenium-webdriver/firefox');
@@ -44,6 +47,10 @@ const saveScreenshot = async(driver, testScript, screenshotName) => {
   const base64png = await driver.takeScreenshot();
   const file = await getImagePath(driver, testScript, screenshotName);
   await writeFile(path.join(DEFAULT_SCREENSHOT_PATH, file), new Buffer(base64png, 'base64'));
+
+  // expose screenshot information
+  debug(`- login error returned, screenshot: ${file}`);
+  console.log(`[[ATTACHMENT|${file}]]`);
 
   return file;
 };

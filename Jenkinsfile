@@ -382,6 +382,15 @@ npm test"""
 
       // publish report
       junit 'reports/junit.xml'
+      publishHTML([
+        allowMissing: false,
+        alwaysLinkToLastBuild: false,
+        keepAll: false,
+        reportDir: 'reports',
+        reportFiles: 'index.html',
+        reportName: 'Test Result HTML Report',
+        reportTitles: ''
+      ])
     }
 
     stage('done') {

@@ -11,6 +11,7 @@
 const path = require('path');
 const expect = require('chai').expect;
 const debug = require('debug')('test:e2e:login');
+const addContext = require('mochawesome/addContext');
 const testName = path.basename(__filename, path.extname(__filename));
 
 const { By } = require('selenium-webdriver');
@@ -50,13 +51,15 @@ before('verify environment variable and load login page', async function() {
     },
     DEFAULT_PAGE_LOADING_TIMEOUT
   );
-  const file = await saveScreenshot(driver, testName, 'login');
-  debug(`- login page is loaded, screenshot: ${file}`);
 });
 
 describe('test MVD login page', function() {
 
   it('should redirect to login page', async function() {
+    // save screenshot
+    const file = await saveScreenshot(driver, testName, 'login');
+    addContext(this, file);
+
     const title = await driver.getTitle();
     expect(title).to.be.equal('Mainframe Virtual Desktop');
   });
@@ -94,7 +97,7 @@ describe('test MVD login page', function() {
 
     // save screenshot
     const file = await saveScreenshot(driver, testName, 'login-wrong-password');
-    debug(`- login error returned, screenshot: ${file}`);
+    addContext(this, file);
 
     // make sure we got authentication error
     let error = await driver.findElement(By.css('p.login-error')).getText();
@@ -145,7 +148,7 @@ describe('test MVD login page', function() {
 
     // save screenshot
     const file = await saveScreenshot(driver, testName, 'login-successfully');
-    debug(`- login successfully returned, screenshot: ${file}`);
+    addContext(this, file);
 
     // make sure we are not hitting login error
     let error = await driver.findElement(By.css('p.login-error')).getText();
