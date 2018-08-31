@@ -17,6 +17,7 @@ const testName = path.basename(__filename, path.extname(__filename));
 const { By } = require('selenium-webdriver');
 
 const {
+  PRE_INSTALLED_APPS,
   DEFAULT_PAGE_LOADING_TIMEOUT,
   saveScreenshot,
   getDefaultDriver,
@@ -154,6 +155,114 @@ describe('test MVD login page', function() {
     let error = await driver.findElement(By.css('p.login-error')).getText();
     error = error.trim();
     expect(error).to.be.oneOf(['', '&nbsp;']);
+
+    // launchbar should exist
+    const launchbar = await driver.findElements(By.css('rs-com-launchbar'));
+    expect(launchbar).to.be.an('array').that.have.lengthOf(1);
+
+    // check we have known apps launched
+    const apps = await driver.findElements(By.css('rs-com-launchbar-icon'));
+    expect(apps).to.be.an('array').that.have.lengthOf(PRE_INSTALLED_APPS.length);
+    for (let app of apps) {
+      let icon = await app.findElement(By.css('div.launchbar-icon'));
+      let title = await icon.getAttribute('title');
+      expect(title).to.be.oneOf(PRE_INSTALLED_APPS);
+    }
+  });
+
+
+  it('should be able to popup apps menu', async function() {
+    // menu should exist
+    const menu = await driver.findElements(By.css('rs-com-launchbar-menu'));
+    expect(menu).to.be.an('array').that.have.lengthOf(1);
+    const menuIcon = await menu[0].findElements(By.css('.launchbar-icon'));
+    expect(menuIcon).to.be.an('array').that.have.lengthOf(1);
+    const menuIconDisplayed = await menuIcon[0].isDisplayed();
+    expect(menuIconDisplayed).to.be.true;
+
+    // popup menu
+    await menuIcon[0].click();
+    await driver.sleep(1000);
+
+    // save screenshot
+    const file = await saveScreenshot(driver, testName, 'apps-menu-popped');
+    addContext(this, file);
+
+    // check popup menu existence
+    const popup = await driver.findElements(By.css('rs-com-launchbar-menu .launch-widget-popup'));
+    expect(popup).to.be.an('array').that.have.lengthOf(1);
+    const popupIsDisplayed = await popup[0].isDisplayed();
+    expect(popupIsDisplayed).to.be.true;
+
+    // check popup menu items
+    const menuItems = await popup[0].findElements(By.css('.launch-widget-row > p'));
+    expect(menuItems).to.be.an('array').that.have.lengthOf(PRE_INSTALLED_APPS.length);
+    for (let item of menuItems) {
+      let text = await item.getText();
+      expect(text).to.be.oneOf(PRE_INSTALLED_APPS);
+    }
+  });
+
+
+  it('should be able to logout', async function() {
+    // widget should exist
+    const widget = await driver.findElements(By.css('rs-com-launchbar-widget'));
+    expect(widget).to.be.an('array').that.have.lengthOf(1);
+    const clock = await widget[0].findElements(By.css('.launchbar-clock'));
+    expect(clock).to.be.an('array').that.have.lengthOf(1);
+    const userIcon = await widget[0].findElements(By.css('.launchbar-user'));
+    expect(userIcon).to.be.an('array').that.have.lengthOf(1);
+
+    // popup user info
+    await userIcon[0].click();
+    await driver.sleep(1000);
+
+    // save screenshot
+    const file = await saveScreenshot(driver, testName, 'user-info-popped');
+    addContext(this, file);
+
+    // check popup menu existence
+    const popup = await widget[0].findElements(By.css('.launchbar-user-popup'));
+    expect(popup).to.be.an('array').that.have.lengthOf(1);
+    const popupIsDisplayed = await popup[0].isDisplayed();
+    expect(popupIsDisplayed).to.be.true;
+
+    // check popup menu
+    const username = await popup[0].findElements(By.css('h5'));
+    expect(username).to.be.an('array').that.have.lengthOf(1);
+    const usernameText = await username[0].getText();
+    expect(usernameText).to.equal(process.env.SSH_USER);
+
+    const signout = await popup[0].findElements(By.css('button'));
+    expect(signout).to.be.an('array').that.have.lengthOf(1);
+    const signoutText = await signout[0].getText();
+    expect(signoutText).to.equal('Sign Out');
+
+    await signout[0].click();
+    await driver.wait(
+      // until.elementLocated(By.css('#\\#loginButton')),
+      async() => {
+        let isDisplayed = false;
+        try {
+          const loginButton = await driver.findElement(By.css('#\\#loginButton'));
+          isDisplayed = await loginButton.isDisplayed();
+        } catch (err) {
+          // don't care about errors, especially NoSuchElementError
+        }
+        await driver.sleep(300); // not too fast
+        return isDisplayed;
+      },
+      DEFAULT_PAGE_LOADING_TIMEOUT
+    );
+
+    // save screenshot
+    const file2 = await saveScreenshot(driver, testName, 'user-logout');
+    addContext(this, file2);
+
+    // logged out
+    const loginPanel = await driver.findElement(By.css('div.login-panel'));
+    const isDisplayed = await loginPanel.isDisplayed();
+    expect(isDisplayed).to.be.true;
   });
 });
 

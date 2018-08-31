@@ -21,6 +21,17 @@ const firefox = require('selenium-webdriver/firefox');
 
 const writeFile = util.promisify(fs.writeFile);
 
+const PRE_INSTALLED_APPS = [
+  'JES Explorer',
+  'MVS Explorer',
+  'USS Explorer',
+  'TN3270',
+  'VT Terminal',
+  'IFrame',
+  'ZOS Subsystems',
+  'Hello World',
+];
+
 const DEFAULT_PAGE_LOADING_TIMEOUT = 30000;
 const DEFAULT_SCREENSHOT_PATH = './reports';
 let SCREENSHOT_FILECOUNT = 0;
@@ -114,6 +125,7 @@ const getDefaultDriver = async(browserType) => {
 };
 
 module.exports = {
+  PRE_INSTALLED_APPS,
   DEFAULT_PAGE_LOADING_TIMEOUT,
   DEFAULT_SCREENSHOT_PATH,
 
