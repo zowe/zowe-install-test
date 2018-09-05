@@ -29,33 +29,12 @@ const {
   loginMVD,
   launchApp,
   locateApp,
+  switchToAppContext,
+  saveScreenshotWithAppContext,
 } = require('./utils');
 let driver;
 
 const APP_TO_TEST = 'JES Explorer';
-
-const switchToContext = async(driver, contexts) => {
-  debug('[switchToContext] started');
-  const app = await locateApp(driver, APP_TO_TEST);
-  for (let i in contexts) {
-    debug(`[switchToContext] - ${i}: ${contexts[i]}`);
-    if (i === 0) {
-      await waitUntilIframe(driver, contexts[i], app);
-    } else {
-      await waitUntilIframe(driver, contexts[i]);
-    }
-  }
-  debug('[switchToContext] done');
-};
-
-const saveScreenshotWithContext = async(testcase, driver, testName, screenshot, contexts) => {
-  debug('[saveScreenshotWithContext] started');
-  await driver.switchTo().defaultContent();
-  const file = await saveScreenshot(driver, testName, screenshot);
-  addContext(testcase, file);
-  switchToContext(driver, contexts);
-  debug('[saveScreenshotWithContext] done');
-};
 
 before('verify environment variable and load login page', async function() {
   expect(process.env.SSH_HOST, 'SSH_HOST is not defined').to.not.be.empty;
@@ -96,7 +75,7 @@ describe('test jes explorer', function() {
     await alert.sendKeys(process.env.SSH_USER + Key.TAB + process.env.SSH_PASSWD);
     await alert.accept();
     // to avoid StaleElementReferenceError, find the iframes context again
-    await switchToContext(driver, ['rs-com-mvd-iframe-component > iframe', 'iframe#atlasIframe']);
+    await switchToAppContext(driver, APP_TO_TEST, ['rs-com-mvd-iframe-component > iframe', 'iframe#atlasIframe']);
 
     // wait for page is loaded
     let treeContent = await waitUntilElement(driver, '#tree-text-content');
@@ -104,7 +83,7 @@ describe('test jes explorer', function() {
     await waitUntilElementIsGone(driver, 'div[mode=indeterminate]', treeContent);
 
     // save screenshot
-    await saveScreenshotWithContext(this, driver, testName, 'app-loaded', ['rs-com-mvd-iframe-component > iframe', 'iframe#atlasIframe']);
+    await saveScreenshotWithAppContext(this, driver, testName, 'app-loaded', APP_TO_TEST, ['rs-com-mvd-iframe-component > iframe', 'iframe#atlasIframe']);
     treeContent = await waitUntilElement(driver, '#tree-text-content');
 
     // expand filter
@@ -125,7 +104,7 @@ describe('test jes explorer', function() {
       }
     }
     // save screenshot
-    await saveScreenshotWithContext(this, driver, testName, 'reset-filter', ['rs-com-mvd-iframe-component > iframe', 'iframe#atlasIframe']);
+    await saveScreenshotWithAppContext(this, driver, testName, 'reset-filter', APP_TO_TEST, ['rs-com-mvd-iframe-component > iframe', 'iframe#atlasIframe']);
     treeContent = await waitUntilElement(driver, '#tree-text-content');
 
     // submit filter
@@ -137,7 +116,7 @@ describe('test jes explorer', function() {
     await waitUntilElementIsGone(driver, 'div[mode=indeterminate]', treeContent);
 
     // save screenshot
-    await saveScreenshotWithContext(this, driver, testName, 'zowe-job-loaded', ['rs-com-mvd-iframe-component > iframe', 'iframe#atlasIframe']);
+    await saveScreenshotWithAppContext(this, driver, testName, 'zowe-job-loaded', APP_TO_TEST, ['rs-com-mvd-iframe-component > iframe', 'iframe#atlasIframe']);
     treeContent = await waitUntilElement(driver, '#tree-text-content');
 
     const items = await getElements(treeContent, 'div.node ul li');

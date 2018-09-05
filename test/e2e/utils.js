@@ -19,6 +19,7 @@ const debug = require('debug')('test:e2e:utils');
 const { Capabilities, Builder, By, logging } = require('selenium-webdriver');
 const chrome = require('selenium-webdriver/chrome');
 const firefox = require('selenium-webdriver/firefox');
+const addContext = require('mochawesome/addContext');
 
 const writeFile = util.promisify(fs.writeFile);
 
@@ -325,6 +326,29 @@ const locateApp = async(driver, appName) => {
   return body;
 };
 
+const switchToAppContext = async(driver, appName, contexts) => {
+  debug('[switchToAppContext] started');
+  const app = await locateApp(driver, appName);
+  for (let i in contexts) {
+    debug(`[switchToAppContext] - ${i}: ${contexts[i]}`);
+    if (i === 0) {
+      await waitUntilIframe(driver, contexts[i], app);
+    } else {
+      await waitUntilIframe(driver, contexts[i]);
+    }
+  }
+  debug('[switchToAppContext] done');
+};
+
+const saveScreenshotWithAppContext = async(testcase, driver, testName, screenshot, appName, contexts) => {
+  debug('[saveScreenshotWithAppContext] started');
+  await driver.switchTo().defaultContent();
+  const file = await saveScreenshot(driver, testName, screenshot);
+  addContext(testcase, file);
+  switchToAppContext(driver, appName, contexts);
+  debug('[saveScreenshotWithAppContext] done');
+};
+
 module.exports = {
   PRE_INSTALLED_APPS,
   DEFAULT_PAGE_LOADING_TIMEOUT,
@@ -342,4 +366,6 @@ module.exports = {
   loginMVD,
   launchApp,
   locateApp,
+  switchToAppContext,
+  saveScreenshotWithAppContext,
 };
