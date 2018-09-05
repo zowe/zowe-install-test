@@ -63,7 +63,8 @@ describe('cli list data sets of tcpip.*', function() {
   });
 
   it('should be able to download file', async function() {
-    const result = await execZoweCli(`bright zos-files download data-set ${TCPIP_DATA_DSNAME} --response-format-json --zosmf-profile ${defaultZOSMFProfileName}`);
+    const targetFile = '.tmp/' + TCPIP_DATA_DSNAME.replace(/\./g, '-') + '.txt';
+    const result = await execZoweCli(`bright zos-files download data-set ${TCPIP_DATA_DSNAME} --file "${targetFile}" --response-format-json --zosmf-profile ${defaultZOSMFProfileName}`);
 
     debug('result:', result);
 
@@ -85,7 +86,7 @@ describe('cli list data sets of tcpip.*', function() {
     expect(res.data.apiResponse).to.include('Name of Data Set:');
 
     // file should be downloaded
-    const file = await fsReadfile(TCPIP_DATA_DSNAME.replace(/\./g, '/') + '.txt');
+    const file = await fsReadfile(targetFile);
     expect(file.toString()).to.include('Name of Data Set:');
   });
 });
