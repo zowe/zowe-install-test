@@ -15,6 +15,7 @@ const debug = require('debug')('test:cli:jobs');
 const fs = require('fs');
 const util = require('util');
 const fsReadfile = util.promisify(fs.readFile);
+const addContext = require('mochawesome/addContext');
 
 const { execZoweCli, defaultZOSMFProfileName, createDefaultZOSMFProfile } = require('./utils');
 
@@ -42,18 +43,17 @@ describe('cli list data sets of tcpip.*', function() {
     const result = await execZoweCli(`bright zos-files list data-set "tcpip.*" --response-format-json --zosmf-profile ${defaultZOSMFProfileName}`);
 
     debug('result:', result);
+    addContext(this, {
+      title: 'cli result',
+      value: result
+    });
 
     expect(result).to.have.property('stdout');
     expect(result).to.have.property('stderr');
 
     expect(result.stderr).to.be.empty;
-    let res;
-    try {
-      res = JSON.parse(result.stdout);
-      expect(res).to.be.an('object');
-    } catch (err) {
-      console.log('parsing stdout failed: ' + result.stdout);
-    }
+    const res = JSON.parse(result.stdout);
+    expect(res).to.be.an('object');
     expect(res.success).to.be.true;
     expect(res.data).to.be.an('object');
     expect(res.data.success).to.be.true;
@@ -69,18 +69,17 @@ describe('cli list data sets of tcpip.*', function() {
     const result = await execZoweCli(`bright zos-files download data-set ${TCPIP_DATA_DSNAME} --file "${targetFile}" --response-format-json --zosmf-profile ${defaultZOSMFProfileName}`);
 
     debug('result:', result);
+    addContext(this, {
+      title: 'cli result',
+      value: result
+    });
 
     expect(result).to.have.property('stdout');
     expect(result).to.have.property('stderr');
 
     expect(result.stderr).to.be.empty;
-    let res;
-    try {
-      res = JSON.parse(result.stdout);
-      expect(res).to.be.an('object');
-    } catch (err) {
-      console.log('parsing stdout failed: ' + result.stdout);
-    }
+    const res = JSON.parse(result.stdout);
+    expect(res).to.be.an('object');
     expect(res.success).to.be.true;
     expect(res.data).to.be.an('object');
     expect(res.data.success).to.be.true;

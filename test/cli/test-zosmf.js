@@ -10,6 +10,7 @@
 
 const expect = require('chai').expect;
 const debug = require('debug')('test:cli:zosmf');
+const addContext = require('mochawesome/addContext');
 const { execZoweCli, defaultZOSMFProfileName, createDefaultZOSMFProfile } = require('./utils');
 
 before('verify environment variables', async function() {
@@ -34,6 +35,10 @@ describe('cli check zosmf status', function() {
     const result = await execZoweCli(`bright zosmf check status --zosmf-profile ${defaultZOSMFProfileName}`);
 
     debug('result:', result);
+    addContext(this, {
+      title: 'cli result',
+      value: result
+    });
 
     expect(result).to.have.property('stdout');
     expect(result).to.have.property('stderr');
