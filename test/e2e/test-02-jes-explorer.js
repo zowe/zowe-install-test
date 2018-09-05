@@ -48,11 +48,11 @@ const switchToContext = async(driver, contexts) => {
   debug('[switchToContext] done');
 };
 
-const saveScreenshotWithContext = async(driver, testName, screenshot, contexts) => {
+const saveScreenshotWithContext = async(testcase, driver, testName, screenshot, contexts) => {
   debug('[saveScreenshotWithContext] started');
   await driver.switchTo().defaultContent();
   const file = await saveScreenshot(driver, testName, screenshot);
-  addContext(this, file);
+  addContext(testcase, file);
   switchToContext(driver, contexts);
   debug('[saveScreenshotWithContext] done');
 };
@@ -104,7 +104,7 @@ describe('test jes explorer', function() {
     await waitUntilElementIsGone(driver, 'div[mode=indeterminate]', treeContent);
 
     // save screenshot
-    await saveScreenshotWithContext(driver, testName, 'app-loaded', ['rs-com-mvd-iframe-component > iframe', 'iframe#atlasIframe']);
+    await saveScreenshotWithContext(this, driver, testName, 'app-loaded', ['rs-com-mvd-iframe-component > iframe', 'iframe#atlasIframe']);
     treeContent = await waitUntilElement(driver, '#tree-text-content');
 
     // expand filter
@@ -125,7 +125,7 @@ describe('test jes explorer', function() {
       }
     }
     // save screenshot
-    await saveScreenshotWithContext(driver, testName, 'reset-filter', ['rs-com-mvd-iframe-component > iframe', 'iframe#atlasIframe']);
+    await saveScreenshotWithContext(this, driver, testName, 'reset-filter', ['rs-com-mvd-iframe-component > iframe', 'iframe#atlasIframe']);
     treeContent = await waitUntilElement(driver, '#tree-text-content');
 
     // submit filter
