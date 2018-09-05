@@ -8,6 +8,8 @@
  * Copyright IBM Corporation 2018
  */
 
+/*eslint no-console: ["error", { allow: ["log", "warn", "error"] }] */
+
 const expect = require('chai').expect;
 const debug = require('debug')('test:cli:jobs');
 const fs = require('fs');
