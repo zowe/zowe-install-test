@@ -50,7 +50,7 @@ describe('cli list data sets of tcpip.*', function() {
       res = JSON.parse(result.stdout);
       expect(res).to.be.an('object');
     } catch (err) {
-      expect(err, 'parsing stdout failed: ' + result.stdout).to.be.undefined;
+      console.log('parsing stdout failed: ' + result.stdout);
     }
     expect(res.success).to.be.true;
     expect(res.data).to.be.an('object');
@@ -77,7 +77,7 @@ describe('cli list data sets of tcpip.*', function() {
       res = JSON.parse(result.stdout);
       expect(res).to.be.an('object');
     } catch (err) {
-      expect(err, 'parsing stdout failed: ' + result.stdout).to.be.undefined;
+      console.log('parsing stdout failed: ' + result.stdout);
     }
     expect(res.success).to.be.true;
     expect(res.data).to.be.an('object');
