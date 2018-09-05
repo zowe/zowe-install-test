@@ -136,6 +136,10 @@ describe('test jes explorer', function() {
     // wait for results
     await waitUntilElementIsGone(driver, 'div[mode=indeterminate]', treeContent);
 
+    // save screenshot
+    await saveScreenshotWithContext(this, driver, testName, 'zowe-job-loaded', ['rs-com-mvd-iframe-component > iframe', 'iframe#atlasIframe']);
+    treeContent = await waitUntilElement(driver, '#tree-text-content');
+
     const items = await getElements(treeContent, 'div.node ul li');
     expect(items).to.be.an('array').that.have.lengthOf.above(0);
     debug(`found ${items.length} of menu items`);
