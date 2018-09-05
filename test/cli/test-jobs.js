@@ -41,8 +41,13 @@ describe('cli list jobs of IZU*', function() {
     expect(result).to.have.property('stderr');
 
     expect(result.stderr).to.be.empty;
-    const res = JSON.parse(result.stdout);
-    expect(res).to.be.an('object');
+    let res;
+    try {
+      res = JSON.parse(result.stdout);
+      expect(res).to.be.an('object');
+    } catch (err) {
+      expect(err, 'parsing stdout failed: ' + result.stdout).to.be.undefined;
+    }
     expect(res.success).to.be.true;
     expect(res.data).to.be.an('array');
     const zoweJobIndex = res.data.findIndex(item => item.jobname === ZOWE_JOB_NAME);
@@ -68,8 +73,13 @@ describe('cli list jobs of IZU*', function() {
     expect(result).to.have.property('stderr');
 
     expect(result.stderr).to.be.empty;
-    const res = JSON.parse(result.stdout);
-    expect(res).to.be.an('object');
+    let res;
+    try {
+      res = JSON.parse(result.stdout);
+      expect(res).to.be.an('object');
+    } catch (err) {
+      expect(err, 'parsing stdout failed: ' + result.stdout).to.be.undefined;
+    }
     expect(res.success).to.be.true;
     expect(res.data).to.be.an('object');
     expect(res.data.jobname).to.be.equal(ZOWE_JOB_NAME);
