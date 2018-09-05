@@ -14,11 +14,13 @@ const debug = require('debug')('test:e2e:login');
 const addContext = require('mochawesome/addContext');
 const testName = path.basename(__filename, path.extname(__filename));
 
-const { By } = require('selenium-webdriver');
-
 const {
   PRE_INSTALLED_APPS,
   DEFAULT_PAGE_LOADING_TIMEOUT,
+  getElements,
+  getElement,
+  getElementText,
+  waitUntilElement,
   saveScreenshot,
   getDefaultDriver,
 } = require('./utils');
@@ -37,21 +39,7 @@ before('verify environment variable and load login page', async function() {
   // load MVD login page
   debug('- loading login page');
   await driver.get(`https://${process.env.SSH_HOST}:${process.env.ZOWE_ZLUX_HTTPS_PORT}/`);
-  await driver.wait(
-    // until.elementLocated(By.css('#\\#loginButton')),
-    async() => {
-      let isDisplayed = false;
-      try {
-        const loginButton = await driver.findElement(By.css('#\\#loginButton'));
-        isDisplayed = await loginButton.isDisplayed();
-      } catch (err) {
-        // don't care about errors, especially NoSuchElementError
-      }
-      await driver.sleep(300); // not too fast
-      return isDisplayed;
-    },
-    DEFAULT_PAGE_LOADING_TIMEOUT
-  );
+  await waitUntilElement(driver, '#\\#loginButton');
 });
 
 describe('test MVD login page', function() {
@@ -67,104 +55,122 @@ describe('test MVD login page', function() {
 
 
   it('should show error with wrong login password', async function() {
-    const loginForm = await driver.findElement(By.css('form.login-form'));
+    const loginForm = await getElement(driver, 'form.login-form');
+    expect(loginForm).to.be.an('object');
     // fill in login form
-    let usernameInput = await loginForm.findElement(By.css('input#usernameInput'));
+    let usernameInput = await getElement(loginForm, 'input#usernameInput');
+    expect(usernameInput).to.be.an('object');
     await usernameInput.clear();
     await usernameInput.sendKeys(process.env.SSH_USER);
-    let passwordInput = await loginForm.findElement(By.css('input#passwordInput'));
+    let passwordInput = await getElement(loginForm, 'input#passwordInput');
+    expect(passwordInput).to.be.an('object');
     await passwordInput.clear();
     await passwordInput.sendKeys('wrong+passdword!');
     // submit login
-    let loginButton = await driver.findElement(By.css('#\\#loginButton'));
+    let loginButton = await getElement(driver, '#\\#loginButton');
+    expect(loginButton).to.be.an('object');
     await loginButton.click();
     // wait for login error
-    await driver.wait(async() => {
-      let result = false;
+    await driver.wait(
+      async() => {
+        let result = false;
 
-      if (!result) {
-        let error = await driver.findElement(By.css('p.login-error')).getText();
-        error = error.trim();
-        if (error && error !== '&nbsp;') {
-          debug('login error message returned: %s', error);
-          result = true;
+        if (!result) {
+          let error = await getElementText(driver, 'p.login-error');
+          if (error !== false) {
+            error = error.trim();
+            if (error && error !== '&nbsp;') {
+              debug('login error message returned: %s', error);
+              result = true;
+            }
+          }
         }
-      }
 
-      await driver.sleep(300); // not too fast
-      return result;
-    },
-    DEFAULT_PAGE_LOADING_TIMEOUT);
+        await driver.sleep(300); // not too fast
+        return result;
+      },
+      DEFAULT_PAGE_LOADING_TIMEOUT
+    );
 
     // save screenshot
     const file = await saveScreenshot(driver, testName, 'login-wrong-password');
     addContext(this, file);
 
     // make sure we got authentication error
-    let error = await driver.findElement(By.css('p.login-error')).getText();
+    let error = await getElementText(driver, 'p.login-error');
+    expect(error).to.be.a('string');
     error = error.trim();
     expect(error).to.include('Authentication failed');
   });
 
 
   it('should login successfully with correct password', async function() {
-    const loginForm = await driver.findElement(By.css('form.login-form'));
+    const loginForm = await getElement(driver, 'form.login-form');
+    expect(loginForm).to.be.an('object');
     // fill in login form
-    let usernameInput = await loginForm.findElement(By.css('input#usernameInput'));
+    let usernameInput = await getElement(loginForm, 'input#usernameInput');
+    expect(usernameInput).to.be.an('object');
     await usernameInput.clear();
     await usernameInput.sendKeys(process.env.SSH_USER);
-    let passwordInput = await loginForm.findElement(By.css('input#passwordInput'));
+    let passwordInput = await getElement(loginForm, 'input#passwordInput');
+    expect(passwordInput).to.be.an('object');
     await passwordInput.clear();
     await passwordInput.sendKeys(process.env.SSH_PASSWD);
     // submit login
-    let loginButton = await driver.findElement(By.css('#\\#loginButton'));
+    let loginButton = await getElement(driver, '#\\#loginButton');
+    expect(loginButton).to.be.an('object');
     await loginButton.click();
     // wait for login error or successfully
-    await driver.wait(async() => {
-      let result = false;
+    await driver.wait(
+      async() => {
+        let result = false;
 
-      if (!result) {
-        let error = await driver.findElement(By.css('p.login-error')).getText();
-        error = error.trim();
-        if (error && error !== '&nbsp;') {
-          debug('login error message returned: %s', error);
-          // authentication failed, no need to wait anymore
-          result = true;
+        if (!result) {
+          let error = await getElementText(driver, 'p.login-error');
+          if (error !== false) {
+            error = error.trim();
+            if (error && error !== '&nbsp;') {
+              debug('login error message returned: %s', error);
+              // authentication failed, no need to wait anymore
+              result = true;
+            }
+          }
         }
-      }
 
-      if (!result) {
-        const loginPanel = await driver.findElement(By.css('div.login-panel'));
-        const isDisplayed = await loginPanel.isDisplayed();
-        if (!isDisplayed) {
-          debug('login panel is hidden, login should be successfully');
-          result = true;
+        if (!result) {
+          const loginPanel = await getElement(driver, 'div.login-panel', false);
+          const isDisplayed = await loginPanel.isDisplayed();
+          if (!isDisplayed) {
+            debug('login panel is hidden, login should be successfully');
+            result = true;
+          }
         }
-      }
 
-      await driver.sleep(300); // not too fast
-      return result;
-    },
-    DEFAULT_PAGE_LOADING_TIMEOUT);
+        await driver.sleep(300); // not too fast
+        return result;
+      },
+      DEFAULT_PAGE_LOADING_TIMEOUT
+    );
 
     // save screenshot
     const file = await saveScreenshot(driver, testName, 'login-successfully');
     addContext(this, file);
 
     // make sure we are not hitting login error
-    let error = await driver.findElement(By.css('p.login-error')).getText();
+    let error = await getElementText(driver, 'p.login-error', false);
+    expect(error).to.be.a('string');
     error = error.trim();
     expect(error).to.be.oneOf(['', '&nbsp;']);
 
     // launchbar should exist
-    const launchbar = await driver.findElements(By.css('rs-com-launchbar'));
-    expect(launchbar).to.be.an('array').that.have.lengthOf(1);
+    const launchbar = await getElement(driver, 'rs-com-launchbar');
+    expect(launchbar).to.be.an('object');
 
     // check we have known apps launched
-    const apps = await driver.findElements(By.css('rs-com-launchbar-icon'));
+    const apps = await getElements(driver, 'rs-com-launchbar-icon');
     expect(apps).to.be.an('array').that.have.lengthOf(PRE_INSTALLED_APPS.length);
     for (let app of apps) {
-      let icon = await app.findElement(By.css('div.launchbar-icon'));
+      let icon = await getElement(app, 'div.launchbar-icon');
       let title = await icon.getAttribute('title');
       expect(title).to.be.oneOf(PRE_INSTALLED_APPS);
     }
@@ -173,15 +179,13 @@ describe('test MVD login page', function() {
 
   it('should be able to popup apps menu', async function() {
     // menu should exist
-    const menu = await driver.findElements(By.css('rs-com-launchbar-menu'));
-    expect(menu).to.be.an('array').that.have.lengthOf(1);
-    const menuIcon = await menu[0].findElements(By.css('.launchbar-icon'));
-    expect(menuIcon).to.be.an('array').that.have.lengthOf(1);
-    const menuIconDisplayed = await menuIcon[0].isDisplayed();
-    expect(menuIconDisplayed).to.be.true;
+    const menu = await getElement(driver, 'rs-com-launchbar-menu');
+    expect(menu).to.be.an('object');
+    const menuIcon = await getElement(menu, '.launchbar-icon');
+    expect(menuIcon).to.be.an('object');
 
     // popup menu
-    await menuIcon[0].click();
+    await menuIcon.click();
     await driver.sleep(1000);
 
     // save screenshot
@@ -189,13 +193,11 @@ describe('test MVD login page', function() {
     addContext(this, file);
 
     // check popup menu existence
-    const popup = await driver.findElements(By.css('rs-com-launchbar-menu .launch-widget-popup'));
-    expect(popup).to.be.an('array').that.have.lengthOf(1);
-    const popupIsDisplayed = await popup[0].isDisplayed();
-    expect(popupIsDisplayed).to.be.true;
+    const popup = await getElement(driver, 'rs-com-launchbar-menu .launch-widget-popup');
+    expect(popup).to.be.an('object');
 
     // check popup menu items
-    const menuItems = await popup[0].findElements(By.css('.launch-widget-row > p'));
+    const menuItems = await getElements(popup, '.launch-widget-row > p');
     expect(menuItems).to.be.an('array').that.have.lengthOf(PRE_INSTALLED_APPS.length);
     for (let item of menuItems) {
       let text = await item.getText();
@@ -206,15 +208,15 @@ describe('test MVD login page', function() {
 
   it('should be able to logout', async function() {
     // widget should exist
-    const widget = await driver.findElements(By.css('rs-com-launchbar-widget'));
-    expect(widget).to.be.an('array').that.have.lengthOf(1);
-    const clock = await widget[0].findElements(By.css('.launchbar-clock'));
-    expect(clock).to.be.an('array').that.have.lengthOf(1);
-    const userIcon = await widget[0].findElements(By.css('.launchbar-user'));
-    expect(userIcon).to.be.an('array').that.have.lengthOf(1);
+    const widget = await getElement(driver, 'rs-com-launchbar-widget');
+    expect(widget).to.be.an('object');
+    const clock = await getElement(widget, '.launchbar-clock');
+    expect(clock).to.be.an('object');
+    const userIcon = await getElement(widget, '.launchbar-user');
+    expect(userIcon).to.be.an('object');
 
     // popup user info
-    await userIcon[0].click();
+    await userIcon.click();
     await driver.sleep(1000);
 
     // save screenshot
@@ -222,47 +224,28 @@ describe('test MVD login page', function() {
     addContext(this, file);
 
     // check popup menu existence
-    const popup = await widget[0].findElements(By.css('.launchbar-user-popup'));
-    expect(popup).to.be.an('array').that.have.lengthOf(1);
-    const popupIsDisplayed = await popup[0].isDisplayed();
-    expect(popupIsDisplayed).to.be.true;
+    const popup = await getElement(widget, '.launchbar-user-popup');
+    expect(popup).to.be.an('object');
 
     // check popup menu
-    const username = await popup[0].findElements(By.css('h5'));
-    expect(username).to.be.an('array').that.have.lengthOf(1);
-    const usernameText = await username[0].getText();
+    const usernameText = await getElementText(popup, 'h5');
     expect(usernameText).to.equal(process.env.SSH_USER);
 
-    const signout = await popup[0].findElements(By.css('button'));
-    expect(signout).to.be.an('array').that.have.lengthOf(1);
-    const signoutText = await signout[0].getText();
+    const signout = await getElement(popup, 'button');
+    expect(signout).to.be.an('object');
+    const signoutText = await signout.getText();
     expect(signoutText).to.equal('Sign Out');
 
-    await signout[0].click();
-    await driver.wait(
-      // until.elementLocated(By.css('#\\#loginButton')),
-      async() => {
-        let isDisplayed = false;
-        try {
-          const loginButton = await driver.findElement(By.css('#\\#loginButton'));
-          isDisplayed = await loginButton.isDisplayed();
-        } catch (err) {
-          // don't care about errors, especially NoSuchElementError
-        }
-        await driver.sleep(300); // not too fast
-        return isDisplayed;
-      },
-      DEFAULT_PAGE_LOADING_TIMEOUT
-    );
+    await signout.click();
+    await waitUntilElement(driver, '#\\#loginButton');
 
     // save screenshot
     const file2 = await saveScreenshot(driver, testName, 'user-logout');
     addContext(this, file2);
 
     // logged out
-    const loginPanel = await driver.findElement(By.css('div.login-panel'));
-    const isDisplayed = await loginPanel.isDisplayed();
-    expect(isDisplayed).to.be.true;
+    const loginPanel = await getElement(driver, 'div.login-panel');
+    expect(loginPanel).to.be.an('object');
   });
 });
 

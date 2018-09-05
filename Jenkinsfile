@@ -357,6 +357,7 @@ EOF"""
     stage('test') {
       ansiColor('xterm') {
         sh "npm install"
+        sh "npm run lint"
 
         withCredentials([usernamePassword(credentialsId: params.TEST_IMAGE_GUEST_SSH_CREDENTIAL, passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
           // download cli
