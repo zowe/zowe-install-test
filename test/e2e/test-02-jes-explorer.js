@@ -23,8 +23,6 @@ const {
   getDefaultDriver,
   getElement,
   getElements,
-  getElementText,
-  waitUntilElements,
   waitUntilElement,
   waitUntilElementIsGone,
   waitUntilIframe,
