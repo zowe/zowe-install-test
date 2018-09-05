@@ -56,7 +56,7 @@ const execZoweCli = async(command) => {
   debug('cli result:', result);
 
   // remove unlock keyring info from stdout
-  if (result && result.stdout) {
+  if (keyringExists && result && result.stdout) {
     let lines = result.stdout.split('\n');
     while (lines && lines[0] &&
       (lines[0].startsWith('GNOME_KEYRING_CONTROL=') || lines[0].startsWith('SSH_AUTH_SOCK='))) {
