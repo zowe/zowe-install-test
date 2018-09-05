@@ -22,7 +22,6 @@ const firefox = require('selenium-webdriver/firefox');
 
 const writeFile = util.promisify(fs.writeFile);
 
-const ZOWE_JOB_NAME = 'ZOWESVR';
 const PRE_INSTALLED_APPS = [
   'JES Explorer',
   'MVS Explorer',
@@ -327,7 +326,6 @@ const locateApp = async(driver, appName) => {
 };
 
 module.exports = {
-  ZOWE_JOB_NAME,
   PRE_INSTALLED_APPS,
   DEFAULT_PAGE_LOADING_TIMEOUT,
   DEFAULT_SCREENSHOT_PATH,

@@ -16,8 +16,8 @@ const testName = path.basename(__filename, path.extname(__filename));
 
 const { Key, until } = require('selenium-webdriver');
 
+const { ZOWE_JOB_NAME } = require('../constants');
 const {
-  ZOWE_JOB_NAME,
   DEFAULT_PAGE_LOADING_TIMEOUT,
   saveScreenshot,
   getDefaultDriver,
