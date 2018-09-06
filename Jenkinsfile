@@ -61,7 +61,7 @@ customParameters.push(string(
 customParameters.push(string(
   name: 'ZOWE_ARTIFACTORY_BUILD',
   description: 'Zowe artifactory download build',
-  defaultValue: 'zowe-install-packaging-pipeline :: master',
+  defaultValue: 'zowe-install-packaging :: master',
   trim: true
 ))
 // >>>>>>>> parameters of installation config
