@@ -55,6 +55,8 @@ describe('cli list jobs of IZU*', function() {
 
     const activeZoweJobs = res.data.filter(item => item.jobname === ZOWE_JOB_NAME && item.status === 'ACTIVE');
     expect(activeZoweJobs).to.be.an('array').that.have.lengthOf(1);
+    testJobId = activeZoweJobs[0].jobid;
+    expect(testJobId).to.be.a('string');
   });
 
   it('should be able to view job details', async function() {
