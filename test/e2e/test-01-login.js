@@ -50,7 +50,7 @@ describe('test MVD login page', function() {
     addContext(this, file);
 
     const title = await driver.getTitle();
-    expect(title).to.be.equal('Mainframe Virtual Desktop');
+    expect(title).to.be.oneOf(['Mainframe Virtual Desktop', 'Zowe Desktop']);
   });
 
 
