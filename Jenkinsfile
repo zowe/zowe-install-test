@@ -345,7 +345,7 @@ EOF"""
         }
         // check if explorer server is started
         timeout(60) {
-          sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 https://${USERNAME}:${PASSWORD}@${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOWE_EXPLORER_SERVER_HTTPS_PORT}/ibm/api/explorer/"
+          sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 https://${USERNAME}:${PASSWORD}@${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOWE_EXPLORER_SERVER_HTTPS_PORT}/Atlas/api/jobs"
         }
         // check if zD&T & z/OSMF are started again in case z/OSMF is restarted
         timeout(60) {
@@ -369,7 +369,8 @@ EOF"""
           sh 'npm install -g zowe-cli-1.*.tgz'
 
           // run tests
-          sh """ZOWE_ROOT_DIR=${params.ZOWE_ROOT_DIR} \
+          try {
+            sh """ZOWE_ROOT_DIR=${params.ZOWE_ROOT_DIR} \
 SSH_HOST=${params.TEST_IMAGE_GUEST_SSH_HOST} \
 SSH_PORT=${params.TEST_IMAGE_GUEST_SSH_PORT} \
 SSH_USER=${USERNAME} \
@@ -378,20 +379,22 @@ ZOSMF_PORT=${params.ZOSMF_PORT} \
 ZOWE_ZLUX_HTTPS_PORT=${params.ZOWE_ZLUX_HTTPS_PORT} \
 ZOWE_EXPLORER_SERVER_HTTPS_PORT=${params.ZOWE_EXPLORER_SERVER_HTTPS_PORT} \
 npm test"""
+          } finally {
+            // publish report
+            junit 'reports/junit.xml'
+            publishHTML([
+              allowMissing: false,
+              alwaysLinkToLastBuild: false,
+              keepAll: false,
+              reportDir: 'reports',
+              reportFiles: 'index.html',
+              reportName: 'Test Result HTML Report',
+              reportTitles: ''
+            ])
+          }
         }
       }
 
-      // publish report
-      junit 'reports/junit.xml'
-      publishHTML([
-        allowMissing: false,
-        alwaysLinkToLastBuild: false,
-        keepAll: false,
-        reportDir: 'reports',
-        reportFiles: 'index.html',
-        reportName: 'Test Result HTML Report',
-        reportTitles: ''
-      ])
     }
 
     stage('done') {
