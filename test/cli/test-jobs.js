@@ -52,12 +52,9 @@ describe('cli list jobs of IZU*', function() {
     expect(res).to.be.an('object');
     expect(res.success).to.be.true;
     expect(res.data).to.be.an('array');
-    const zoweJobIndex = res.data.findIndex(item => item.jobname === ZOWE_JOB_NAME);
-    debug(`found ${ZOWE_JOB_NAME} at ${zoweJobIndex}`);
-    expect(zoweJobIndex).to.be.above(-1);
-    expect(res.data[zoweJobIndex].status).to.be.equal('ACTIVE');
-    testJobId = res.data[zoweJobIndex].jobid;
-    expect(testJobId).to.be.a('string');
+
+    const activeZoweJobs = res.data.filter(item => item.jobname === ZOWE_JOB_NAME && item.status === 'ACTIVE');
+    expect(activeZoweJobs).to.be.an('array').that.have.lengthOf(1);
   });
 
   it('should be able to view job details', async function() {
