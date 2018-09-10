@@ -26,23 +26,24 @@ const {
 } = require('./utils');
 let driver;
 
-before('verify environment variable and load login page', async function() {
-  expect(process.env.SSH_HOST, 'SSH_HOST is not defined').to.not.be.empty;
-  expect(process.env.SSH_USER, 'SSH_USER is not defined').to.not.be.empty;
-  expect(process.env.SSH_PASSWD, 'SSH_PASSWD is not defined').to.not.be.empty;
-  expect(process.env.ZOWE_ZLUX_HTTPS_PORT, 'ZOWE_ZLUX_HTTPS_PORT is not defined').to.not.be.empty;
-
-  // init webdriver
-  driver = await getDefaultDriver();
-  debug('webdriver initialized');
-
-  // load MVD login page
-  debug('- loading login page');
-  await driver.get(`https://${process.env.SSH_HOST}:${process.env.ZOWE_ZLUX_HTTPS_PORT}/`);
-  await waitUntilElement(driver, '#\\#loginButton');
-});
-
 describe('test MVD login page', function() {
+
+  before('verify environment variable and load login page', async function() {
+    expect(process.env.SSH_HOST, 'SSH_HOST is not defined').to.not.be.empty;
+    expect(process.env.SSH_USER, 'SSH_USER is not defined').to.not.be.empty;
+    expect(process.env.SSH_PASSWD, 'SSH_PASSWD is not defined').to.not.be.empty;
+    expect(process.env.ZOWE_ZLUX_HTTPS_PORT, 'ZOWE_ZLUX_HTTPS_PORT is not defined').to.not.be.empty;
+
+    // init webdriver
+    driver = await getDefaultDriver();
+    debug('webdriver initialized');
+
+    // load MVD login page
+    debug('- loading login page');
+    await driver.get(`https://${process.env.SSH_HOST}:${process.env.ZOWE_ZLUX_HTTPS_PORT}/`);
+    await waitUntilElement(driver, '#\\#loginButton');
+  });
+
 
   it('should redirect to login page', async function() {
     // save screenshot
@@ -247,10 +248,12 @@ describe('test MVD login page', function() {
     const loginPanel = await getElement(driver, 'div.login-panel');
     expect(loginPanel).to.be.an('object');
   });
-});
 
 
-after('quit webdriver', async function() {
-  // quit webdriver
-  await driver.quit();
+  after('quit webdriver', async function() {
+    // quit webdriver
+    if (driver) {
+      await driver.quit();
+    }
+  });
 });

@@ -16,19 +16,19 @@ let REQ;
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-before('verify environment variables', function() {
-  expect(process.env.SSH_HOST, 'SSH_HOST is not defined').to.not.be.empty;
-  expect(process.env.SSH_USER, 'SSH_USER is not defined').to.not.be.empty;
-  expect(process.env.SSH_PASSWD, 'SSH_PASSWD is not defined').to.not.be.empty;
-  expect(process.env.ZOWE_EXPLORER_SERVER_HTTPS_PORT, 'ZOWE_EXPLORER_SERVER_HTTPS_PORT is not defined').to.not.be.empty;
-
-  REQ = axios.create({
-    baseURL: `https://${process.env.SSH_HOST}:${process.env.ZOWE_EXPLORER_SERVER_HTTPS_PORT}`,
-    timeout: 30000,
-  });
-});
-
 describe(`test explorer server https://${process.env.SSH_HOST}:${process.env.ZOWE_EXPLORER_SERVER_HTTPS_PORT}`, function() {
+  before('verify environment variables', function() {
+    expect(process.env.SSH_HOST, 'SSH_HOST is not defined').to.not.be.empty;
+    expect(process.env.SSH_USER, 'SSH_USER is not defined').to.not.be.empty;
+    expect(process.env.SSH_PASSWD, 'SSH_PASSWD is not defined').to.not.be.empty;
+    expect(process.env.ZOWE_EXPLORER_SERVER_HTTPS_PORT, 'ZOWE_EXPLORER_SERVER_HTTPS_PORT is not defined').to.not.be.empty;
+
+    REQ = axios.create({
+      baseURL: `https://${process.env.SSH_HOST}:${process.env.ZOWE_EXPLORER_SERVER_HTTPS_PORT}`,
+      timeout: 30000,
+    });
+  });
+
   describe('GET /ibm/api/explorer/', function() {
     it('should return ok', function() {
       let req = {

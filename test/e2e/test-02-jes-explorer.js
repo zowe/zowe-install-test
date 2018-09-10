@@ -36,21 +36,21 @@ let driver;
 
 const APP_TO_TEST = 'JES Explorer';
 
-before('verify environment variable and load login page', async function() {
-  expect(process.env.SSH_HOST, 'SSH_HOST is not defined').to.not.be.empty;
-  expect(process.env.SSH_USER, 'SSH_USER is not defined').to.not.be.empty;
-  expect(process.env.SSH_PASSWD, 'SSH_PASSWD is not defined').to.not.be.empty;
-  expect(process.env.ZOWE_ZLUX_HTTPS_PORT, 'ZOWE_ZLUX_HTTPS_PORT is not defined').to.not.be.empty;
-
-  // init webdriver
-  driver = await getDefaultDriver();
-  debug('webdriver initialized');
-
-  // load MVD login page
-  await loginMVD(driver);
-});
-
 describe('test jes explorer', function() {
+  before('verify environment variable and load login page', async function() {
+    expect(process.env.SSH_HOST, 'SSH_HOST is not defined').to.not.be.empty;
+    expect(process.env.SSH_USER, 'SSH_USER is not defined').to.not.be.empty;
+    expect(process.env.SSH_PASSWD, 'SSH_PASSWD is not defined').to.not.be.empty;
+    expect(process.env.ZOWE_ZLUX_HTTPS_PORT, 'ZOWE_ZLUX_HTTPS_PORT is not defined').to.not.be.empty;
+
+    // init webdriver
+    driver = await getDefaultDriver();
+    debug('webdriver initialized');
+
+    // load MVD login page
+    await loginMVD(driver);
+  });
+
 
   it('should launch app correctly', async function() {
     // load app
@@ -135,10 +135,12 @@ describe('test jes explorer', function() {
     }
     expect(findZoweJob).to.be.above(-1);
   });
-});
 
 
-after('quit webdriver', async function() {
-  // quit webdriver
-  await driver.quit();
+  after('quit webdriver', async function() {
+    // quit webdriver
+    if (driver) {
+      await driver.quit();
+    }
+  });
 });

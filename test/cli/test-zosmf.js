@@ -13,24 +13,24 @@ const debug = require('debug')('test:cli:zosmf');
 const addContext = require('mochawesome/addContext');
 const { execZoweCli, defaultZOSMFProfileName, createDefaultZOSMFProfile } = require('./utils');
 
-before('verify environment variables', async function() {
-  expect(process.env.ZOSMF_PORT, 'ZOSMF_PORT is not defined').to.not.be.empty;
-  expect(process.env.SSH_HOST, 'SSH_HOST is not defined').to.not.be.empty;
-  expect(process.env.SSH_USER, 'SSH_USER is not defined').to.not.be.empty;
-  expect(process.env.SSH_PASSWD, 'SSH_PASSWD is not defined').to.not.be.empty;
-
-  const result = await createDefaultZOSMFProfile();
-
-  debug('result:', result);
-
-  expect(result).to.have.property('stdout');
-  expect(result).to.have.property('stderr');
-
-  expect(result.stderr).to.be.empty;
-  expect(result.stdout).to.have.string('Profile created successfully');
-});
-
 describe('cli check zosmf status', function() {
+  before('verify environment variables', async function() {
+    expect(process.env.ZOSMF_PORT, 'ZOSMF_PORT is not defined').to.not.be.empty;
+    expect(process.env.SSH_HOST, 'SSH_HOST is not defined').to.not.be.empty;
+    expect(process.env.SSH_USER, 'SSH_USER is not defined').to.not.be.empty;
+    expect(process.env.SSH_PASSWD, 'SSH_PASSWD is not defined').to.not.be.empty;
+
+    const result = await createDefaultZOSMFProfile();
+
+    debug('result:', result);
+
+    expect(result).to.have.property('stdout');
+    expect(result).to.have.property('stderr');
+
+    expect(result.stderr).to.be.empty;
+    expect(result.stdout).to.have.string('Profile created successfully');
+  });
+
   it('should be able to return zosmf status', async function() {
     const result = await execZoweCli(`bright zosmf check status --zosmf-profile ${defaultZOSMFProfileName}`);
 
