@@ -78,8 +78,6 @@ echo "[${SCRIPT_NAME}] starting IZUSVR1 ..."
 ($FULL_EXTRACTED_ZOWE_FOLDER/scripts/opercmd "S IZUSVR1") || exit 1
 sleep 20
 
-echo "[${SCRIPT_NAME}] FIXME: we don't have tool to check if z/OSMF is ready."
-
 ################################################################################
 echo
 echo "[${SCRIPT_NAME}] done."

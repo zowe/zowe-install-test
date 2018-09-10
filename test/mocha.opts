@@ -1,5 +1,5 @@
 --recursive
 --timeout 30s
 --colors
---reporter mocha-jenkins-reporter
---reporter-options junit_report_path=reports/junit.xml
+--reporter mocha-multi-reporters
+--reporter-options configFile=test/multi-reporters.json

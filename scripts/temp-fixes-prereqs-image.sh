@@ -26,8 +26,14 @@ SCRIPT_NAME=$(basename "$0")
 cd ~
 rm GBLIPNOD.txt* || true
 echo "[${SCRIPT_NAME}] fixing local resolver GBLIPNOD ..."
-echo "10.1.1.2 RIVER.ZOWE.ORG RIVER                                                                 " > GBLIPNOD.txt.1
-echo "127.0.0.1 LOCALHOST                                                                           " >> GBLIPNOD.txt.1
+echo "[${SCRIPT_NAME}]   - downloading ADCD.Z23A.TCPPARMS/GBLIPNOD ..."
+CMD_RESULT=$(/usr/z1090/bin/pdsUtil /zaas1/zVolumes/A3SYS1 ADCD.Z23A.TCPPARMS/GBLIPNOD --extract GBLIPNOD.txt)
+if [[ "$CMD_RESULT" != *'AWSPDS042I'* ]]; then
+  echo "[${SCRIPT_NAME}] failed to extract ADCD.Z23A.TCPPARMS/GBLIPNOD."
+  exit 1
+fi
+echo "[${SCRIPT_NAME}]   - downloaded, replacing ..."
+sed '2,2s/^.*$/127.0.0.1 LOCALHOST                                                                          /' GBLIPNOD.txt > GBLIPNOD.txt.1
 cat GBLIPNOD.txt.1 | cut -c -80 > GBLIPNOD.txt
 echo "[${SCRIPT_NAME}]   - replaced, putting it back ..."
 CMD_RESULT=$(/usr/z1090/bin/pdsUtil /zaas1/zVolumes/A3SYS1 ADCD.Z23A.TCPPARMS/GBLIPNOD --overlay GBLIPNOD.txt)

@@ -36,6 +36,7 @@ CI_ZOWE_CONFIG_FILE=zowe-install.yaml
 CI_ZOWE_PAX=
 CI_SKIP_TEMP_FIXES=no
 CI_UNINSTALL=no
+CI_HOSTNAME=
 CI_ZOSMF_PORT=$DEFAULT_CI_ZOSMF_PORT
 CI_ZOWE_ROOT_DIR=$DEFAULT_CI_ZOWE_ROOT_DIR
 CI_INSTALL_DIR=$DEFAULT_CI_INSTALL_DIR
@@ -80,7 +81,12 @@ function ensure_script_encoding {
   fi
 
   iconv -f $FROM_ENCODING -t $TO_ENCODING "${SCRIPT_TO_CHECK}" > "${SCRIPT_TO_CHECK}.new"
-  mv "${SCRIPT_TO_CHECK}.new" "${SCRIPT_TO_CHECK}" && chmod +x "${SCRIPT_TO_CHECK}"
+  REQUIRE_THIS_CONVERT=$(cat "${SCRIPT_TO_CHECK}.new" | grep '#!/')
+  if [ -n "$REQUIRE_THIS_CONVERT" ]; then
+    mv "${SCRIPT_TO_CHECK}.new" "${SCRIPT_TO_CHECK}" && chmod +x "${SCRIPT_TO_CHECK}"
+  else
+    rm "${SCRIPT_TO_CHECK}.new"
+  fi
 }
 
 ################################################################################
@@ -177,6 +183,7 @@ function usage {
   echo "                        Optional, default is no."
   echo "  -u|--uninstall        If uninstall Zowe first."
   echo "                        Optional, default is no."
+  echo "  -n|--hostname         The server public domain/IP."
   echo "  --zosmf-port          z/OSMF port for testing."
   echo "                        Optional, default is $DEFAULT_CI_ZOSMF_PORT."
   echo "  -t|--target-dir       Installation target folder."
@@ -217,12 +224,17 @@ while [ $# -gt 0 ]; do
       exit 0
       ;;
     -s|--skip-fixes)
-      CI_SKIP_TEMP_FIXES=YES
+      CI_SKIP_TEMP_FIXES=yes
       shift # past argument
       ;;
     -u|--uninstall)
-      CI_UNINSTALL=YES
+      CI_UNINSTALL=yes
       shift # past argument
+      ;;
+    -n|--hostname)
+      CI_HOSTNAME="$2"
+      shift # past argument
+      shift # past value
       ;;
     --zosmf-port)
       CI_ZOSMF_PORT="$2"
@@ -313,6 +325,10 @@ if [ ! -f "$CI_ZOWE_PAX" ]; then
   echo "[${SCRIPT_NAME}][error] cannot find the package file."
   exit 1
 fi
+if [ -z "$CI_HOSTNAME" ]; then
+  echo "[${SCRIPT_NAME}][error] server hostname/IP is required."
+  exit 1
+fi
 # convert encoding if those files uploaded
 cd $CI_INSTALL_DIR
 if [ -f "temp-fixes-after-install.sh" ]; then
@@ -401,7 +417,7 @@ cat "${CI_ZOWE_CONFIG_FILE}" | \
   sed -e "/^explorer-server:/,\$s#httpPort=.*\$#httpPort=${CI_EXPLORER_HTTP_PORT}#" | \
   sed -e "/^explorer-server:/,\$s#httpsPort=.*\$#httpsPort=${CI_EXPLORER_HTTPS_PORT}#" | \
   sed -e "/^zlux-server:/,\$s#httpPort=.*\$#httpPort=${CI_ZLUX_HTTP_PORT}#" | \
-  sed -e "/^zlux-server:/,\$s#httpsPort=.*\$#httpsPort=${CI_EXPLORER_HTTPS_PORT}#" | \
+  sed -e "/^zlux-server:/,\$s#httpsPort=.*\$#httpsPort=${CI_ZLUX_HTTPS_PORT}#" | \
   sed -e "/^zlux-server:/,\$s#zssPort=.*\$#zssPort=${CI_ZLUX_ZSS_PORT}#" | \
   sed -e "/^terminals:/,\$s#sshPort=.*\$#sshPort=${CI_TERMINALS_SSH_PORT}#" | \
   sed -e "/^terminals:/,\$s#telnetPort=.*\$#telnetPort=${CI_TERMINALS_TELNET_PORT}#" > "${CI_ZOWE_CONFIG_FILE}.tmp"
@@ -452,7 +468,7 @@ if [ "$CI_SKIP_TEMP_FIXES" != "yes" ]; then
   cd $CI_INSTALL_DIR
   RUN_SCRIPT=temp-fixes-after-install.sh
   if [ -f "$RUN_SCRIPT" ]; then
-    run_script_with_timeout "${RUN_SCRIPT} ${CI_ZOWE_ROOT_DIR}" 1800
+    run_script_with_timeout "${RUN_SCRIPT} ${CI_ZOWE_ROOT_DIR} ${CI_HOSTNAME}" 1800
     EXIT_CODE=$?
     if [[ "$EXIT_CODE" != "0" ]]; then
       echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."

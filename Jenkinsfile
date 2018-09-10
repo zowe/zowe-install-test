@@ -61,7 +61,7 @@ customParameters.push(string(
 customParameters.push(string(
   name: 'ZOWE_ARTIFACTORY_BUILD',
   description: 'Zowe artifactory download build',
-  defaultValue: 'zowe-install-packaging-pipeline :: master',
+  defaultValue: 'zowe-install-packaging :: master',
   trim: true
 ))
 // >>>>>>>> parameters of installation config
@@ -145,14 +145,14 @@ customParameters.push(string(
 customParameters.push(string(
   name: 'ZOWE_MVD_SSH_PORT',
   description: 'sshPort for Zowe MVD terminals',
-  defaultValue: '2022',
+  defaultValue: '22',
   trim: true,
   required: true
 ))
 customParameters.push(string(
   name: 'ZOWE_MVD_TELNET_PORT',
   description: 'telnetPort for Zowe MVD terminals',
-  defaultValue: '2023',
+  defaultValue: '23',
   trim: true,
   required: true
 ))
@@ -205,7 +205,7 @@ opts.push(parameters(customParameters))
 // set build properties
 properties(opts)
 
-node ('ca-jenkins-agent') {
+node ('ibm-jenkins-slave-nvm') {
   currentBuild.result = 'SUCCESS'
 
   try {
@@ -327,7 +327,7 @@ EOF"""
           sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
 cd ${params.INSTALL_DIR} && \
   (iconv -f ISO8859-1 -t IBM-1047 install-zowe.sh > install-zowe.sh.new) && mv install-zowe.sh.new install-zowe.sh && chmod +x install-zowe.sh
-./install-zowe.sh -t ${params.ZOWE_ROOT_DIR} -i ${params.INSTALL_DIR}${skipTempFixes}${uninstallZowe} --zosmf-port ${params.ZOSMF_PORT}\
+./install-zowe.sh -n ${params.TEST_IMAGE_GUEST_SSH_HOST} -t ${params.ZOWE_ROOT_DIR} -i ${params.INSTALL_DIR}${skipTempFixes}${uninstallZowe} --zosmf-port ${params.ZOSMF_PORT}\
   --apim-catelog-port ${params.ZOWE_API_MEDIATION_CATALOG_HTTP_PORT} --apim-discovery-port ${params.ZOWE_API_MEDIATION_DISCOVERY_HTTP_PORT} --apim-gateway-port ${params.ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT}\
   --explorer-http-port ${params.ZOWE_EXPLORER_SERVER_HTTP_PORT} --explorer-https-port ${params.ZOWE_EXPLORER_SERVER_HTTPS_PORT}\
   --zlux-http-port ${params.ZOWE_ZLUX_HTTP_PORT} --zlux-https-port ${params.ZOWE_ZLUX_HTTPS_PORT} --zlux-zss-port ${params.ZOWE_ZLUX_ZSS_PORT}\
@@ -345,7 +345,11 @@ EOF"""
         }
         // check if explorer server is started
         timeout(60) {
-          sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 https://${USERNAME}:${PASSWORD}@${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOWE_EXPLORER_SERVER_HTTPS_PORT}/ibm/api/explorer/"
+          sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 https://${USERNAME}:${PASSWORD}@${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOWE_EXPLORER_SERVER_HTTPS_PORT}/Atlas/api/jobs"
+        }
+        // check if zD&T & z/OSMF are started again in case z/OSMF is restarted
+        timeout(60) {
+          sh "./scripts/is-website-ready.sh -r 720 -t 10 -c 20 https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOSMF_PORT}/zosmf/"
         }
       }
     }
@@ -353,20 +357,20 @@ EOF"""
     stage('test') {
       ansiColor('xterm') {
         sh "npm install"
+        sh "npm run lint"
 
         withCredentials([usernamePassword(credentialsId: params.TEST_IMAGE_GUEST_SSH_CREDENTIAL, passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
           // download cli
           sh """SSHPASS=${PASSWORD} sshpass -e sftp -o BatchMode=no -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -b - -P ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
 get ${params.INSTALL_DIR}/extracted/zowe-cli-bundle.zip
 EOF"""
-          // unzip is missing from container
-          sh 'sudo apt-get install unzip'
           // install CLI
           sh 'unzip zowe-cli-bundle.zip'
           sh 'npm install -g zowe-cli-1.*.tgz'
 
           // run tests
-          sh """ZOWE_ROOT_DIR=${params.ZOWE_ROOT_DIR} \
+          try {
+            sh """ZOWE_ROOT_DIR=${params.ZOWE_ROOT_DIR} \
 SSH_HOST=${params.TEST_IMAGE_GUEST_SSH_HOST} \
 SSH_PORT=${params.TEST_IMAGE_GUEST_SSH_PORT} \
 SSH_USER=${USERNAME} \
@@ -375,18 +379,29 @@ ZOSMF_PORT=${params.ZOSMF_PORT} \
 ZOWE_ZLUX_HTTPS_PORT=${params.ZOWE_ZLUX_HTTPS_PORT} \
 ZOWE_EXPLORER_SERVER_HTTPS_PORT=${params.ZOWE_EXPLORER_SERVER_HTTPS_PORT} \
 npm test"""
+          } finally {
+            // publish report
+            junit 'reports/junit.xml'
+            publishHTML([
+              allowMissing: false,
+              alwaysLinkToLastBuild: false,
+              keepAll: false,
+              reportDir: 'reports',
+              reportFiles: 'index.html',
+              reportName: 'Test Result HTML Report',
+              reportTitles: ''
+            ])
+          }
         }
       }
 
-      // publish report
-      junit 'reports/junit.xml'
     }
 
     stage('done') {
       // send out notification
-      slackSend channel: slackChannel,
-                color: 'good',
-                message: "Job \"${env.JOB_NAME}\" build #${env.BUILD_NUMBER} succeeded.\n\nCheck detail: ${env.BUILD_URL}"
+      // slackSend channel: slackChannel,
+      //           color: 'good',
+      //           message: "Job \"${env.JOB_NAME}\" build #${env.BUILD_NUMBER} succeeded.\n\nCheck detail: ${env.BUILD_URL}"
 
       emailext body: "Job \"${env.JOB_NAME}\" build #${env.BUILD_NUMBER} succeeded.\n\nCheck detail: ${env.BUILD_URL}" ,
           subject: "[Jenkins] Job \"${env.JOB_NAME}\" build #${env.BUILD_NUMBER} succeeded",
@@ -402,9 +417,9 @@ npm test"""
     currentBuild.result = 'FAILURE'
 
     // catch all failures to send out notification
-    slackSend channel: slackChannel,
-              color: 'warning',
-              message: "Job \"${env.JOB_NAME}\" build #${env.BUILD_NUMBER} failed.\n\nError: ${err}\n\nCheck detail: ${env.BUILD_URL}"
+    // slackSend channel: slackChannel,
+    //           color: 'warning',
+    //           message: "Job \"${env.JOB_NAME}\" build #${env.BUILD_NUMBER} failed.\n\nError: ${err}\n\nCheck detail: ${env.BUILD_URL}"
 
     emailext body: "Job \"${env.JOB_NAME}\" build #${env.BUILD_NUMBER} failed.\n\nError: ${err}\n\nCheck detail: ${env.BUILD_URL}" ,
         subject: "[Jenkins] Job \"${env.JOB_NAME}\" build #${env.BUILD_NUMBER} failed",
