@@ -24,7 +24,7 @@ const {
 } = require('./utils');
 let driver;
 
-const APP_TO_TEST = 'TN3270';
+const APP_TO_TEST = 'VT Terminal';
 
 
 describe(`test ${APP_TO_TEST}`, function() {
@@ -68,10 +68,10 @@ describe(`test ${APP_TO_TEST}`, function() {
     debug('app viewport is ready');
 
     // wait for page is loaded
-    let canvas = await waitUntilElement(driver, 'com-rs-mvd-tn3270 .tn3270 textarea#Input', viewport);
+    let canvas = await waitUntilElement(driver, 'com-rs-mvd-vt .vt textarea#Input', viewport);
     expect(canvas).to.be.an('object');
     // we don't know what's in canvas, just wait for a while
-    await driver.sleep(5000);
+    await driver.sleep(20000);
     debug('app is fully loaded');
 
     // save screenshot
