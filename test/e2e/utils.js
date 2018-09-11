@@ -38,7 +38,8 @@ const DEFAULT_PAGE_LOADING_TIMEOUT = 30000;
 const DEFAULT_SCREENSHOT_PATH = './reports';
 let SCREENSHOT_FILECOUNT = 0;
 
-const MVD_IFRAME_APP_CONTEXT = ['rs-com-mvd-iframe-component > iframe', 'iframe#atlasIframe'];
+const MVD_IFRAME_APP_CONTEXT = ['rs-com-mvd-iframe-component > iframe'];
+const MVD_ATLAS_APP_CONTEXT = ['rs-com-mvd-iframe-component > iframe', 'iframe#atlasIframe'];
 
 const getImagePath = async(driver, testScript, screenshotName) => {
   const dc = await driver.getCapabilities();
@@ -356,6 +357,7 @@ module.exports = {
   DEFAULT_PAGE_LOADING_TIMEOUT,
   DEFAULT_SCREENSHOT_PATH,
   MVD_IFRAME_APP_CONTEXT,
+  MVD_ATLAS_APP_CONTEXT,
 
   saveScreenshot,
   getDefaultDriver,
