@@ -38,6 +38,8 @@ const DEFAULT_PAGE_LOADING_TIMEOUT = 30000;
 const DEFAULT_SCREENSHOT_PATH = './reports';
 let SCREENSHOT_FILECOUNT = 0;
 
+const MVD_IFRAME_APP_CONTEXT = ['rs-com-mvd-iframe-component > iframe', 'iframe#atlasIframe'];
+
 const getImagePath = async(driver, testScript, screenshotName) => {
   const dc = await driver.getCapabilities();
   const browserName = dc.getBrowserName(),
@@ -62,7 +64,7 @@ const saveScreenshot = async(driver, testScript, screenshotName) => {
   await writeFile(path.join(DEFAULT_SCREENSHOT_PATH, file), new Buffer(base64png, 'base64'));
 
   // expose screenshot information
-  debug(`- login error returned, screenshot: ${file}`);
+  debug(`- screenshot saved: ${file}`);
   console.log(`[[ATTACHMENT|${file}]]`);
 
   return file;
@@ -345,7 +347,7 @@ const saveScreenshotWithAppContext = async(testcase, driver, testName, screensho
   await driver.switchTo().defaultContent();
   const file = await saveScreenshot(driver, testName, screenshot);
   addContext(testcase, file);
-  switchToAppContext(driver, appName, contexts);
+  await switchToAppContext(driver, appName, contexts);
   debug('[saveScreenshotWithAppContext] done');
 };
 
@@ -353,6 +355,7 @@ module.exports = {
   PRE_INSTALLED_APPS,
   DEFAULT_PAGE_LOADING_TIMEOUT,
   DEFAULT_SCREENSHOT_PATH,
+  MVD_IFRAME_APP_CONTEXT,
 
   saveScreenshot,
   getDefaultDriver,

@@ -18,6 +18,7 @@ const { Key, until } = require('selenium-webdriver');
 
 const {
   DEFAULT_PAGE_LOADING_TIMEOUT,
+  MVD_IFRAME_APP_CONTEXT,
   saveScreenshot,
   getDefaultDriver,
   getElement,
@@ -36,7 +37,6 @@ let driver;
 const APP_TO_TEST = 'MVS Explorer';
 const DS_TO_TEST = 'TCPIP.TCPIP.DATA';
 
-const MVD_IFRAME_APP_CONTEXT = ['rs-com-mvd-iframe-component > iframe', 'iframe#atlasIframe'];
 const MVD_EXPLORER_TREE_SECTION = 'div.tree-card > div > div:nth-child(2)';
 
 let appLaunched = false;
@@ -97,7 +97,6 @@ describe('test mvs explorer', function() {
 
     // save screenshot
     await saveScreenshotWithAppContext(this, driver, testName, 'app-loaded', APP_TO_TEST, MVD_IFRAME_APP_CONTEXT);
-    treeContent = await waitUntilElement(driver, MVD_EXPLORER_TREE_SECTION);
 
     appLaunched = true;
   });
