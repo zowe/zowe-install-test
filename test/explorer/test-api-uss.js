@@ -41,7 +41,7 @@ describe('test explorer server uss files api', function() {
     testDir = process.env.ZOWE_ROOT_DIR;
   });
 
-  it(`should be able to list content of directory ${DIR_TO_TEST}/${FILE_TO_TEST}`, function() {
+  it(`should be able to list content of directory ${DIR_TO_TEST}`, function() {
     const _this = this;
 
     const req = {
