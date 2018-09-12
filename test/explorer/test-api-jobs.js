@@ -12,6 +12,7 @@ const _ = require('lodash');
 const expect = require('chai').expect;
 const debug = require('debug')('test:explorer:api-jobs');
 const axios = require('axios');
+const addContext = require('mochawesome/addContext');
 
 const { ZOWE_JOB_NAME } = require('../constants');
 
@@ -37,6 +38,8 @@ describe('test explorer server jobs api', function() {
   });
 
   it(`should be able to list jobs and have a job ${ZOWE_JOB_NAME}`, function() {
+    const _this = this;
+
     const req = {
       method: 'get',
       url: '/Atlas/api/jobs',
@@ -54,6 +57,11 @@ describe('test explorer server jobs api', function() {
     return REQ.request(req)
       .then(function(res) {
         debug('response', _.pick(res, ['status', 'statusText', 'headers', 'data']));
+        addContext(_this, {
+          title: 'http response',
+          value: res && res.data
+        });
+
         expect(res).to.have.property('status');
         expect(res.status).to.equal(200);
         expect(res.data).to.be.an('array');

@@ -12,6 +12,7 @@ const _ = require('lodash');
 const expect = require('chai').expect;
 const debug = require('debug')('test:explorer:api-datasets');
 const axios = require('axios');
+const addContext = require('mochawesome/addContext');
 
 let REQ, username, password;
 const DS_PATTERN_TO_TEST = 'TCPIP.T*';
@@ -37,6 +38,8 @@ describe('test explorer server datasets api', function() {
   });
 
   it(`should be able to list data sets of ${DS_PATTERN_TO_TEST}`, function() {
+    const _this = this;
+
     const req = {
       method: 'get',
       url: '/Atlas/api/datasets/' + encodeURIComponent(DS_PATTERN_TO_TEST),
@@ -50,6 +53,10 @@ describe('test explorer server datasets api', function() {
     return REQ.request(req)
       .then(function(res) {
         debug('response', _.pick(res, ['status', 'statusText', 'headers', 'data']));
+        addContext(_this, {
+          title: 'http response',
+          value: res && res.data
+        });
 
         expect(res).to.have.property('status');
         expect(res.status).to.equal(200);
@@ -59,6 +66,8 @@ describe('test explorer server datasets api', function() {
   });
 
   it(`should be able to get content of data set ${DS_TO_TEST}`, function() {
+    const _this = this;
+
     const req = {
       method: 'get',
       url: '/Atlas/api/datasets/' + encodeURIComponent(DS_TO_TEST) + '/content',
@@ -72,6 +81,10 @@ describe('test explorer server datasets api', function() {
     return REQ.request(req)
       .then(function(res) {
         debug('response', _.pick(res, ['status', 'statusText', 'headers', 'data']));
+        addContext(_this, {
+          title: 'http response',
+          value: res && res.data
+        });
 
         expect(res).to.have.property('status');
         expect(res.status).to.equal(200);

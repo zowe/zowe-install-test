@@ -12,6 +12,7 @@ const _ = require('lodash');
 const expect = require('chai').expect;
 const debug = require('debug')('test:explorer:api-zos');
 const axios = require('axios');
+const addContext = require('mochawesome/addContext');
 
 let REQ, username, password;
 
@@ -35,6 +36,8 @@ describe('test explorer server zos api', function() {
   });
 
   it('should be able to get z/OS PARMLIB (/Atlas/api/zos/parmlib)', function() {
+    const _this = this;
+
     const req = {
       method: 'get',
       url: '/Atlas/api/zos/parmlib',
@@ -48,6 +51,10 @@ describe('test explorer server zos api', function() {
     return REQ.request(req)
       .then(function(res) {
         debug('response', _.pick(res, ['status', 'statusText', 'headers', 'data']));
+        addContext(_this, {
+          title: 'http response',
+          value: res && res.data
+        });
 
         expect(res).to.have.property('status');
         expect(res.status).to.equal(200);
@@ -57,6 +64,8 @@ describe('test explorer server zos api', function() {
   });
 
   it('should be able to get z/OS SYSPLEX (/Atlas/api/zos/sysplex)', function() {
+    const _this = this;
+
     const req = {
       method: 'get',
       url: '/Atlas/api/zos/sysplex',
@@ -70,6 +79,10 @@ describe('test explorer server zos api', function() {
     return REQ.request(req)
       .then(function(res) {
         debug('response', _.pick(res, ['status', 'statusText', 'headers', 'data']));
+        addContext(_this, {
+          title: 'http response',
+          value: res && res.data
+        });
 
         expect(res).to.have.property('status');
         expect(res.status).to.equal(200);
@@ -80,6 +93,8 @@ describe('test explorer server zos api', function() {
   });
 
   it('should be able to get z/OS username (/Atlas/api/zos/username)', function() {
+    const _this = this;
+
     const req = {
       method: 'get',
       url: '/Atlas/api/zos/username',
@@ -93,6 +108,10 @@ describe('test explorer server zos api', function() {
     return REQ.request(req)
       .then(function(res) {
         debug('response', _.pick(res, ['status', 'statusText', 'headers', 'data']));
+        addContext(_this, {
+          title: 'http response',
+          value: res && res.data
+        });
 
         expect(res).to.have.property('status');
         expect(res.status).to.equal(200);

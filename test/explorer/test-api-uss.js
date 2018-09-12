@@ -12,6 +12,7 @@ const _ = require('lodash');
 const expect = require('chai').expect;
 const debug = require('debug')('test:explorer:api-uss');
 const axios = require('axios');
+const addContext = require('mochawesome/addContext');
 
 let REQ, username, password;
 let testDir;
@@ -41,6 +42,8 @@ describe('test explorer server uss files api', function() {
   });
 
   it(`should be able to list content of directory ${DIR_TO_TEST}/${FILE_TO_TEST}`, function() {
+    const _this = this;
+
     const req = {
       method: 'get',
       url: '/Atlas/api/uss/files/' + encodeURIComponent(testDir + '/' + DIR_TO_TEST),
@@ -54,6 +57,11 @@ describe('test explorer server uss files api', function() {
     return REQ.request(req)
       .then(function(res) {
         debug('response', _.pick(res, ['status', 'statusText', 'headers', 'data']));
+        addContext(_this, {
+          title: 'http response',
+          value: res && res.data
+        });
+
         expect(res).to.have.property('status');
         expect(res.status).to.equal(200);
         expect(res.data).to.be.an('object');
@@ -69,6 +77,8 @@ describe('test explorer server uss files api', function() {
   });
 
   it(`should be able to get content of file ${DIR_TO_TEST}/${FILE_TO_TEST}`, function() {
+    const _this = this;
+
     const req = {
       method: 'get',
       url: '/Atlas/api/uss/files/' + encodeURIComponent(testDir + '/' + DIR_TO_TEST + '/' + FILE_TO_TEST) + '/content',
@@ -82,6 +92,11 @@ describe('test explorer server uss files api', function() {
     return REQ.request(req)
       .then(function(res) {
         debug('response', _.pick(res, ['status', 'statusText', 'headers', 'data']));
+        addContext(_this, {
+          title: 'http response',
+          value: res && res.data
+        });
+
         expect(res).to.have.property('status');
         expect(res.status).to.equal(200);
         expect(res.data).to.be.an('object');

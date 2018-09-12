@@ -12,6 +12,7 @@ const _ = require('lodash');
 const expect = require('chai').expect;
 const debug = require('debug')('test:explorer:docs');
 const axios = require('axios');
+const addContext = require('mochawesome/addContext');
 
 let REQ, username, password;
 
@@ -35,6 +36,8 @@ describe('test explorer server docs', function() {
   });
 
   it('should be able to access Swagger UI (/ibm/api/explorer/)', function() {
+    const _this = this;
+
     const req = {
       method: 'get',
       url: '/ibm/api/explorer/',
@@ -48,6 +51,10 @@ describe('test explorer server docs', function() {
     return REQ.request(req)
       .then(function(res) {
         debug('response', _.pick(res, ['status', 'statusText', 'headers', 'data']));
+        addContext(_this, {
+          title: 'http response',
+          value: res && res.data
+        });
 
         expect(res).to.have.property('status');
         expect(res.status).to.equal(200);
@@ -57,6 +64,8 @@ describe('test explorer server docs', function() {
   });
 
   it('should be able to access Swagger JSON file (/ibm/api/docs)', function() {
+    const _this = this;
+
     const req = {
       method: 'get',
       url: '/ibm/api/docs',
@@ -74,6 +83,10 @@ describe('test explorer server docs', function() {
     return REQ.request(req)
       .then(function(res) {
         debug('response', _.pick(res, ['status', 'statusText', 'headers', 'data']));
+        addContext(_this, {
+          title: 'http response',
+          value: res && res.data
+        });
 
         expect(res).to.have.property('status');
         expect(res.status).to.equal(200);
