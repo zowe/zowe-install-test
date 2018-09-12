@@ -78,7 +78,7 @@ describe(`test ${APP_TO_TEST}`, function() {
     debug('app is fully loaded');
 
     // save screenshot
-    await saveScreenshot(driver, testName, 'app-loaded');
+    const file = await saveScreenshot(driver, testName, 'app-loaded');
     addContext(this, file);
   });
 

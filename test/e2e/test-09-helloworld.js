@@ -82,7 +82,7 @@ describe(`test ${APP_TO_TEST}`, function() {
     debug('app is fully loaded');
 
     // save screenshot
-    await saveScreenshot(driver, testName, 'app-loaded');
+    const file = await saveScreenshot(driver, testName, 'app-loaded');
     addContext(this, file);
   });
 
@@ -126,7 +126,7 @@ describe(`test ${APP_TO_TEST}`, function() {
     expect(serverResponseText).to.include(testMessage);
 
     // save screenshot
-    await saveScreenshot(driver, testName, 'say-hello');
+    const file = await saveScreenshot(driver, testName, 'say-hello');
     addContext(this, file);
   });
 
