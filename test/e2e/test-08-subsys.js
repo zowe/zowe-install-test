@@ -79,6 +79,7 @@ describe(`test ${APP_TO_TEST}`, function() {
 
     // save screenshot
     await saveScreenshot(driver, testName, 'app-loaded');
+    addContext(this, file);
   });
 
 

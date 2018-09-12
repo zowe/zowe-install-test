@@ -83,6 +83,7 @@ describe(`test ${APP_TO_TEST}`, function() {
 
     // save screenshot
     await saveScreenshot(driver, testName, 'app-loaded');
+    addContext(this, file);
   });
 
   it('should say hello to me', async function() {
@@ -126,6 +127,7 @@ describe(`test ${APP_TO_TEST}`, function() {
 
     // save screenshot
     await saveScreenshot(driver, testName, 'say-hello');
+    addContext(this, file);
   });
 
   after('quit webdriver', async function() {
