@@ -31,7 +31,7 @@ describe(`test zLux server https://${process.env.SSH_HOST}:${process.env.ZOWE_ZL
 
   describe('GET /', function() {
     it('should redirect to /ZLUX/plugins/com.rs.mvd/web/', function() {
-      let req = {
+      const req = {
         method: 'get',
         url: '/',
         maxRedirects: 0,
@@ -52,7 +52,7 @@ describe(`test zLux server https://${process.env.SSH_HOST}:${process.env.ZOWE_ZL
 
   describe('GET /', function() {
     it('should return ok', function() {
-      let req = {
+      const req = {
         method: 'get',
         url: '/'
       };
@@ -70,7 +70,7 @@ describe(`test zLux server https://${process.env.SSH_HOST}:${process.env.ZOWE_ZL
 
   describe('GET /ZLUX/plugins', function() {
     it('/com.ibm.atlas.atlasJES/web/index.html should return ok', function() {
-      let req = {
+      const req = {
         method: 'get',
         url: '/ZLUX/plugins/com.ibm.atlas.atlasJES/web/index.html'
       };
@@ -87,7 +87,7 @@ describe(`test zLux server https://${process.env.SSH_HOST}:${process.env.ZOWE_ZL
     });
 
     it('/com.ibm.atlas.atlasMVS/web/index.html should return ok', function() {
-      let req = {
+      const req = {
         method: 'get',
         url: '/ZLUX/plugins/com.ibm.atlas.atlasMVS/web/index.html'
       };
@@ -104,7 +104,7 @@ describe(`test zLux server https://${process.env.SSH_HOST}:${process.env.ZOWE_ZL
     });
 
     it('/com.ibm.atlas.atlasUSS/web/index.html should return ok', function() {
-      let req = {
+      const req = {
         method: 'get',
         url: '/ZLUX/plugins/com.ibm.atlas.atlasUSS/web/index.html'
       };

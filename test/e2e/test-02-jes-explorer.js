@@ -93,7 +93,7 @@ describe(`test ${APP_TO_TEST}`, function() {
     debug('atlas login successfully');
 
     // wait for page is loaded
-    let treeContent = await waitUntilElement(driver, MVD_EXPLORER_TREE_SECTION);
+    const treeContent = await waitUntilElement(driver, MVD_EXPLORER_TREE_SECTION);
     expect(treeContent).to.be.an('object');
     await waitUntilElementIsGone(driver, 'div[mode=indeterminate]', treeContent);
     debug('page is fully loaded');
@@ -178,7 +178,7 @@ describe(`test ${APP_TO_TEST}`, function() {
     const zoweJob = items[findZoweJob];
 
     // find the expand icon and click to load children
-    let expandButton = await getElement(zoweJob, 'div.react-contextmenu-wrapper button');
+    const expandButton = await getElement(zoweJob, 'div.react-contextmenu-wrapper button');
     expect(expandButton).to.be.an('object');
     await expandButton.click();
     debug(`${ZOWE_JOB_NAME} job expand icon is clicked`);
@@ -203,7 +203,7 @@ describe(`test ${APP_TO_TEST}`, function() {
     const activeZoweJob = items2[findActiveZoweJob];
 
     // find the expand icon and click to load children
-    let expandButton2 = await getElement(activeZoweJob, 'div.react-contextmenu-wrapper button');
+    const expandButton2 = await getElement(activeZoweJob, 'div.react-contextmenu-wrapper button');
     expect(expandButton2).to.be.an('object');
     await expandButton2.click();
     debug(`Active ${ZOWE_JOB_NAME} job expand icon is clicked`);
@@ -228,7 +228,7 @@ describe(`test ${APP_TO_TEST}`, function() {
     const zoweJobFiles = items3[findZoweJobFiles];
 
     // find the expand icon and click to load children
-    let expandButton3 = await getElement(zoweJobFiles, 'div.react-contextmenu-wrapper button');
+    const expandButton3 = await getElement(zoweJobFiles, 'div.react-contextmenu-wrapper button');
     expect(expandButton3).to.be.an('object');
     await expandButton3.click();
     debug(`Active ${ZOWE_JOB_NAME} job files expand icon is clicked`);
@@ -273,7 +273,7 @@ describe(`test ${APP_TO_TEST}`, function() {
     const zoweJclFile = items4[findZoweJclFile];
 
     // find the expand icon and click to load children
-    let contentLink = await getElement(zoweJclFile, 'div.react-contextmenu-wrapper span.content-link');
+    const contentLink = await getElement(zoweJclFile, 'div.react-contextmenu-wrapper span.content-link');
     expect(contentLink).to.be.an('object');
     await contentLink.click();
     debug(`Active ${ZOWE_JOB_NAME} ${JCL_TO_TEST} file content link is clicked`);

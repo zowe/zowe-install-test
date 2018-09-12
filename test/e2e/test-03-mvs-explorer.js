@@ -93,7 +93,7 @@ describe(`test ${APP_TO_TEST}`, function() {
     debug('atlas login successfully');
 
     // wait for page is loaded
-    let treeContent = await waitUntilElement(driver, MVD_EXPLORER_TREE_SECTION);
+    const treeContent = await waitUntilElement(driver, MVD_EXPLORER_TREE_SECTION);
     expect(treeContent).to.be.an('object');
     // the loading icon is not there right after page is loaded, so wait a little
     await driver.sleep(1000);
@@ -153,19 +153,19 @@ describe(`test ${APP_TO_TEST}`, function() {
 
     // prepare app context and find the li of DS_TO_TEST
     await switchToIframeAppContext(driver, APP_TO_TEST, MVD_ATLAS_APP_CONTEXT);
-    let treeContent = await getElement(driver, MVD_EXPLORER_TREE_SECTION);
+    const treeContent = await getElement(driver, MVD_EXPLORER_TREE_SECTION);
     expect(treeContent).to.be.an('object');
     const items = await getElements(treeContent, 'div.node ul li');
     const testDsFound = items[testDsIndex];
 
     // find the file icon and click load content
-    let contentLink = await getElement(testDsFound, 'div.react-contextmenu-wrapper span.content-link');
+    const contentLink = await getElement(testDsFound, 'div.react-contextmenu-wrapper span.content-link');
     expect(contentLink).to.be.an('object');
     await contentLink.click();
     debug(`${DS_TO_TEST} is clicked`);
 
     // find right panel header
-    let fileContentPanelHeader = await getElement(driver, 'div.component-no-vertical-pad div.component-no-vertical-pad > div:nth-child(1)');
+    const fileContentPanelHeader = await getElement(driver, 'div.component-no-vertical-pad div.component-no-vertical-pad > div:nth-child(1)');
     expect(fileContentPanelHeader).to.be.an('object');
     await driver.wait(
       async() => {

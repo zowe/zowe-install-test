@@ -75,7 +75,7 @@ describe(`test ${APP_TO_TEST}`, function() {
     debug('app viewport is ready');
 
     // wait for page is loaded
-    let appTitle = await waitUntilElement(driver, 'app-root h1', viewport);
+    const appTitle = await waitUntilElement(driver, 'app-root h1', viewport);
     expect(appTitle).to.be.an('object');
     const appTitleText = await appTitle.getText();
     expect(appTitleText.trim()).to.be.equal('Welcome to app!');

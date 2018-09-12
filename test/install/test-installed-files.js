@@ -11,7 +11,7 @@
 const expect = require('chai').expect;
 const debug = require('debug')('test:install:installed-files');
 const SSH = require('node-ssh');
-var ssh = new SSH();
+const ssh = new SSH();
 
 describe('verify installed files', function() {
   before('prepare SSH connection', function() {

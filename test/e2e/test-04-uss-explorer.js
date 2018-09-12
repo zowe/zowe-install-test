@@ -96,7 +96,7 @@ describe(`test ${APP_TO_TEST}`, function() {
     debug('atlas login successfully');
 
     // wait for page is loaded
-    let treeContent = await waitUntilElement(driver, MVD_EXPLORER_TREE_SECTION);
+    const treeContent = await waitUntilElement(driver, MVD_EXPLORER_TREE_SECTION);
     expect(treeContent).to.be.an('object');
     // the loading icon is not there right after page is loaded, so wait a little
     await driver.sleep(1000);
@@ -137,7 +137,7 @@ describe(`test ${APP_TO_TEST}`, function() {
     expect(items).to.be.an('array').that.have.lengthOf.above(0);
     debug(`found ${items.length} of menu items`);
     for (let i in items) {
-      let label = await getElement(items[i], 'div.uss-node-label div.react-contextmenu-wrapper span');
+      const label = await getElement(items[i], 'div.uss-node-label div.react-contextmenu-wrapper span');
       if (label) {
         const text = await label.getText();
         if (text === DIR_TO_TEST) {
@@ -157,13 +157,13 @@ describe(`test ${APP_TO_TEST}`, function() {
 
     // prepare app context and find the li of DIR_TO_TEST
     await switchToIframeAppContext(driver, APP_TO_TEST, MVD_ATLAS_APP_CONTEXT);
-    let treeContent = await getElement(driver, MVD_EXPLORER_TREE_SECTION);
+    const treeContent = await getElement(driver, MVD_EXPLORER_TREE_SECTION);
     expect(treeContent).to.be.an('object');
     const items = await getElements(treeContent, 'div.node ul li');
     const testDirFound = items[testDirIndex];
 
     // find the file icon and click load content
-    let expandButton = await getElement(testDirFound, 'div.uss-node-label button');
+    const expandButton = await getElement(testDirFound, 'div.uss-node-label button');
     expect(expandButton).to.be.an('object');
     await expandButton.click();
     debug(`${DIR_TO_TEST} is clicked`);
@@ -190,7 +190,7 @@ describe(`test ${APP_TO_TEST}`, function() {
     debug(`found ${fileItems.length} of menu items`);
     let testFileIndex = -1;
     for (let i in fileItems) {
-      let label = await getElement(fileItems[i], 'div.node-label div.react-contextmenu-wrapper span.node-label');
+      const label = await getElement(fileItems[i], 'div.node-label div.react-contextmenu-wrapper span.node-label');
       if (label) {
         const text = await label.getText();
         if (text === FILE_TO_TEST) {
@@ -204,13 +204,13 @@ describe(`test ${APP_TO_TEST}`, function() {
     const testFileFound = fileItems[testFileIndex];
 
     // find the file icon and click load content
-    let contentLink = await getElement(testFileFound, 'div.node-label div.react-contextmenu-wrapper span.node-label');
+    const contentLink = await getElement(testFileFound, 'div.node-label div.react-contextmenu-wrapper span.node-label');
     expect(contentLink).to.be.an('object');
     await contentLink.click();
     debug(`${DIR_TO_TEST}/${FILE_TO_TEST} is clicked`);
 
     // find right panel header
-    let fileContentPanelHeader = await getElement(driver, 'div.component-no-vertical-pad div.component-no-vertical-pad > div:nth-child(1)');
+    const fileContentPanelHeader = await getElement(driver, 'div.component-no-vertical-pad div.component-no-vertical-pad > div:nth-child(1)');
     expect(fileContentPanelHeader).to.be.an('object');
     await driver.wait(
       async() => {

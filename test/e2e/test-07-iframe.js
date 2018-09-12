@@ -71,7 +71,7 @@ describe(`test ${APP_TO_TEST}`, function() {
     debug('app iframe found');
 
     // wait for page is loaded
-    let appTitle = await waitUntilElement(driver, 'div.bottom-10 span.bigger-bold-text');
+    const appTitle = await waitUntilElement(driver, 'div.bottom-10 span.bigger-bold-text');
     expect(appTitle).to.be.an('object');
     debug('page is fully loaded');
 

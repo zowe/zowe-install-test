@@ -73,7 +73,7 @@ describe(`test ${APP_TO_TEST}`, function() {
     debug('app viewport is ready');
 
     // wait for page is loaded
-    let canvas = await waitUntilElement(driver, 'ng2-subsystems-root ng2-subsystems', viewport);
+    const canvas = await waitUntilElement(driver, 'ng2-subsystems-root ng2-subsystems', viewport);
     expect(canvas).to.be.an('object');
     debug('app is fully loaded');
 

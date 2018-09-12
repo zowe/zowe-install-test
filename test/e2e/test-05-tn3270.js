@@ -73,7 +73,7 @@ describe(`test ${APP_TO_TEST}`, function() {
     debug('app viewport is ready');
 
     // wait for page is loaded
-    let canvas = await waitUntilElement(driver, 'com-rs-mvd-tn3270 .tn3270 textarea#Input', viewport);
+    const canvas = await waitUntilElement(driver, 'com-rs-mvd-tn3270 .tn3270 textarea#Input', viewport);
     expect(canvas).to.be.an('object');
     // we don't know what's in canvas, just wait for a while
     await driver.sleep(5000);

@@ -61,7 +61,7 @@ const getImagePath = async(driver, testScript, screenshotName) => {
     browserVersion = dc.getBrowserVersion() || dc.get('version'),
     platform = dc.getPlatform() || dc.get('platform');
 
-  let file = [
+  const file = [
     browserName ? browserName.toUpperCase() : 'ANY',
     browserVersion ? browserVersion.toUpperCase() : 'ANY',
     platform.toUpperCase(),
@@ -106,7 +106,7 @@ const getDefaultDriver = async(browserType) => {
   const browser = browserType === 'chrome' ? chrome : firefox;
 
   // define Logging Preferences
-  let loggingPrefs = new logging.Preferences();
+  const loggingPrefs = new logging.Preferences();
   loggingPrefs.setLevel(logging.Type.BROWSER, logging.Level.ALL);
   loggingPrefs.setLevel(logging.Type.CLIENT, logging.Level.ALL);
   loggingPrefs.setLevel(logging.Type.DRIVER, logging.Level.ALL);
@@ -114,7 +114,7 @@ const getDefaultDriver = async(browserType) => {
   loggingPrefs.setLevel(logging.Type.SERVER, logging.Level.ALL);
 
   // configure ServiceBuilder
-  let service = new browser.ServiceBuilder();
+  const service = new browser.ServiceBuilder();
   if (browserType === 'firefox') {
     service.enableVerboseLogging(true);
   } else if (browserType === 'chrome') {
@@ -124,7 +124,7 @@ const getDefaultDriver = async(browserType) => {
   service.build();
 
   // configure Options
-  let options = new browser.Options()
+  const options = new browser.Options()
     .setLoggingPrefs(loggingPrefs);
   if (browserType === 'firefox') {
     // options.setBinary('/Applications/IBM Firefox.app/Contents/MacOS/firefox');
@@ -139,7 +139,7 @@ const getDefaultDriver = async(browserType) => {
   options.headless();
 
   // define Capabilities
-  let capabilities = browserType === 'chrome' ? Capabilities.chrome() : Capabilities.firefox();
+  const capabilities = browserType === 'chrome' ? Capabilities.chrome() : Capabilities.firefox();
   capabilities.setLoggingPrefs(loggingPrefs)
     .setAcceptInsecureCerts(true);
 
@@ -167,51 +167,57 @@ const getDefaultDriver = async(browserType) => {
  */
 const loginMVD = async(driver, url, username, password) => {
   // load MVD login page
-  debug('- loading login page');
+  debug('loading login page');
   await driver.get(url);
   await driver.wait(
     async() => {
-      let isDisplayed = false;
-      try {
-        const loginButton = await driver.findElement(By.css('#\\#loginButton'));
-        isDisplayed = await loginButton.isDisplayed();
-      } catch (err) {
-        // don't care about errors, especially NoSuchElementError
+      const loginButton = await getElement(driver, '#\\#loginButton', true);
+      if (loginButton) {
+        return true;
       }
+
       await driver.sleep(300); // not too fast
-      return isDisplayed;
+      return false;
     },
     DEFAULT_PAGE_LOADING_TIMEOUT
   );
+  debug('login form is ready');
 
-  const loginForm = await driver.findElement(By.css('form.login-form'));
+  const loginForm = await getElement(driver, 'form.login-form');
+  expect(loginForm).to.be.an('object');
   // fill in login form
-  let usernameInput = await loginForm.findElement(By.css('input#usernameInput'));
+  const usernameInput = await getElement(loginForm, 'input#usernameInput');
+  expect(usernameInput).to.be.an('object');
   await usernameInput.clear();
   await usernameInput.sendKeys(username);
-  let passwordInput = await loginForm.findElement(By.css('input#passwordInput'));
+  const passwordInput = await getElement(loginForm, 'input#passwordInput');
+  expect(passwordInput).to.be.an('object');
   await passwordInput.clear();
   await passwordInput.sendKeys(password);
   // submit login
-  let loginButton = await driver.findElement(By.css('#\\#loginButton'));
+  const loginButton = await getElement(driver, '#\\#loginButton');
+  expect(loginButton).to.be.an('object');
   await loginButton.click();
+  debug('login button clicked');
   // wait for login error or successfully
   await driver.wait(
     async() => {
       let result = false;
 
       if (!result) {
-        let error = await driver.findElement(By.css('p.login-error')).getText();
-        error = error.trim();
-        if (error && error !== '&nbsp;') {
-          debug('login error message returned: %s', error);
-          // authentication failed, no need to wait anymore
-          result = true;
+        let error = await getElementText(driver, 'p.login-error');
+        if (error !== false) {
+          error = error.trim();
+          if (error && error !== '&nbsp;') {
+            debug('login error message returned: %s', error);
+            // authentication failed, no need to wait anymore
+            result = true;
+          }
         }
       }
 
       if (!result) {
-        const loginPanel = await driver.findElement(By.css('div.login-panel'));
+        const loginPanel = await getElement(driver, 'div.login-panel');
         const isDisplayed = await loginPanel.isDisplayed();
         if (!isDisplayed) {
           debug('login panel is hidden, login should be successfully');
@@ -224,20 +230,23 @@ const loginMVD = async(driver, url, username, password) => {
     },
     DEFAULT_PAGE_LOADING_TIMEOUT
   );
+  debug('login done');
 
   // make sure we are not hitting login error
-  let error = await driver.findElement(By.css('p.login-error')).getText();
+  let error = await getElementText(driver, 'p.login-error');
+  expect(error).to.be.a('string');
   error = error.trim();
   expect(error).to.be.oneOf(['', '&nbsp;']);
+  debug('login error message is ok');
 };
 
 /**
  * Get multiple elements by css selector
  *
- * @param  {WebDriver} driver          Selenium WebDriver
- * @param  {String}    selector        css selector
- * @param  {Boolean}   checkDisplayed  if verify the 1st element is visible
- * @return {Array}                     array of Selenium WebElement
+ * @param  {WebDriver|WebElement} driver          Selenium WebDriver or parent WebElement
+ * @param  {String}               selector        css selector
+ * @param  {Boolean}              checkDisplayed  optional, if verify the 1st element is visible
+ * @return {Array}                                array of Selenium WebElement
  */
 const getElements = async(driver, selector, checkDisplayed) => {
   const elements = await driver.findElements(By.css(selector));
@@ -249,22 +258,25 @@ const getElements = async(driver, selector, checkDisplayed) => {
   if (!checkDisplayed) {
     return elements;
   }
+
+  // check if element is visible
   const isDisplayed = await elements[0].isDisplayed();
   if (!isDisplayed) {
     return false;
   }
   debug('[getElements]     and the first element is displayed');
+
   return elements;
 };
 
 /**
  * Get element by css selector
  *
- * This method won't throw error like Selenium WebDriver.findElement()
+ * This method won't throw NoSuchElementError like Selenium WebDriver.findElement()
  *
- * @param  {WebDriver}          driver          Selenium WebDriver
- * @param  {String}             selector        css selector
- * @param  {Boolean}            checkDisplayed  if verify the 1st element is visible
+ * @param  {WebDriver|WebElement} driver          Selenium WebDriver or parent WebElement
+ * @param  {String}               selector        css selector
+ * @param  {Boolean}              checkDisplayed  optional, if verify the 1st element is visible
  * @return {WebElement|Boolean}                 Selenium WebElement or false if not found
  */
 const getElement = async(driver, selector, checkDisplayed) => {
@@ -275,11 +287,11 @@ const getElement = async(driver, selector, checkDisplayed) => {
 /**
  * Get element text by css selector
  *
- * This method won't throw error like Selenium WebDriver.findElement()
+ * This method won't throw NoSuchElementError like Selenium WebDriver.findElement()
  *
  * @param  {WebDriver}      driver          Selenium WebDriver
  * @param  {String}         selector        css selector
- * @param  {Boolean}        checkDisplayed  if verify the 1st element is visible
+ * @param  {Boolean}        checkDisplayed  optional, if verify the 1st element is visible
  * @return {String|Boolean}                 text of Selenium WebElement or false if element is not found
  */
 const getElementText = async(driver, selector, checkDisplayed) => {

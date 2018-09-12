@@ -31,7 +31,7 @@ describe(`test explorer server https://${process.env.SSH_HOST}:${process.env.ZOW
 
   describe('GET /ibm/api/explorer/', function() {
     it('should return ok', function() {
-      let req = {
+      const req = {
         method: 'get',
         url: '/ibm/api/explorer/',
         auth: {
@@ -54,7 +54,7 @@ describe(`test explorer server https://${process.env.SSH_HOST}:${process.env.ZOW
 
   describe('GET /Atlas/api/jobs', function() {
     it('should have a job ZOWESVR', function() {
-      let req = {
+      const req = {
         method: 'get',
         url: '/Atlas/api/jobs',
         params: {
