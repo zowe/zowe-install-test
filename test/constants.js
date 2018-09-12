@@ -8,6 +8,7 @@
  * Copyright IBM Corporation 2018
  */
 
+// default Zowe JES job name
 const ZOWE_JOB_NAME = 'ZOWESVR';
 
 module.exports = {

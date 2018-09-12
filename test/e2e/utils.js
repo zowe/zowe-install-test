@@ -19,6 +19,7 @@ const debug = require('debug')('test:e2e:utils');
 const { Capabilities, Builder, By, logging } = require('selenium-webdriver');
 const chrome = require('selenium-webdriver/chrome');
 const firefox = require('selenium-webdriver/firefox');
+// method to attach screenshots and other content to mochawesome HTML report
 const addContext = require('mochawesome/addContext');
 
 const writeFile = util.promisify(fs.writeFile);
@@ -34,13 +35,26 @@ const PRE_INSTALLED_APPS = [
   'Hello World',
 ];
 
+// timeout of HTTP request to Zowe services, default is 30s
 const DEFAULT_PAGE_LOADING_TIMEOUT = 30000;
+// where to save screenshots
 const DEFAULT_SCREENSHOT_PATH = './reports';
+// screenshots unqiue index
 let SCREENSHOT_FILECOUNT = 0;
 
+// css selector to find MVD iframe app
 const MVD_IFRAME_APP_CONTEXT = ['rs-com-mvd-iframe-component > iframe'];
+// css selector to find MVD Atlas iframe app
 const MVD_ATLAS_APP_CONTEXT = ['rs-com-mvd-iframe-component > iframe', 'iframe#atlasIframe'];
 
+/**
+ * Get unqiue screen shot image name
+ *
+ * @param  {WebDriver} driver         Selenium WebDriver
+ * @param  {String}    testScript     name of file holds test cases
+ * @param  {String}    screenshotName screen shot identity name
+ * @return {String}                   file name
+ */
 const getImagePath = async(driver, testScript, screenshotName) => {
   const dc = await driver.getCapabilities();
   const browserName = dc.getBrowserName(),
@@ -59,6 +73,14 @@ const getImagePath = async(driver, testScript, screenshotName) => {
   return `${file}.png`;
 };
 
+/**
+ * Save screenshot
+ *
+ * @param  {WebDriver} driver         Selenium WebDriver
+ * @param  {String}    testScript     name of file holds test cases
+ * @param  {String}    screenshotName screen shot identity name
+ * @return {String}                   file name
+ */
 const saveScreenshot = async(driver, testScript, screenshotName) => {
   const base64png = await driver.takeScreenshot();
   const file = await getImagePath(driver, testScript, screenshotName);
@@ -71,6 +93,12 @@ const saveScreenshot = async(driver, testScript, screenshotName) => {
   return file;
 };
 
+/**
+ * Get default Selenium WebDriver
+ *
+ * @param  {String}    browserType  browser type, can be: chrome, firefox
+ * @return {WebDriver} driver       Selenium WebDriver
+ */
 const getDefaultDriver = async(browserType) => {
   if (!browserType) {
     browserType = 'firefox';
@@ -129,10 +157,18 @@ const getDefaultDriver = async(browserType) => {
   return driver;
 };
 
-const loginMVD = async(driver) => {
+/**
+ * Helper function to login to MVD
+ *
+ * @param {WebDriver} driver    Selenium WebDriver
+ * @param {String}    url       MVD URL
+ * @param {String}    username  login username
+ * @param {String}    password  login password
+ */
+const loginMVD = async(driver, url, username, password) => {
   // load MVD login page
   debug('- loading login page');
-  await driver.get(`https://${process.env.SSH_HOST}:${process.env.ZOWE_ZLUX_HTTPS_PORT}/`);
+  await driver.get(url);
   await driver.wait(
     async() => {
       let isDisplayed = false;
@@ -152,10 +188,10 @@ const loginMVD = async(driver) => {
   // fill in login form
   let usernameInput = await loginForm.findElement(By.css('input#usernameInput'));
   await usernameInput.clear();
-  await usernameInput.sendKeys(process.env.SSH_USER);
+  await usernameInput.sendKeys(username);
   let passwordInput = await loginForm.findElement(By.css('input#passwordInput'));
   await passwordInput.clear();
-  await passwordInput.sendKeys(process.env.SSH_PASSWD);
+  await passwordInput.sendKeys(password);
   // submit login
   let loginButton = await driver.findElement(By.css('#\\#loginButton'));
   await loginButton.click();
@@ -195,6 +231,14 @@ const loginMVD = async(driver) => {
   expect(error).to.be.oneOf(['', '&nbsp;']);
 };
 
+/**
+ * Get multiple elements by css selector
+ *
+ * @param  {WebDriver} driver          Selenium WebDriver
+ * @param  {String}    selector        css selector
+ * @param  {Boolean}   checkDisplayed  if verify the 1st element is visible
+ * @return {Array}                     array of Selenium WebElement
+ */
 const getElements = async(driver, selector, checkDisplayed) => {
   const elements = await driver.findElements(By.css(selector));
   if (!elements[0]) {
@@ -213,11 +257,31 @@ const getElements = async(driver, selector, checkDisplayed) => {
   return elements;
 };
 
+/**
+ * Get element by css selector
+ *
+ * This method won't throw error like Selenium WebDriver.findElement()
+ *
+ * @param  {WebDriver}          driver          Selenium WebDriver
+ * @param  {String}             selector        css selector
+ * @param  {Boolean}            checkDisplayed  if verify the 1st element is visible
+ * @return {WebElement|Boolean}                 Selenium WebElement or false if not found
+ */
 const getElement = async(driver, selector, checkDisplayed) => {
   const elements = await getElements(driver, selector, checkDisplayed);
   return elements[0] || false;
 };
 
+/**
+ * Get element text by css selector
+ *
+ * This method won't throw error like Selenium WebDriver.findElement()
+ *
+ * @param  {WebDriver}      driver          Selenium WebDriver
+ * @param  {String}         selector        css selector
+ * @param  {Boolean}        checkDisplayed  if verify the 1st element is visible
+ * @return {String|Boolean}                 text of Selenium WebElement or false if element is not found
+ */
 const getElementText = async(driver, selector, checkDisplayed) => {
   const element = await getElement(driver, selector, checkDisplayed);
   if (!element) {
@@ -227,6 +291,16 @@ const getElementText = async(driver, selector, checkDisplayed) => {
   return text;
 };
 
+/**
+ * Wait until elements with css selector are loaded
+ *
+ * NOTE: This method may exit with driver.wait timeout.
+ *
+ * @param  {WebDriver}  driver    Selenium WebDriver
+ * @param  {String}     selector  css selector
+ * @param  {WebElement} parent    optional, parent element where to find css selector
+ * @return {Array}                array of Selenium WebElement if loaded
+ */
 const waitUntilElements = async(driver, selector, parent) => {
   let elements;
 
@@ -252,6 +326,16 @@ const waitUntilElements = async(driver, selector, parent) => {
   return elements;
 };
 
+/**
+ * Wait until element with css selector are removed from web page
+ *
+ * NOTE: This method may exit with driver.wait timeout.
+ *
+ * @param  {WebDriver}  driver    Selenium WebDriver
+ * @param  {String}     selector  css selector
+ * @param  {WebElement} parent    optional, parent element where to find css selector
+ * @return {Boolean}              true if the element cannot be found
+ */
 const waitUntilElementIsGone = async(driver, selector, parent) => {
   if (!parent) {
     parent = driver;
@@ -275,19 +359,47 @@ const waitUntilElementIsGone = async(driver, selector, parent) => {
   return true;
 };
 
+/**
+ * Wait until element with css selector is loaded
+ *
+ * NOTE: This method may exit with driver.wait timeout.
+ *
+ * @param  {WebDriver}          driver    Selenium WebDriver
+ * @param  {String}             selector  css selector
+ * @param  {WebElement}         parent    optional, parent element where to find css selector
+ * @return {WebElement|Boolean}           Selenium WebElement or false if not found
+ */
 const waitUntilElement = async(driver, selector, parent) => {
   const elements = await waitUntilElements(driver, selector, parent);
 
   return (elements && elements[0]) || false;
 };
 
+/**
+ * Wait until iframe with css selector is loaded, and switch context to the iframe
+ *
+ * NOTE: This method may exit with driver.wait timeout.
+ *
+ * @param  {WebDriver}          driver          Selenium WebDriver
+ * @param  {String}             iframeSelector  css selector
+ * @param  {WebElement}         parent          optional, parent element where to find css selector
+ * @return {WebElement|Boolean}                 Selenium WebElement or false if not found
+ */
 const waitUntilIframe = async(driver, iframeSelector, parent) => {
   const iframe = await waitUntilElement(driver, iframeSelector, parent);
-  await driver.switchTo().frame(iframe);
+  if (iframe) {
+    await driver.switchTo().frame(iframe);
+  }
 
   return iframe;
 };
 
+/**
+ * Launch MVD application by name
+ *
+ * @param  {WebDriver}  driver   Selenium WebDriver
+ * @param  {String}     appName  application name
+ */
 const launchApp = async(driver, appName) => {
   await driver.switchTo().defaultContent();
 
@@ -299,6 +411,13 @@ const launchApp = async(driver, appName) => {
   await app[0].click();
 };
 
+/**
+ * Find application among MVD windows by name
+ *
+ * @param  {WebDriver}          driver   Selenium WebDriver
+ * @param  {String}             appName  application name
+ * @return {WebElement|Boolean}          Selenium WebElement of the app viewport or false if cannot find the application
+ */
 const locateApp = async(driver, appName) => {
   await driver.switchTo().defaultContent();
 
@@ -329,29 +448,47 @@ const locateApp = async(driver, appName) => {
   return body;
 };
 
-const switchToAppContext = async(driver, appName, contexts) => {
-  debug('[switchToAppContext] started');
+/**
+ * Find and switch to iframe application context
+ *
+ * @param  {WebDriver}  driver    Selenium WebDriver
+ * @param  {String}     appName   application name
+ * @param  {Array}.     contexts  array of css selectors
+ */
+const switchToIframeAppContext = async(driver, appName, contexts) => {
+  debug('[switchToIframeAppContext] started');
   const app = await locateApp(driver, appName);
   for (let i in contexts) {
-    debug(`[switchToAppContext] - ${i}: ${contexts[i]}`);
+    debug(`[switchToIframeAppContext] - ${i}: ${contexts[i]}`);
     if (i === 0) {
       await waitUntilIframe(driver, contexts[i], app);
     } else {
       await waitUntilIframe(driver, contexts[i]);
     }
   }
-  debug('[switchToAppContext] done');
+  debug('[switchToIframeAppContext] done');
 };
 
-const saveScreenshotWithAppContext = async(testcase, driver, testName, screenshot, appName, contexts) => {
-  debug('[saveScreenshotWithAppContext] started');
+/**
+ * Save screenshot then switch back to iframe application context
+ *
+ * @param  {Object}    testcase       Mocha test case context object
+ * @param  {WebDriver} driver         Selenium WebDriver
+ * @param  {String}    testScript     name of file holds test cases
+ * @param  {String}    screenshotName screen shot identity name
+ * @param  {String}    appName        application name
+ * @param  {Array}.    contexts       array of css selectors
+ */
+const saveScreenshotWithIframeAppContext = async(testcase, driver, testScript, screenshotName, appName, contexts) => {
+  debug('[saveScreenshotWithIframeAppContext] started');
   await driver.switchTo().defaultContent();
-  const file = await saveScreenshot(driver, testName, screenshot);
+  const file = await saveScreenshot(driver, testScript, screenshotName);
   addContext(testcase, file);
-  await switchToAppContext(driver, appName, contexts);
-  debug('[saveScreenshotWithAppContext] done');
+  await switchToIframeAppContext(driver, appName, contexts);
+  debug('[saveScreenshotWithIframeAppContext] done');
 };
 
+// export constants and methods
 module.exports = {
   PRE_INSTALLED_APPS,
   DEFAULT_PAGE_LOADING_TIMEOUT,
@@ -371,6 +508,6 @@ module.exports = {
   loginMVD,
   launchApp,
   locateApp,
-  switchToAppContext,
-  saveScreenshotWithAppContext,
+  switchToIframeAppContext,
+  saveScreenshotWithIframeAppContext,
 };

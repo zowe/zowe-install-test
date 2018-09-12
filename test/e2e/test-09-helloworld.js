@@ -41,7 +41,12 @@ describe(`test ${APP_TO_TEST}`, function() {
     debug('webdriver initialized');
 
     // load MVD login page
-    await loginMVD(driver);
+    await loginMVD(
+      driver,
+      `https://${process.env.SSH_HOST}:${process.env.ZOWE_ZLUX_HTTPS_PORT}/`,
+      process.env.SSH_USER,
+      process.env.SSH_PASSWD
+    );
   });
 
 

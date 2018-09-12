@@ -29,8 +29,8 @@ const {
   loginMVD,
   launchApp,
   locateApp,
-  switchToAppContext,
-  saveScreenshotWithAppContext,
+  switchToIframeAppContext,
+  saveScreenshotWithIframeAppContext,
 } = require('./utils');
 let driver;
 
@@ -54,7 +54,12 @@ describe(`test ${APP_TO_TEST}`, function() {
     debug('webdriver initialized');
 
     // load MVD login page
-    await loginMVD(driver);
+    await loginMVD(
+      driver,
+      `https://${process.env.SSH_HOST}:${process.env.ZOWE_ZLUX_HTTPS_PORT}/`,
+      process.env.SSH_USER,
+      process.env.SSH_PASSWD
+    );
   });
 
 
@@ -84,7 +89,7 @@ describe(`test ${APP_TO_TEST}`, function() {
     await alert.sendKeys(process.env.SSH_USER + Key.TAB + process.env.SSH_PASSWD);
     await alert.accept();
     // to avoid StaleElementReferenceError, find the iframes context again
-    await switchToAppContext(driver, APP_TO_TEST, MVD_ATLAS_APP_CONTEXT);
+    await switchToIframeAppContext(driver, APP_TO_TEST, MVD_ATLAS_APP_CONTEXT);
     debug('atlas login successfully');
 
     // wait for page is loaded
@@ -96,7 +101,7 @@ describe(`test ${APP_TO_TEST}`, function() {
     debug('page is fully loaded');
 
     // save screenshot
-    await saveScreenshotWithAppContext(this, driver, testName, 'app-loaded', APP_TO_TEST, MVD_ATLAS_APP_CONTEXT);
+    await saveScreenshotWithIframeAppContext(this, driver, testName, 'app-loaded', APP_TO_TEST, MVD_ATLAS_APP_CONTEXT);
 
     appLaunched = true;
   });
@@ -121,7 +126,7 @@ describe(`test ${APP_TO_TEST}`, function() {
     debug('page reloaded');
 
     // save screenshot
-    await saveScreenshotWithAppContext(this, driver, testName, 'ds-list-loaded', APP_TO_TEST, MVD_ATLAS_APP_CONTEXT);
+    await saveScreenshotWithIframeAppContext(this, driver, testName, 'ds-list-loaded', APP_TO_TEST, MVD_ATLAS_APP_CONTEXT);
     treeContent = await waitUntilElement(driver, MVD_EXPLORER_TREE_SECTION);
 
     const items = await getElements(treeContent, 'div.node ul li');
@@ -147,8 +152,7 @@ describe(`test ${APP_TO_TEST}`, function() {
     }
 
     // prepare app context and find the li of DS_TO_TEST
-    await driver.switchTo().defaultContent();
-    await switchToAppContext(driver, APP_TO_TEST, MVD_ATLAS_APP_CONTEXT);
+    await switchToIframeAppContext(driver, APP_TO_TEST, MVD_ATLAS_APP_CONTEXT);
     let treeContent = await getElement(driver, MVD_EXPLORER_TREE_SECTION);
     expect(treeContent).to.be.an('object');
     const items = await getElements(treeContent, 'div.node ul li');
@@ -179,7 +183,7 @@ describe(`test ${APP_TO_TEST}`, function() {
     debug('right panel is loaded');
 
     // save screenshot
-    await saveScreenshotWithAppContext(this, driver, testName, 'ds-content-loaded', APP_TO_TEST, MVD_ATLAS_APP_CONTEXT);
+    await saveScreenshotWithIframeAppContext(this, driver, testName, 'ds-content-loaded', APP_TO_TEST, MVD_ATLAS_APP_CONTEXT);
   });
 
 

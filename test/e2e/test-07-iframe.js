@@ -23,7 +23,7 @@ const {
   loginMVD,
   launchApp,
   locateApp,
-  saveScreenshotWithAppContext,
+  saveScreenshotWithIframeAppContext,
 } = require('./utils');
 let driver;
 
@@ -45,7 +45,12 @@ describe(`test ${APP_TO_TEST}`, function() {
     debug('webdriver initialized');
 
     // load MVD login page
-    await loginMVD(driver);
+    await loginMVD(
+      driver,
+      `https://${process.env.SSH_HOST}:${process.env.ZOWE_ZLUX_HTTPS_PORT}/`,
+      process.env.SSH_USER,
+      process.env.SSH_PASSWD
+    );
   });
 
 
@@ -71,7 +76,7 @@ describe(`test ${APP_TO_TEST}`, function() {
     debug('page is fully loaded');
 
     // save screenshot
-    await saveScreenshotWithAppContext(this, driver, testName, 'app-loaded', APP_TO_TEST, MVD_IFRAME_APP_CONTEXT);
+    await saveScreenshotWithIframeAppContext(this, driver, testName, 'app-loaded', APP_TO_TEST, MVD_IFRAME_APP_CONTEXT);
 
     appLaunched = true;
   });
@@ -103,7 +108,7 @@ describe(`test ${APP_TO_TEST}`, function() {
     debug('app launched');
 
     // save screenshot
-    await saveScreenshotWithAppContext(this, driver, testName, 'test-app-launched', APP_TO_TEST, MVD_IFRAME_APP_CONTEXT);
+    await saveScreenshotWithIframeAppContext(this, driver, testName, 'test-app-launched', APP_TO_TEST, MVD_IFRAME_APP_CONTEXT);
   });
 
   after('quit webdriver', async function() {
