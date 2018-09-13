@@ -47,7 +47,9 @@ describe(`test zLux server https://${process.env.SSH_HOST}:${process.env.ZOWE_ZL
 
           expect(err).to.have.property('response');
           const res = err.response;
+          expect(res).to.have.property('status');
           expect(res.status).to.equal(302);
+          expect(res).to.have.property('headers');
           expect(res.headers).to.have.property('location');
           expect(res.headers.location).to.equal('/ZLUX/plugins/com.rs.mvd/web/');
         });
@@ -72,7 +74,8 @@ describe(`test zLux server https://${process.env.SSH_HOST}:${process.env.ZOWE_ZL
 
           expect(res).to.have.property('status');
           expect(res.status).to.equal(200);
-          expect(res.data).to.include('Mainframe Virtual Desktop');
+          // has been renamed to Zowe Desktop
+          expect(res.data).to.be.oneOf(['Mainframe Virtual Desktop', 'Zowe Desktop']);
         });
     });
   });
