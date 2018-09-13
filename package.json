@@ -24,12 +24,13 @@
     "mocha": "^5.2.0",
     "mocha-jenkins-reporter": "^0.4.0",
     "mocha-multi-reporters": "^1.1.7",
+    "mocha-parallel-tests": "^2.0.4",
     "mochawesome": "^3.0.3",
     "node-ssh": "^5.1.2",
     "selenium-webdriver": "^4.0.0-alpha.1"
   },
   "scripts": {
-    "test": "mocha",
+    "test": "mocha-parallel-tests",
     "lint": "eslint ."
   }
 }
