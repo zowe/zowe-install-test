@@ -26,23 +26,36 @@ const {
 } = require('./utils');
 let driver;
 
-before('verify environment variable and load login page', async function() {
-  expect(process.env.SSH_HOST, 'SSH_HOST is not defined').to.not.be.empty;
-  expect(process.env.SSH_USER, 'SSH_USER is not defined').to.not.be.empty;
-  expect(process.env.SSH_PASSWD, 'SSH_PASSWD is not defined').to.not.be.empty;
-  expect(process.env.ZOWE_ZLUX_HTTPS_PORT, 'ZOWE_ZLUX_HTTPS_PORT is not defined').to.not.be.empty;
-
-  // init webdriver
-  driver = await getDefaultDriver();
-  debug('webdriver initialized');
-
-  // load MVD login page
-  debug('- loading login page');
-  await driver.get(`https://${process.env.SSH_HOST}:${process.env.ZOWE_ZLUX_HTTPS_PORT}/`);
-  await waitUntilElement(driver, '#\\#loginButton');
-});
-
 describe('test MVD login page', function() {
+
+  before('verify environment variable and load login page', async function() {
+    expect(process.env.SSH_HOST, 'SSH_HOST is not defined').to.not.be.empty;
+    expect(process.env.SSH_USER, 'SSH_USER is not defined').to.not.be.empty;
+    expect(process.env.SSH_PASSWD, 'SSH_PASSWD is not defined').to.not.be.empty;
+    expect(process.env.ZOWE_ZLUX_HTTPS_PORT, 'ZOWE_ZLUX_HTTPS_PORT is not defined').to.not.be.empty;
+
+    // init webdriver
+    driver = await getDefaultDriver();
+    debug('webdriver initialized');
+
+    // load MVD login page
+    debug('loading login page');
+    await driver.get(`https://${process.env.SSH_HOST}:${process.env.ZOWE_ZLUX_HTTPS_PORT}/`);
+    await driver.wait(
+      async() => {
+        const loginButton = await getElement(driver, '#\\#loginButton', true);
+        if (loginButton) {
+          return true;
+        }
+
+        await driver.sleep(300); // not too fast
+        return false;
+      },
+      DEFAULT_PAGE_LOADING_TIMEOUT
+    );
+    debug('login form is ready');
+  });
+
 
   it('should redirect to login page', async function() {
     // save screenshot
@@ -50,6 +63,7 @@ describe('test MVD login page', function() {
     addContext(this, file);
 
     const title = await driver.getTitle();
+    debug(`Current MVD title is ${title}`);
     expect(title).to.be.oneOf(['Mainframe Virtual Desktop', 'Zowe Desktop']);
   });
 
@@ -58,18 +72,19 @@ describe('test MVD login page', function() {
     const loginForm = await getElement(driver, 'form.login-form');
     expect(loginForm).to.be.an('object');
     // fill in login form
-    let usernameInput = await getElement(loginForm, 'input#usernameInput');
+    const usernameInput = await getElement(loginForm, 'input#usernameInput');
     expect(usernameInput).to.be.an('object');
     await usernameInput.clear();
     await usernameInput.sendKeys(process.env.SSH_USER);
-    let passwordInput = await getElement(loginForm, 'input#passwordInput');
+    const passwordInput = await getElement(loginForm, 'input#passwordInput');
     expect(passwordInput).to.be.an('object');
     await passwordInput.clear();
     await passwordInput.sendKeys('wrong+passdword!');
     // submit login
-    let loginButton = await getElement(driver, '#\\#loginButton');
+    const loginButton = await getElement(driver, '#\\#loginButton');
     expect(loginButton).to.be.an('object');
     await loginButton.click();
+    debug('login button clicked');
     // wait for login error
     await driver.wait(
       async() => {
@@ -91,6 +106,7 @@ describe('test MVD login page', function() {
       },
       DEFAULT_PAGE_LOADING_TIMEOUT
     );
+    debug('login done');
 
     // save screenshot
     const file = await saveScreenshot(driver, testName, 'login-wrong-password');
@@ -108,18 +124,19 @@ describe('test MVD login page', function() {
     const loginForm = await getElement(driver, 'form.login-form');
     expect(loginForm).to.be.an('object');
     // fill in login form
-    let usernameInput = await getElement(loginForm, 'input#usernameInput');
+    const usernameInput = await getElement(loginForm, 'input#usernameInput');
     expect(usernameInput).to.be.an('object');
     await usernameInput.clear();
     await usernameInput.sendKeys(process.env.SSH_USER);
-    let passwordInput = await getElement(loginForm, 'input#passwordInput');
+    const passwordInput = await getElement(loginForm, 'input#passwordInput');
     expect(passwordInput).to.be.an('object');
     await passwordInput.clear();
     await passwordInput.sendKeys(process.env.SSH_PASSWD);
     // submit login
-    let loginButton = await getElement(driver, '#\\#loginButton');
+    const loginButton = await getElement(driver, '#\\#loginButton');
     expect(loginButton).to.be.an('object');
     await loginButton.click();
+    debug('login button clicked');
     // wait for login error or successfully
     await driver.wait(
       async() => {
@@ -151,6 +168,7 @@ describe('test MVD login page', function() {
       },
       DEFAULT_PAGE_LOADING_TIMEOUT
     );
+    debug('login done');
 
     // save screenshot
     const file = await saveScreenshot(driver, testName, 'login-successfully');
@@ -170,8 +188,8 @@ describe('test MVD login page', function() {
     const apps = await getElements(driver, 'rs-com-launchbar-icon');
     expect(apps).to.be.an('array').that.have.lengthOf(PRE_INSTALLED_APPS.length);
     for (let app of apps) {
-      let icon = await getElement(app, 'div.launchbar-icon');
-      let title = await icon.getAttribute('title');
+      const icon = await getElement(app, 'div.launchbar-icon');
+      const title = await icon.getAttribute('title');
       expect(title).to.be.oneOf(PRE_INSTALLED_APPS);
     }
   });
@@ -200,7 +218,7 @@ describe('test MVD login page', function() {
     const menuItems = await getElements(popup, '.launch-widget-row > p');
     expect(menuItems).to.be.an('array').that.have.lengthOf(PRE_INSTALLED_APPS.length);
     for (let item of menuItems) {
-      let text = await item.getText();
+      const text = await item.getText();
       expect(text).to.be.oneOf(PRE_INSTALLED_APPS);
     }
   });
@@ -247,10 +265,12 @@ describe('test MVD login page', function() {
     const loginPanel = await getElement(driver, 'div.login-panel');
     expect(loginPanel).to.be.an('object');
   });
-});
 
 
-after('quit webdriver', async function() {
-  // quit webdriver
-  await driver.quit();
+  after('quit webdriver', async function() {
+    // quit webdriver
+    if (driver) {
+      await driver.quit();
+    }
+  });
 });

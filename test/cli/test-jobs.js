@@ -17,24 +17,24 @@ const { execZoweCli, defaultZOSMFProfileName, createDefaultZOSMFProfile } = requ
 const { ZOWE_JOB_NAME } = require('../constants');
 let testJobId;
 
-before('verify environment variables', async function() {
-  expect(process.env.ZOSMF_PORT, 'ZOSMF_PORT is not defined').to.not.be.empty;
-  expect(process.env.SSH_HOST, 'SSH_HOST is not defined').to.not.be.empty;
-  expect(process.env.SSH_USER, 'SSH_USER is not defined').to.not.be.empty;
-  expect(process.env.SSH_PASSWD, 'SSH_PASSWD is not defined').to.not.be.empty;
-
-  const result = await createDefaultZOSMFProfile();
-
-  debug('result:', result);
-
-  expect(result).to.have.property('stdout');
-  expect(result).to.have.property('stderr');
-
-  expect(result.stderr).to.be.empty;
-  expect(result.stdout).to.have.string('Profile created successfully');
-});
-
 describe('cli list jobs of IZU*', function() {
+  before('verify environment variables', async function() {
+    expect(process.env.ZOSMF_PORT, 'ZOSMF_PORT is not defined').to.not.be.empty;
+    expect(process.env.SSH_HOST, 'SSH_HOST is not defined').to.not.be.empty;
+    expect(process.env.SSH_USER, 'SSH_USER is not defined').to.not.be.empty;
+    expect(process.env.SSH_PASSWD, 'SSH_PASSWD is not defined').to.not.be.empty;
+
+    const result = await createDefaultZOSMFProfile();
+
+    debug('result:', result);
+
+    expect(result).to.have.property('stdout');
+    expect(result).to.have.property('stderr');
+
+    expect(result.stderr).to.be.empty;
+    expect(result.stdout).to.have.string('Profile created successfully');
+  });
+
   it(`should have an active job ${ZOWE_JOB_NAME}`, async function() {
     const result = await execZoweCli(`bright zos-jobs list jobs --owner IZU* --response-format-json --zosmf-profile ${defaultZOSMFProfileName}`);
 

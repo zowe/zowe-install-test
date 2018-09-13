@@ -17,7 +17,9 @@ const exec = util.promisify(require('child_process').exec);
 const writeFile = util.promisify(fs.writeFile);
 const chmod = util.promisify(fs.chmod);
 
+// script name to wrap CLI command
 const wrapperFileName = 'zowe-cli-command-wrapper.sh';
+// how to wrap CLI command
 const wrapperFileContent = `#!/usr/bin/env bash
 
 # Unlock the keyring
@@ -26,6 +28,12 @@ echo 'jenkins' | gnome-keyring-daemon --unlock
 # Your commands here
 `;
 
+/**
+ * Execute Zowe CLI command
+ *
+ * @param  {String} command cli command line
+ * @return {Object}         exec result object with stdout, stderr properties
+ */
 const execZoweCli = async(command) => {
   let result;
 
@@ -68,7 +76,14 @@ const execZoweCli = async(command) => {
   return result;
 };
 
+// default z/OSMF CLI profile name
 const defaultZOSMFProfileName = 'zowe-install-test';
+
+/**
+ * Create z/OSMF CLI profile
+ *
+ * @return {Object}         exec result object with stdout, stderr properties
+ */
 const createDefaultZOSMFProfile = async() => {
   const zosmfUrl = url.parse(`https://${process.env.SSH_HOST}:${process.env.ZOSMF_PORT}/zosmf/`);
   const command = [
@@ -93,6 +108,7 @@ const createDefaultZOSMFProfile = async() => {
   return await execZoweCli(command.join(' '));
 };
 
+// export constants and methods
 module.exports = {
   execZoweCli,
   defaultZOSMFProfileName,
