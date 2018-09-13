@@ -107,7 +107,7 @@ echo "[${SCRIPT_NAME}] checking md5sum ... [skipped]"
 # run temp fixes
 cd $SCRIPT_PWD
 if [ -f "temp-fixes-prereqs-image.sh" ]; then
-  (exec bash -c temp-fixes-prereqs-image.sh)
+  (exec bash -c "$SCRIPT_PWD/temp-fixes-prereqs-image.sh")
 fi
 
 ################################################################################
