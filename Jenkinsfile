@@ -219,31 +219,6 @@ node ('ibm-jenkins-slave-nvm') {
       if (isPullRequest) {
         echo "This is a pull request"
       }
-
-      if (!params.SKIP_RESET_IMAGE && !params.SKIP_INSTALLATION) {
-        // send out notification to prepare for manual process
-        emailext body: """Job \"${env.JOB_NAME}\" build #${env.BUILD_NUMBER} has been started, and it requires manual input. For river, it usually takes 30 ~ 40 minutes to reset the image.
-
-Check detail: ${env.BUILD_URL}
-
-To manually start zD&T, please follow these steps:
-1. start SSH tunnel on VNC port 5901
-   \$ ssh -L 5901:localhost:5901 ibmsys1@river.zowe.org
-2. use vncviewer or other tools (like screen sharing) to connect to vnc
-   \$ vncviewer localhost:1
-3. from VNC Terminal command line, run command:
-   \$ /zaas1/scripts/onboot.sh
-4. go back to Jenkins job and click Continue.
-
-It may take another 10 ~ 30 minutes for z/OS and z/OSMF to start.""",
-            subject: "[Jenkins] Job \"${env.JOB_NAME}\" build #${env.BUILD_NUMBER} started",
-            recipientProviders: [
-              [$class: 'RequesterRecipientProvider'],
-              [$class: 'CulpritsRecipientProvider'],
-              [$class: 'DevelopersRecipientProvider'],
-              [$class: 'UpstreamComitterRecipientProvider']
-            ]
-      }
     }
 
     utils.conditionalStage('prepare', !params.SKIP_INSTALLATION) {
@@ -280,10 +255,6 @@ EOF"""
 ~/refresh-zosaas.sh
 exit 0
 EOF"""
-            }
-
-            timeout(60) {
-              input message: 'Please manually start zD&T /zaas1/scripts/onboot.sh and click on Continue...', ok: 'Continue'
             }
 
             // wait a while before testing z/OSMF
