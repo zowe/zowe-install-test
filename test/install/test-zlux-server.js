@@ -75,7 +75,7 @@ describe(`test zLux server https://${process.env.SSH_HOST}:${process.env.ZOWE_ZL
           expect(res).to.have.property('status');
           expect(res.status).to.equal(200);
           // has been renamed to Zowe Desktop
-          expect(res.data).to.be.oneOf(['Mainframe Virtual Desktop', 'Zowe Desktop']);
+          expect(res.data).to.include.oneOf(['Mainframe Virtual Desktop', 'Zowe Desktop']);
         });
     });
   });
