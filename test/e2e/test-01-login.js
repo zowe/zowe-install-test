@@ -89,8 +89,8 @@ describe('test MVD login page', function() {
     debug('login button clicked');
 
     // save screenshot
-    const file = await saveScreenshot(driver, testName, 'login-wrong-password-submitted');
-    addContext(this, file);
+    const file0 = await saveScreenshot(driver, testName, 'login-wrong-password-submitted');
+    addContext(this, file0);
 
     // wait for login error
     await driver.wait(
@@ -129,8 +129,8 @@ describe('test MVD login page', function() {
 
   it('should login successfully with correct password', async function() {
     // save screenshot
-    const file = await saveScreenshot(driver, testName, 'before-login');
-    addContext(this, file);
+    const file0 = await saveScreenshot(driver, testName, 'before-login');
+    addContext(this, file0);
 
     const loginForm = await getElement(driver, 'form.login-form');
     expect(loginForm).to.be.an('object');
