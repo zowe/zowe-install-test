@@ -356,6 +356,7 @@ SSH_PASSWD=${PASSWORD} \
 ZOSMF_PORT=${params.ZOSMF_PORT} \
 ZOWE_ZLUX_HTTPS_PORT=${params.ZOWE_ZLUX_HTTPS_PORT} \
 ZOWE_EXPLORER_SERVER_HTTPS_PORT=${params.ZOWE_EXPLORER_SERVER_HTTPS_PORT} \
+DEBUG=test:* \
 npm test"""
           } finally {
             // publish report

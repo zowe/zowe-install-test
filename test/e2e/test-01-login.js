@@ -26,6 +26,8 @@ const {
 } = require('./utils');
 let driver;
 
+let loginSuccessfully = false;
+
 describe('test MVD login page', function() {
 
   before('verify environment variable and load login page', async function() {
@@ -85,6 +87,11 @@ describe('test MVD login page', function() {
     expect(loginButton).to.be.an('object');
     await loginButton.click();
     debug('login button clicked');
+
+    // save screenshot
+    const file = await saveScreenshot(driver, testName, 'login-wrong-password-submitted');
+    addContext(this, file);
+
     // wait for login error
     await driver.wait(
       async() => {
@@ -109,7 +116,7 @@ describe('test MVD login page', function() {
     debug('login done');
 
     // save screenshot
-    const file = await saveScreenshot(driver, testName, 'login-wrong-password');
+    const file = await saveScreenshot(driver, testName, 'login-wrong-password-returned');
     addContext(this, file);
 
     // make sure we got authentication error
@@ -121,6 +128,10 @@ describe('test MVD login page', function() {
 
 
   it('should login successfully with correct password', async function() {
+    // save screenshot
+    const file = await saveScreenshot(driver, testName, 'before-login');
+    addContext(this, file);
+
     const loginForm = await getElement(driver, 'form.login-form');
     expect(loginForm).to.be.an('object');
     // fill in login form
@@ -192,10 +203,17 @@ describe('test MVD login page', function() {
       const title = await icon.getAttribute('title');
       expect(title).to.be.oneOf(PRE_INSTALLED_APPS);
     }
+
+    // mark login succeeded
+    loginSuccessfully = true;
   });
 
 
   it('should be able to popup apps menu', async function() {
+    if (!loginSuccessfully) {
+      this.skip();
+    }
+
     // menu should exist
     const menu = await getElement(driver, 'rs-com-launchbar-menu');
     expect(menu).to.be.an('object');
@@ -225,6 +243,10 @@ describe('test MVD login page', function() {
 
 
   it('should be able to logout', async function() {
+    if (!loginSuccessfully) {
+      this.skip();
+    }
+
     // widget should exist
     const widget = await getElement(driver, 'rs-com-launchbar-widget');
     expect(widget).to.be.an('object');
