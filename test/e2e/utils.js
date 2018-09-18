@@ -35,8 +35,8 @@ const PRE_INSTALLED_APPS = [
   'Hello World',
 ];
 
-// timeout of HTTP request to Zowe services, default is 30s
-const DEFAULT_PAGE_LOADING_TIMEOUT = 30000;
+// timeout of HTTP request to Zowe services, default is 60s
+const DEFAULT_PAGE_LOADING_TIMEOUT = 60000;
 // where to save screenshots
 const DEFAULT_SCREENSHOT_PATH = './reports';
 // screenshots unqiue index
