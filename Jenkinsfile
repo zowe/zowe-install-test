@@ -200,6 +200,13 @@ customParameters.push(credentials(
   defaultValue: 'ssh-zdt-test-image-guest',
   required: true
 ))
+// >>>>>>>> parametters for test cases
+customParameters.push(string(
+  name: 'TEST_CASE_DEBUG_INFORMATION',
+  description: 'How to show debug logging for running test cases.',
+  defaultValue: '',
+  trim: true
+))
 opts.push(parameters(customParameters))
 
 // set build properties
@@ -359,7 +366,7 @@ SSH_PASSWD=${PASSWORD} \
 ZOSMF_PORT=${params.ZOSMF_PORT} \
 ZOWE_ZLUX_HTTPS_PORT=${params.ZOWE_ZLUX_HTTPS_PORT} \
 ZOWE_EXPLORER_SERVER_HTTPS_PORT=${params.ZOWE_EXPLORER_SERVER_HTTPS_PORT} \
-DEBUG=test:* \
+DEBUG=${params.TEST_CASE_DEBUG_INFORMATION} \
 npm test"""
           } finally {
             // publish report

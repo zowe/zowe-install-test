@@ -43,18 +43,32 @@ describe('test MVD login page', function() {
     // load MVD login page
     debug('loading login page');
     await driver.get(`https://${process.env.SSH_HOST}:${process.env.ZOWE_ZLUX_HTTPS_PORT}/`);
-    await driver.wait(
-      async() => {
-        const loginButton = await getElement(driver, '#\\#loginButton', true);
-        if (loginButton) {
-          return true;
-        }
+    try {
+      await driver.wait(
+        async() => {
+          const loginButton = await getElement(driver, '#\\#loginButton', true);
+          if (loginButton) {
+            return true;
+          }
 
-        await driver.sleep(300); // not too fast
-        return false;
-      },
-      DEFAULT_PAGE_LOADING_TIMEOUT
-    );
+          await driver.sleep(300); // not too fast
+          return false;
+        },
+        DEFAULT_PAGE_LOADING_TIMEOUT
+      );
+    } catch (e) {
+      // try to save screenshot for debug purpose
+      await driver.switchTo().defaultContent();
+      const failureSS = await saveScreenshot(driver, testName, 'login-button-missing');
+      addContext(this, failureSS);
+
+      const errName = e && e.name;
+      if (errName === 'TimeoutError') {
+        expect(errName).to.not.equal('TimeoutError');
+      } else {
+        expect(e).to.be.null;
+      }
+    }
     debug('login form is ready');
   });
 
@@ -93,26 +107,40 @@ describe('test MVD login page', function() {
     addContext(this, file0);
 
     // wait for login error
-    await driver.wait(
-      async() => {
-        let result = false;
+    try {
+      await driver.wait(
+        async() => {
+          let result = false;
 
-        if (!result) {
-          let error = await getElementText(driver, 'p.login-error');
-          if (error !== false) {
-            error = error.trim();
-            if (error && error !== '&nbsp;') {
-              debug('login error message returned: %s', error);
-              result = true;
+          if (!result) {
+            let error = await getElementText(driver, 'p.login-error');
+            if (error !== false) {
+              error = error.trim();
+              if (error && error !== '&nbsp;') {
+                debug('login error message returned: %s', error);
+                result = true;
+              }
             }
           }
-        }
 
-        await driver.sleep(300); // not too fast
-        return result;
-      },
-      DEFAULT_PAGE_LOADING_TIMEOUT
-    );
+          await driver.sleep(300); // not too fast
+          return result;
+        },
+        DEFAULT_PAGE_LOADING_TIMEOUT
+      );
+    } catch (e) {
+      // try to save screenshot for debug purpose
+      await driver.switchTo().defaultContent();
+      const failureSS = await saveScreenshot(driver, testName, 'login-error-incorrect');
+      addContext(this, failureSS);
+
+      const errName = e && e.name;
+      if (errName === 'TimeoutError') {
+        expect(errName).to.not.equal('TimeoutError');
+      } else {
+        expect(e).to.be.null;
+      }
+    }
     debug('login done');
 
     // save screenshot
@@ -149,36 +177,50 @@ describe('test MVD login page', function() {
     await loginButton.click();
     debug('login button clicked');
     // wait for login error or successfully
-    await driver.wait(
-      async() => {
-        let result = false;
+    try {
+      await driver.wait(
+        async() => {
+          let result = false;
 
-        if (!result) {
-          let error = await getElementText(driver, 'p.login-error');
-          if (error !== false) {
-            error = error.trim();
-            if (error && error !== '&nbsp;') {
-              debug('login error message returned: %s', error);
-              // authentication failed, no need to wait anymore
+          if (!result) {
+            let error = await getElementText(driver, 'p.login-error');
+            if (error !== false) {
+              error = error.trim();
+              if (error && error !== '&nbsp;') {
+                debug('login error message returned: %s', error);
+                // authentication failed, no need to wait anymore
+                result = true;
+              }
+            }
+          }
+
+          if (!result) {
+            const loginPanel = await getElement(driver, 'div.login-panel', false);
+            const isDisplayed = await loginPanel.isDisplayed();
+            if (!isDisplayed) {
+              debug('login panel is hidden, login should be successfully');
               result = true;
             }
           }
-        }
 
-        if (!result) {
-          const loginPanel = await getElement(driver, 'div.login-panel', false);
-          const isDisplayed = await loginPanel.isDisplayed();
-          if (!isDisplayed) {
-            debug('login panel is hidden, login should be successfully');
-            result = true;
-          }
-        }
+          await driver.sleep(300); // not too fast
+          return result;
+        },
+        DEFAULT_PAGE_LOADING_TIMEOUT
+      );
+    } catch (e) {
+      // try to save screenshot for debug purpose
+      await driver.switchTo().defaultContent();
+      const failureSS = await saveScreenshot(driver, testName, 'login-failed');
+      addContext(this, failureSS);
 
-        await driver.sleep(300); // not too fast
-        return result;
-      },
-      DEFAULT_PAGE_LOADING_TIMEOUT
-    );
+      const errName = e && e.name;
+      if (errName === 'TimeoutError') {
+        expect(errName).to.not.equal('TimeoutError');
+      } else {
+        expect(e).to.be.null;
+      }
+    }
     debug('login done');
 
     // save screenshot

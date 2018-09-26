@@ -23,6 +23,7 @@ const firefox = require('selenium-webdriver/firefox');
 const addContext = require('mochawesome/addContext');
 
 const writeFile = util.promisify(fs.writeFile);
+const testName = path.basename(__filename, path.extname(__filename));
 
 const PRE_INSTALLED_APPS = [
   'JES Explorer',
@@ -169,18 +170,31 @@ const loginMVD = async(driver, url, username, password) => {
   // load MVD login page
   debug('loading login page');
   await driver.get(url);
-  await driver.wait(
-    async() => {
-      const loginButton = await getElement(driver, '#\\#loginButton', true);
-      if (loginButton) {
-        return true;
-      }
+  try {
+    await driver.wait(
+      async() => {
+        const loginButton = await getElement(driver, '#\\#loginButton', true);
+        if (loginButton) {
+          return true;
+        }
 
-      await driver.sleep(300); // not too fast
-      return false;
-    },
-    DEFAULT_PAGE_LOADING_TIMEOUT
-  );
+        await driver.sleep(300); // not too fast
+        return false;
+      },
+      DEFAULT_PAGE_LOADING_TIMEOUT
+    );
+  } catch (e) {
+    const errName = e && e.name;
+    if (errName === 'TimeoutError') {
+      // try to save screenshot for debug purpose
+      await driver.switchTo().defaultContent();
+      await saveScreenshot(driver, testName, 'logon-mvd-loginbutton');
+
+      expect(errName).to.not.equal('TimeoutError');
+    } else {
+      expect(e).to.be.null;
+    }
+  }
   debug('login form is ready');
 
   const loginForm = await getElement(driver, 'form.login-form');
@@ -200,37 +214,50 @@ const loginMVD = async(driver, url, username, password) => {
   await loginButton.click();
   debug('login button clicked');
   // wait for login error or successfully
-  await driver.wait(
-    async() => {
-      let result = false;
+  try {
+    await driver.wait(
+      async() => {
+        let result = false;
 
-      if (!result) {
-        let error = await getElementText(driver, 'p.login-error');
-        if (error !== false) {
-          error = error.trim();
-          if (error && error !== '&nbsp;') {
-            debug('login error message returned: %s', error);
-            // authentication failed, no need to wait anymore
+        if (!result) {
+          let error = await getElementText(driver, 'p.login-error');
+          if (error !== false) {
+            error = error.trim();
+            if (error && error !== '&nbsp;') {
+              debug('login error message returned: %s', error);
+              // authentication failed, no need to wait anymore
+              result = true;
+            }
+          }
+        }
+
+        if (!result) {
+          const loginPanel = await getElement(driver, 'div.login-panel');
+          const isDisplayed = await loginPanel.isDisplayed();
+          if (!isDisplayed) {
+            debug('login panel is hidden, login should be successfully');
             result = true;
           }
         }
-      }
 
-      if (!result) {
-        const loginPanel = await getElement(driver, 'div.login-panel');
-        const isDisplayed = await loginPanel.isDisplayed();
-        if (!isDisplayed) {
-          debug('login panel is hidden, login should be successfully');
-          result = true;
-        }
-      }
+        await driver.sleep(300); // not too fast
+        return result;
+      },
+      DEFAULT_PAGE_LOADING_TIMEOUT
+    );
+  } catch (e) {
+    const errName = e && e.name;
+    if (errName === 'TimeoutError') {
+      // try to save screenshot for debug purpose
+      await driver.switchTo().defaultContent();
+      await saveScreenshot(driver, testName, 'logon-mvd-error');
 
-      await driver.sleep(300); // not too fast
-      return result;
-    },
-    DEFAULT_PAGE_LOADING_TIMEOUT
-  );
-  debug('login done');
+      expect(errName).to.not.equal('TimeoutError');
+    } else {
+      expect(e).to.be.null;
+    }
+  }
+  debug('login successfully');
 
   // make sure we are not hitting login error
   let error = await getElementText(driver, 'p.login-error');
@@ -320,19 +347,32 @@ const waitUntilElements = async(driver, selector, parent) => {
     parent = driver;
   }
 
-  await driver.wait(
-    async() => {
-      const elementsDisplayed = await getElements(parent, selector);
-      if (elementsDisplayed) {
-        elements = elementsDisplayed;
-        return true;
-      }
+  try {
+    await driver.wait(
+      async() => {
+        const elementsDisplayed = await getElements(parent, selector);
+        if (elementsDisplayed) {
+          elements = elementsDisplayed;
+          return true;
+        }
 
-      await driver.sleep(300); // not too fast
-      return false;
-    },
-    DEFAULT_PAGE_LOADING_TIMEOUT
-  );
+        await driver.sleep(300); // not too fast
+        return false;
+      },
+      DEFAULT_PAGE_LOADING_TIMEOUT
+    );
+  } catch (e) {
+    const errName = e && e.name;
+    if (errName === 'TimeoutError') {
+      // try to save screenshot for debug purpose
+      await driver.switchTo().defaultContent();
+      await saveScreenshot(driver, testName, 'wait-until-elements');
+
+      expect(errName).to.not.equal('TimeoutError');
+    } else {
+      expect(e).to.be.null;
+    }
+  }
   debug(`[waitUntilElements] find ${elements.length} of "${selector}"`);
 
   return elements;
@@ -354,18 +394,31 @@ const waitUntilElementIsGone = async(driver, selector, parent) => {
   }
 
   await driver.sleep(500);
-  await driver.wait(
-    async() => {
-      const elementsDisplayed = await getElement(parent, selector, false);
-      if (!elementsDisplayed) {
-        return true;
-      }
+  try {
+    await driver.wait(
+      async() => {
+        const elementsDisplayed = await getElement(parent, selector, false);
+        if (!elementsDisplayed) {
+          return true;
+        }
 
-      await driver.sleep(300); // not too fast
-      return false;
-    },
-    DEFAULT_PAGE_LOADING_TIMEOUT
-  );
+        await driver.sleep(300); // not too fast
+        return false;
+      },
+      DEFAULT_PAGE_LOADING_TIMEOUT
+    );
+  } catch (e) {
+    const errName = e && e.name;
+    if (errName === 'TimeoutError') {
+      // try to save screenshot for debug purpose
+      await driver.switchTo().defaultContent();
+      await saveScreenshot(driver, testName, 'wait-until-element-is-gone');
+
+      expect(errName).to.not.equal('TimeoutError');
+    } else {
+      expect(e).to.be.null;
+    }
+  }
   await driver.sleep(500);
 
   return true;

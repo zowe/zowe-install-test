@@ -235,22 +235,36 @@ describe(`test ${APP_TO_TEST}`, function() {
 
     // wait until loading... text is gone
     await driver.sleep(1000);
-    await driver.wait(
-      async() => {
-        const firstItem = await getElement(zoweJobFiles, 'div.node ul li:nth-child(1)');
-        if (firstItem) {
-          const text = await firstItem.getText();
+    try {
+      await driver.wait(
+        async() => {
+          const firstItem = await getElement(zoweJobFiles, 'div.node ul li:nth-child(1)');
+          if (firstItem) {
+            const text = await firstItem.getText();
 
-          if (text.toLowerCase().indexOf('loading...') === -1) {
-            return true;
+            if (text.toLowerCase().indexOf('loading...') === -1) {
+              return true;
+            }
           }
-        }
 
-        await driver.sleep(300); // not too fast
-        return false;
-      },
-      DEFAULT_PAGE_LOADING_TIMEOUT
-    );
+          await driver.sleep(300); // not too fast
+          return false;
+        },
+        DEFAULT_PAGE_LOADING_TIMEOUT
+      );
+    } catch (e) {
+      // try to save screenshot for debug purpose
+      await driver.switchTo().defaultContent();
+      const failureSS = await saveScreenshot(driver, testName, 'load-items-failed');
+      addContext(this, failureSS);
+
+      const errName = e && e.name;
+      if (errName === 'TimeoutError') {
+        expect(errName).to.not.equal('TimeoutError');
+      } else {
+        expect(e).to.be.null;
+      }
+    }
     debug(`Active ${ZOWE_JOB_NAME} job files list is updated`);
 
     // find the files entry
@@ -283,40 +297,54 @@ describe(`test ${APP_TO_TEST}`, function() {
 
     // wait for right panel updated
     await driver.sleep(1000);
-    await driver.wait(
-      async() => {
-        let isHeaderReady = false,
-          isContentReady = false;
+    try {
+      await driver.wait(
+        async() => {
+          let isHeaderReady = false,
+            isContentReady = false;
 
-        const header = await getElement(driver, '#content-viewer div div div span:nth-child(1)');
-        if (header) {
-          const text = await header.getText();
+          const header = await getElement(driver, '#content-viewer div div div span:nth-child(1)');
+          if (header) {
+            const text = await header.getText();
 
-          if (text === JCL_TO_TEST) {
-            isHeaderReady = true;
-          }
-        }
-
-        if (isHeaderReady) {
-          const content = await getElement(driver, '#node-viewer-content code');
-          if (content) {
-            const text = await content.getAttribute('innerHTML');
-
-            if (text) {
-              isContentReady = true;
+            if (text === JCL_TO_TEST) {
+              isHeaderReady = true;
             }
           }
-        }
 
-        if (isHeaderReady && isContentReady) {
-          return true;
-        }
+          if (isHeaderReady) {
+            const content = await getElement(driver, '#node-viewer-content code');
+            if (content) {
+              const text = await content.getAttribute('innerHTML');
 
-        await driver.sleep(300); // not too fast
-        return false;
-      },
-      DEFAULT_PAGE_LOADING_TIMEOUT
-    );
+              if (text) {
+                isContentReady = true;
+              }
+            }
+          }
+
+          if (isHeaderReady && isContentReady) {
+            return true;
+          }
+
+          await driver.sleep(300); // not too fast
+          return false;
+        },
+        DEFAULT_PAGE_LOADING_TIMEOUT
+      );
+    } catch (e) {
+      // try to save screenshot for debug purpose
+      await driver.switchTo().defaultContent();
+      const failureSS = await saveScreenshot(driver, testName, 'load-content-failed');
+      addContext(this, failureSS);
+
+      const errName = e && e.name;
+      if (errName === 'TimeoutError') {
+        expect(errName).to.not.equal('TimeoutError');
+      } else {
+        expect(e).to.be.null;
+      }
+    }
     debug(`Active ${ZOWE_JOB_NAME} ${JCL_TO_TEST} file content is loaded`);
 
     // save screenshot
