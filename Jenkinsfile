@@ -332,6 +332,14 @@ EOF"""
 
         // FIXME: wait more until the services are stable, otherwise UI test cases might fail randomly
         sleep time: 30, unit: 'MINUTES'
+        // FIXME: zLux login may hang there which blocks UI test cases
+        // try a login to the zlux auth api
+        def zluxAuth = sh(
+          script: "curl -d '{\\\"username\\\":\\\"${USERNAME}\\\",\\\"password\\\":\\\"${PASSWORD}\\\"}' -H 'Content-Type: application/json' -X POST -k https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOWE_ZLUX_HTTPS_PORT}/auth",
+          returnStdout: true
+        ).trim()
+        echo "zLux login successfully:"
+        echo zluxAuth
       }
     }
 
