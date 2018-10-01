@@ -16,6 +16,7 @@ const testName = path.basename(__filename, path.extname(__filename));
 
 const {
   PRE_INSTALLED_APPS,
+  PRE_PINNED_APPS,
   DEFAULT_PAGE_LOADING_TIMEOUT,
   getElements,
   getElement,
@@ -25,6 +26,8 @@ const {
   getDefaultDriver,
 } = require('./utils');
 let driver;
+
+let loginSuccessfully = false;
 
 describe('test MVD login page', function() {
 
@@ -41,18 +44,32 @@ describe('test MVD login page', function() {
     // load MVD login page
     debug('loading login page');
     await driver.get(`https://${process.env.SSH_HOST}:${process.env.ZOWE_ZLUX_HTTPS_PORT}/`);
-    await driver.wait(
-      async() => {
-        const loginButton = await getElement(driver, '#\\#loginButton', true);
-        if (loginButton) {
-          return true;
-        }
+    try {
+      await driver.wait(
+        async() => {
+          const loginButton = await getElement(driver, '#\\#loginButton', true);
+          if (loginButton) {
+            return true;
+          }
 
-        await driver.sleep(300); // not too fast
-        return false;
-      },
-      DEFAULT_PAGE_LOADING_TIMEOUT
-    );
+          await driver.sleep(300); // not too fast
+          return false;
+        },
+        DEFAULT_PAGE_LOADING_TIMEOUT
+      );
+    } catch (e) {
+      // try to save screenshot for debug purpose
+      await driver.switchTo().defaultContent();
+      const failureSS = await saveScreenshot(driver, testName, 'login-button-missing');
+      addContext(this, failureSS);
+
+      const errName = e && e.name;
+      if (errName === 'TimeoutError') {
+        expect(errName).to.not.equal('TimeoutError');
+      } else {
+        expect(e).to.be.null;
+      }
+    }
     debug('login form is ready');
   });
 
@@ -85,31 +102,50 @@ describe('test MVD login page', function() {
     expect(loginButton).to.be.an('object');
     await loginButton.click();
     debug('login button clicked');
-    // wait for login error
-    await driver.wait(
-      async() => {
-        let result = false;
 
-        if (!result) {
-          let error = await getElementText(driver, 'p.login-error');
-          if (error !== false) {
-            error = error.trim();
-            if (error && error !== '&nbsp;') {
-              debug('login error message returned: %s', error);
-              result = true;
+    // save screenshot
+    const file0 = await saveScreenshot(driver, testName, 'login-wrong-password-submitted');
+    addContext(this, file0);
+
+    // wait for login error
+    try {
+      await driver.wait(
+        async() => {
+          let result = false;
+
+          if (!result) {
+            let error = await getElementText(driver, 'p.login-error');
+            if (error !== false) {
+              error = error.trim();
+              if (error && error !== '&nbsp;') {
+                debug('login error message returned: %s', error);
+                result = true;
+              }
             }
           }
-        }
 
-        await driver.sleep(300); // not too fast
-        return result;
-      },
-      DEFAULT_PAGE_LOADING_TIMEOUT
-    );
+          await driver.sleep(300); // not too fast
+          return result;
+        },
+        DEFAULT_PAGE_LOADING_TIMEOUT
+      );
+    } catch (e) {
+      // try to save screenshot for debug purpose
+      await driver.switchTo().defaultContent();
+      const failureSS = await saveScreenshot(driver, testName, 'login-error-incorrect');
+      addContext(this, failureSS);
+
+      const errName = e && e.name;
+      if (errName === 'TimeoutError') {
+        expect(errName).to.not.equal('TimeoutError');
+      } else {
+        expect(e).to.be.null;
+      }
+    }
     debug('login done');
 
     // save screenshot
-    const file = await saveScreenshot(driver, testName, 'login-wrong-password');
+    const file = await saveScreenshot(driver, testName, 'login-wrong-password-returned');
     addContext(this, file);
 
     // make sure we got authentication error
@@ -121,6 +157,10 @@ describe('test MVD login page', function() {
 
 
   it('should login successfully with correct password', async function() {
+    // save screenshot
+    const file0 = await saveScreenshot(driver, testName, 'before-login');
+    addContext(this, file0);
+
     const loginForm = await getElement(driver, 'form.login-form');
     expect(loginForm).to.be.an('object');
     // fill in login form
@@ -138,36 +178,50 @@ describe('test MVD login page', function() {
     await loginButton.click();
     debug('login button clicked');
     // wait for login error or successfully
-    await driver.wait(
-      async() => {
-        let result = false;
+    try {
+      await driver.wait(
+        async() => {
+          let result = false;
 
-        if (!result) {
-          let error = await getElementText(driver, 'p.login-error');
-          if (error !== false) {
-            error = error.trim();
-            if (error && error !== '&nbsp;') {
-              debug('login error message returned: %s', error);
-              // authentication failed, no need to wait anymore
+          if (!result) {
+            let error = await getElementText(driver, 'p.login-error');
+            if (error !== false) {
+              error = error.trim();
+              if (error && error !== '&nbsp;') {
+                debug('login error message returned: %s', error);
+                // authentication failed, no need to wait anymore
+                result = true;
+              }
+            }
+          }
+
+          if (!result) {
+            const loginPanel = await getElement(driver, 'div.login-panel', false);
+            const isDisplayed = await loginPanel.isDisplayed();
+            if (!isDisplayed) {
+              debug('login panel is hidden, login should be successfully');
               result = true;
             }
           }
-        }
 
-        if (!result) {
-          const loginPanel = await getElement(driver, 'div.login-panel', false);
-          const isDisplayed = await loginPanel.isDisplayed();
-          if (!isDisplayed) {
-            debug('login panel is hidden, login should be successfully');
-            result = true;
-          }
-        }
+          await driver.sleep(300); // not too fast
+          return result;
+        },
+        DEFAULT_PAGE_LOADING_TIMEOUT
+      );
+    } catch (e) {
+      // try to save screenshot for debug purpose
+      await driver.switchTo().defaultContent();
+      const failureSS = await saveScreenshot(driver, testName, 'login-failed');
+      addContext(this, failureSS);
 
-        await driver.sleep(300); // not too fast
-        return result;
-      },
-      DEFAULT_PAGE_LOADING_TIMEOUT
-    );
+      const errName = e && e.name;
+      if (errName === 'TimeoutError') {
+        expect(errName).to.not.equal('TimeoutError');
+      } else {
+        expect(e).to.be.null;
+      }
+    }
     debug('login done');
 
     // save screenshot
@@ -186,16 +240,23 @@ describe('test MVD login page', function() {
 
     // check we have known apps launched
     const apps = await getElements(driver, 'rs-com-launchbar-icon');
-    expect(apps).to.be.an('array').that.have.lengthOf(PRE_INSTALLED_APPS.length);
+    expect(apps).to.be.an('array').that.have.lengthOf(PRE_PINNED_APPS.length);
     for (let app of apps) {
       const icon = await getElement(app, 'div.launchbar-icon');
       const title = await icon.getAttribute('title');
-      expect(title).to.be.oneOf(PRE_INSTALLED_APPS);
+      expect(title).to.be.oneOf(PRE_PINNED_APPS);
     }
+
+    // mark login succeeded
+    loginSuccessfully = true;
   });
 
 
   it('should be able to popup apps menu', async function() {
+    if (!loginSuccessfully) {
+      this.skip();
+    }
+
     // menu should exist
     const menu = await getElement(driver, 'rs-com-launchbar-menu');
     expect(menu).to.be.an('object');
@@ -225,6 +286,10 @@ describe('test MVD login page', function() {
 
 
   it('should be able to logout', async function() {
+    if (!loginSuccessfully) {
+      this.skip();
+    }
+
     // widget should exist
     const widget = await getElement(driver, 'rs-com-launchbar-widget');
     expect(widget).to.be.an('object');

@@ -200,6 +200,13 @@ customParameters.push(credentials(
   defaultValue: 'ssh-zdt-test-image-guest',
   required: true
 ))
+// >>>>>>>> parametters for test cases
+customParameters.push(string(
+  name: 'TEST_CASE_DEBUG_INFORMATION',
+  description: 'How to show debug logging for running test cases.',
+  defaultValue: '',
+  trim: true
+))
 opts.push(parameters(customParameters))
 
 // set build properties
@@ -218,31 +225,6 @@ node ('ibm-jenkins-slave-nvm') {
       echo "Current branch is ${env.BRANCH_NAME}"
       if (isPullRequest) {
         echo "This is a pull request"
-      }
-
-      if (!params.SKIP_RESET_IMAGE && !params.SKIP_INSTALLATION) {
-        // send out notification to prepare for manual process
-        emailext body: """Job \"${env.JOB_NAME}\" build #${env.BUILD_NUMBER} has been started, and it requires manual input. For river, it usually takes 30 ~ 40 minutes to reset the image.
-
-Check detail: ${env.BUILD_URL}
-
-To manually start zD&T, please follow these steps:
-1. start SSH tunnel on VNC port 5901
-   \$ ssh -L 5901:localhost:5901 ibmsys1@river.zowe.org
-2. use vncviewer or other tools (like screen sharing) to connect to vnc
-   \$ vncviewer localhost:1
-3. from VNC Terminal command line, run command:
-   \$ /zaas1/scripts/onboot.sh
-4. go back to Jenkins job and click Continue.
-
-It may take another 10 ~ 30 minutes for z/OS and z/OSMF to start.""",
-            subject: "[Jenkins] Job \"${env.JOB_NAME}\" build #${env.BUILD_NUMBER} started",
-            recipientProviders: [
-              [$class: 'RequesterRecipientProvider'],
-              [$class: 'CulpritsRecipientProvider'],
-              [$class: 'DevelopersRecipientProvider'],
-              [$class: 'UpstreamComitterRecipientProvider']
-            ]
       }
     }
 
@@ -282,10 +264,6 @@ exit 0
 EOF"""
             }
 
-            timeout(60) {
-              input message: 'Please manually start zD&T /zaas1/scripts/onboot.sh and click on Continue...', ok: 'Continue'
-            }
-
             // wait a while before testing z/OSMF
             sleep time: 10, unit: 'MINUTES'
             // check if zD&T & z/OSMF are started
@@ -299,7 +277,7 @@ EOF"""
       parallel tasks
     }
 
-    utils.conditionalStage('install', !params.SKIP_INSTALLATION) {
+    utils.conditionalStage('install-zowe', !params.SKIP_INSTALLATION) {
       withCredentials([usernamePassword(credentialsId: params.TEST_IMAGE_GUEST_SSH_CREDENTIAL, passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
         // create INSTALL_DIR
         sh "SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} 'mkdir -p ${params.INSTALL_DIR}'"
@@ -351,6 +329,32 @@ EOF"""
         timeout(60) {
           sh "./scripts/is-website-ready.sh -r 720 -t 10 -c 20 https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOSMF_PORT}/zosmf/"
         }
+
+        // FIXME: wait more until the services are stable, otherwise UI test cases might fail randomly
+        sleep time: 30, unit: 'MINUTES'
+        // FIXME: zLux login may hang there which blocks UI test cases
+        // try a login to the zlux auth api
+        def zluxAuth = sh(
+          script: "curl -d '{\\\"username\\\":\\\"${USERNAME}\\\",\\\"password\\\":\\\"${PASSWORD}\\\"}' -H 'Content-Type: application/json' -X POST -k https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOWE_ZLUX_HTTPS_PORT}/auth",
+          returnStdout: true
+        ).trim()
+        echo "zLux login successfully:"
+        echo zluxAuth
+      }
+    }
+
+
+    stage('install-cli') {
+      ansiColor('xterm') {
+        withCredentials([usernamePassword(credentialsId: params.TEST_IMAGE_GUEST_SSH_CREDENTIAL, passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
+          // download cli
+          sh """SSHPASS=${PASSWORD} sshpass -e sftp -o BatchMode=no -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -b - -P ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
+get ${params.INSTALL_DIR}/extracted/zowe-cli-bundle.zip
+EOF"""
+          // install CLI
+          sh 'unzip zowe-cli-bundle.zip'
+          sh 'npm install -g zowe-cli-1.*.tgz'
+        }
       }
     }
 
@@ -360,14 +364,6 @@ EOF"""
         sh "npm run lint"
 
         withCredentials([usernamePassword(credentialsId: params.TEST_IMAGE_GUEST_SSH_CREDENTIAL, passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
-          // download cli
-          sh """SSHPASS=${PASSWORD} sshpass -e sftp -o BatchMode=no -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -b - -P ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
-get ${params.INSTALL_DIR}/extracted/zowe-cli-bundle.zip
-EOF"""
-          // install CLI
-          sh 'unzip zowe-cli-bundle.zip'
-          sh 'npm install -g zowe-cli-1.*.tgz'
-
           // run tests
           try {
             sh """ZOWE_ROOT_DIR=${params.ZOWE_ROOT_DIR} \
@@ -378,6 +374,7 @@ SSH_PASSWD=${PASSWORD} \
 ZOSMF_PORT=${params.ZOSMF_PORT} \
 ZOWE_ZLUX_HTTPS_PORT=${params.ZOWE_ZLUX_HTTPS_PORT} \
 ZOWE_EXPLORER_SERVER_HTTPS_PORT=${params.ZOWE_EXPLORER_SERVER_HTTPS_PORT} \
+DEBUG=${params.TEST_CASE_DEBUG_INFORMATION} \
 npm test"""
           } finally {
             // publish report
@@ -394,7 +391,6 @@ npm test"""
           }
         }
       }
-
     }
 
     stage('done') {

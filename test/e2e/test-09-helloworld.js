@@ -28,8 +28,8 @@ let driver;
 
 const APP_TO_TEST = 'Hello World';
 
-
-describe(`test ${APP_TO_TEST}`, function() {
+// this app has been removed
+describe.skip(`test ${APP_TO_TEST}`, function() {
   before('verify environment variable and load login page', async function() {
     expect(process.env.SSH_HOST, 'SSH_HOST is not defined').to.not.be.empty;
     expect(process.env.SSH_USER, 'SSH_USER is not defined').to.not.be.empty;
@@ -109,19 +109,33 @@ describe(`test ${APP_TO_TEST}`, function() {
     const response = await getElement(driver, 'textarea', appRoot);
     expect(response).to.be.an('object');
     let serverResponseText;
-    await driver.wait(
-      async function() {
-        const text = await response.getText();
-        if (text.substr(0, 19) === 'Server replied with') {
-          serverResponseText = text;
-          return true;
-        }
+    try {
+      await driver.wait(
+        async function() {
+          const text = await response.getText();
+          if (text.substr(0, 19) === 'Server replied with') {
+            serverResponseText = text;
+            return true;
+          }
 
-        await driver.sleep(300); // not too fast
-        return false;
-      },
-      DEFAULT_PAGE_LOADING_TIMEOUT,
-    );
+          await driver.sleep(300); // not too fast
+          return false;
+        },
+        DEFAULT_PAGE_LOADING_TIMEOUT,
+      );
+    } catch (e) {
+      // try to save screenshot for debug purpose
+      await driver.switchTo().defaultContent();
+      const failureSS = await saveScreenshot(driver, testName, 'server-not-respond');
+      addContext(this, failureSS);
+
+      const errName = e && e.name;
+      if (errName === 'TimeoutError') {
+        expect(errName).to.not.equal('TimeoutError');
+      } else {
+        expect(e).to.be.null;
+      }
+    }
     debug('server responded');
     expect(serverResponseText).to.include(testMessage);
 

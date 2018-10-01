@@ -170,18 +170,32 @@ describe(`test ${APP_TO_TEST}`, function() {
 
     // wait until dir content is loaded
     await driver.sleep(1000);
-    await driver.wait(
-      async() => {
-        const firstItem = await getElement(testDirFound, 'div.node ul li:nth-child(1)');
-        if (firstItem) {
-          return true;
-        }
+    try {
+      await driver.wait(
+        async() => {
+          const firstItem = await getElement(testDirFound, 'div.node ul li:nth-child(1)');
+          if (firstItem) {
+            return true;
+          }
 
-        await driver.sleep(300); // not too fast
-        return false;
-      },
-      DEFAULT_PAGE_LOADING_TIMEOUT
-    );
+          await driver.sleep(300); // not too fast
+          return false;
+        },
+        DEFAULT_PAGE_LOADING_TIMEOUT
+      );
+    } catch (e) {
+      // try to save screenshot for debug purpose
+      await driver.switchTo().defaultContent();
+      const failureSS = await saveScreenshot(driver, testName, 'load-items-failed');
+      addContext(this, failureSS);
+
+      const errName = e && e.name;
+      if (errName === 'TimeoutError') {
+        expect(errName).to.not.equal('TimeoutError');
+      } else {
+        expect(e).to.be.null;
+      }
+    }
     debug(`${DIR_TO_TEST} content list is updated`);
 
     // load children of DIR_TO_TEST
@@ -212,19 +226,33 @@ describe(`test ${APP_TO_TEST}`, function() {
     // find right panel header
     const fileContentPanelHeader = await getElement(driver, 'div.component-no-vertical-pad div.component-no-vertical-pad > div:nth-child(1)');
     expect(fileContentPanelHeader).to.be.an('object');
-    await driver.wait(
-      async() => {
-        const text = await fileContentPanelHeader.getText();
+    try {
+      await driver.wait(
+        async() => {
+          const text = await fileContentPanelHeader.getText();
 
-        if (text.indexOf(`/${DIR_TO_TEST}/${FILE_TO_TEST}`) > -1) {
-          return true;
-        }
+          if (text.indexOf(`/${DIR_TO_TEST}/${FILE_TO_TEST}`) > -1) {
+            return true;
+          }
 
-        await driver.sleep(300); // not too fast
-        return false;
-      },
-      DEFAULT_PAGE_LOADING_TIMEOUT
-    );
+          await driver.sleep(300); // not too fast
+          return false;
+        },
+        DEFAULT_PAGE_LOADING_TIMEOUT
+      );
+    } catch (e) {
+      // try to save screenshot for debug purpose
+      await driver.switchTo().defaultContent();
+      const failureSS = await saveScreenshot(driver, testName, 'load-content-failed');
+      addContext(this, failureSS);
+
+      const errName = e && e.name;
+      if (errName === 'TimeoutError') {
+        expect(errName).to.not.equal('TimeoutError');
+      } else {
+        expect(e).to.be.null;
+      }
+    }
     debug('right panel is loaded');
 
     // save screenshot

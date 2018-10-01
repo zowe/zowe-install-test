@@ -107,7 +107,7 @@ echo "[${SCRIPT_NAME}] checking md5sum ... [skipped]"
 # run temp fixes
 cd $SCRIPT_PWD
 if [ -f "temp-fixes-prereqs-image.sh" ]; then
-  . temp-fixes-prereqs-image.sh
+  (exec bash -c "$SCRIPT_PWD/temp-fixes-prereqs-image.sh")
 fi
 
 ################################################################################
@@ -115,16 +115,18 @@ fi
 # FIXME: we cannot simply restart image to bring up zD&T, waiting for v4
 # echo "[${SCRIPT_NAME}] rebooting image ..."
 # sudo shutdown -r 1
-echo "[${SCRIPT_NAME}] please manually start zD&T..."
-echo
-echo "[${SCRIPT_NAME}] to manually start, please follow these steps:"
-echo "[${SCRIPT_NAME}] 1. start SSH tunnel on VNC port 5901"
-echo "[${SCRIPT_NAME}]    $ ssh -L 5901:localhost:5901 ibmsys1@river.zowe.org"
-echo "[${SCRIPT_NAME}] 2. use vncviewer or other tools (like screen sharing) to connect to vnc"
-echo "[${SCRIPT_NAME}]    $ vncviewer localhost:1"
-echo "[${SCRIPT_NAME}] 3. from VNC Terminal command line, run command:"
-echo "[${SCRIPT_NAME}]    $ /zaas1/scripts/onboot.sh"
-echo "[${SCRIPT_NAME}] 4. go back to Jenkins job and click Continue."
+# echo "[${SCRIPT_NAME}] please manually start zD&T..."
+# echo
+# echo "[${SCRIPT_NAME}] to manually start, please follow these steps:"
+# echo "[${SCRIPT_NAME}] 1. start SSH tunnel on VNC port 5901"
+# echo "[${SCRIPT_NAME}]    $ ssh -L 5901:localhost:5901 ibmsys1@river.zowe.org"
+# echo "[${SCRIPT_NAME}] 2. use vncviewer or other tools (like screen sharing) to connect to vnc"
+# echo "[${SCRIPT_NAME}]    $ vncviewer localhost:1"
+# echo "[${SCRIPT_NAME}] 3. from VNC Terminal command line, run command:"
+# echo "[${SCRIPT_NAME}]    $ /zaas1/scripts/onboot.sh"
+# echo "[${SCRIPT_NAME}] 4. go back to Jenkins job and click Continue."
+echo "[${SCRIPT_NAME}] restarting VNC to start onboot.sh ..."
+sudo systemctl restart vncserver.service
 
 ################################################################################
 echo

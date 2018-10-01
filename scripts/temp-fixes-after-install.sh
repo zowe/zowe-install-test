@@ -52,7 +52,7 @@ fi
 # explorer JES/MVS/USS has internal host name, convert to public domain
 echo "[${SCRIPT_NAME}] checking hostname in explorer-* ..."
 ZDNT_HOSTNAME=S0W1.DAL-EBIS.IHOST.COM
-FILES_TO_UPDATE="explorer-JES explorer-USS explorer-MVS"
+FILES_TO_UPDATE="explorer-JES explorer-USS explorer-MVS api_catalog"
 for one in $FILES_TO_UPDATE; do
   ZDNT_FILE=$CI_ZOWE_ROOT_DIR/${one}/web/index.html
   echo "[${SCRIPT_NAME}]   - checking $ZDNT_FILE ..."
