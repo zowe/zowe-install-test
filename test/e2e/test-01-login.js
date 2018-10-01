@@ -16,6 +16,7 @@ const testName = path.basename(__filename, path.extname(__filename));
 
 const {
   PRE_INSTALLED_APPS,
+  PRE_PINNED_APPS,
   DEFAULT_PAGE_LOADING_TIMEOUT,
   getElements,
   getElement,
@@ -239,11 +240,11 @@ describe('test MVD login page', function() {
 
     // check we have known apps launched
     const apps = await getElements(driver, 'rs-com-launchbar-icon');
-    expect(apps).to.be.an('array').that.have.lengthOf(PRE_INSTALLED_APPS.length);
+    expect(apps).to.be.an('array').that.have.lengthOf(PRE_PINNED_APPS.length);
     for (let app of apps) {
       const icon = await getElement(app, 'div.launchbar-icon');
       const title = await icon.getAttribute('title');
-      expect(title).to.be.oneOf(PRE_INSTALLED_APPS);
+      expect(title).to.be.oneOf(PRE_PINNED_APPS);
     }
 
     // mark login succeeded

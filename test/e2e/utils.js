@@ -31,13 +31,21 @@ const PRE_INSTALLED_APPS = [
   'USS Explorer',
   'TN3270',
   'VT Terminal',
-  'IFrame',
+  'User Tasks/Workflows',
+  // 'IFrame',
   'ZOS Subsystems',
-  'Hello World',
+  'API Catalog',
+  'IFrame Sample',
+  'Angular Sample',
+  // 'Hello World',
+];
+const PRE_PINNED_APPS = [
+  'TN3270',
+  'VT Terminal',
 ];
 
-// timeout of HTTP request to Zowe services, default is 110s
-const DEFAULT_PAGE_LOADING_TIMEOUT = 110000;
+// timeout of HTTP request to Zowe services, default is 3m
+const DEFAULT_PAGE_LOADING_TIMEOUT = 180000;
 // where to save screenshots
 const DEFAULT_SCREENSHOT_PATH = './reports';
 // screenshots unqiue index
@@ -137,7 +145,7 @@ const getDefaultDriver = async(browserType) => {
     options.addArguments('--no-sandbox', '--disable-gpu', '--allow-insecure-localhost', '--disable-dev-shm-usage');
   }
   // use headless mode
-  options.headless();
+  // options.headless();
 
   // define Capabilities
   const capabilities = browserType === 'chrome' ? Capabilities.chrome() : Capabilities.firefox();
@@ -468,12 +476,30 @@ const waitUntilIframe = async(driver, iframeSelector, parent) => {
 const launchApp = async(driver, appName) => {
   await driver.switchTo().defaultContent();
 
+  // find start icon
+  const menu = await getElement(driver, 'rs-com-launchbar-menu');
+  const menuIcon = await getElement(menu, '.launchbar-icon');
+
+  // popup menu
+  await menuIcon.click();
+  await driver.sleep(1000);
+
   // find the app icon
-  const app = await driver.findElements(By.css(`rs-com-launchbar rs-com-launchbar-icon div[title="${appName}"]`));
-  expect(app).to.be.an('array').that.have.lengthOf(1);
+  const popup = await getElement(driver, 'rs-com-launchbar-menu .launch-widget-popup');
+  const menuItems = await getElements(popup, '.launch-widget-row');
+  let app;
+  for (let item of menuItems) {
+    const itemTitle = await getElement(item, 'p');
+    const text = await itemTitle.getText();
+    if (text === appName) {
+      app = item;
+      break;
+    }
+  }
+  expect(app).to.not.be.null;
 
   // start app
-  await app[0].click();
+  await app.click();
 };
 
 /**
@@ -556,6 +582,7 @@ const saveScreenshotWithIframeAppContext = async(testcase, driver, testScript, s
 // export constants and methods
 module.exports = {
   PRE_INSTALLED_APPS,
+  PRE_PINNED_APPS,
   DEFAULT_PAGE_LOADING_TIMEOUT,
   DEFAULT_SCREENSHOT_PATH,
   MVD_IFRAME_APP_CONTEXT,

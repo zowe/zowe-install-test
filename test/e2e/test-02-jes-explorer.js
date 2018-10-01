@@ -313,7 +313,7 @@ describe(`test ${APP_TO_TEST}`, function() {
           }
 
           if (isHeaderReady) {
-            const content = await getElement(driver, '#node-viewer-content code');
+            const content = await getElement(driver, '#embeddedEditor');
             if (content) {
               const text = await content.getAttribute('innerHTML');
 
