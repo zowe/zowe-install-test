@@ -145,7 +145,7 @@ const getDefaultDriver = async(browserType) => {
     options.addArguments('--no-sandbox', '--disable-gpu', '--allow-insecure-localhost', '--disable-dev-shm-usage');
   }
   // use headless mode
-  // options.headless();
+  options.headless();
 
   // define Capabilities
   const capabilities = browserType === 'chrome' ? Capabilities.chrome() : Capabilities.firefox();
