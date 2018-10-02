@@ -353,7 +353,7 @@ get ${params.INSTALL_DIR}/extracted/zowe-cli-bundle.zip
 EOF"""
           // install CLI
           sh 'unzip zowe-cli-bundle.zip'
-          sh 'npm install -g zowe-cli-1.*.tgz'
+          sh 'npm install -g zowe-cli-*.tgz'
         }
       }
     }
