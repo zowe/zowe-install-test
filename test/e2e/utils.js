@@ -35,7 +35,9 @@ const PRE_INSTALLED_APPS = [
   // 'IFrame',
   'ZOS Subsystems',
   'API Catalog',
+  'Editor',
   'IFrame Sample',
+  'React Sample',
   'Angular Sample',
   // 'Hello World',
 ];
