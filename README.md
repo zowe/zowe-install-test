@@ -1,6 +1,25 @@
 # Zowe Install Test
 
-Perform Zowe installation and run smoke/integration tests.
+Perform Zowe installation and smoke tests.
+
+Contents of this readme:
+
+- [Programming Language And Main Testing Method](#programming-language-and-main-testing-method)
+- [Run Test Cases On Your Local](#run-test-cases-on-your-local)
+  * [Prepare NPM Packages](#prepare-npm-packages)
+  * [Requirements For E2E UI Test](#requirements-for-e2e-ui-test)
+  * [Start Test](#start-test)
+- [General Guideline For Adding Test Cases](#general-guideline-for-adding-test-cases)
+  * [Test Cases Directory Structure](#test-cases-directory-structure)
+  * [Output Debugging Information](#output-debugging-information)
+  * [Add Extra Information To HTML Result](#add-extra-information-to-html-result)
+  * [Save Screenshot And Add To HTML Report](#save-screenshot-and-add-to-html-report)
+- [Add More Test Cases](#add-more-test-cases)
+  * [Add CLI Test Cases](#add-cli-test-cases)
+  * [Add API Test Cases](#add-api-test-cases)
+  * [Add E2E UI Test Cases](#add-e2e-ui-test-cases)
+  * [Add Installation (SSH) Test Cases](#add-installation-ssh-test-cases)
+
 
 ## Programming Language And Main Testing Method
 
@@ -157,7 +176,9 @@ Then switch back to IFrame Application content by locating the application iFram
   await switchToIframeAppContext(driver, appName, contexts);
 ```
 
-## Add CLI Test Cases
+## Add More Test Cases
+
+### Add CLI Test Cases
 
 This section will provide brief example how to add new CLI test cases.
 
@@ -199,7 +220,7 @@ describe('my test suite', function() {
 });
 ```
 
-## Add API Test Cases
+### Add API Test Cases
 
 This section will provide brief example how to add new API test cases. Below examples uses [axios](https://www.npmjs.com/package/axios) to make HTTP requests.
 
@@ -246,7 +267,7 @@ describe('my test suite', function() {
 });
 ```
 
-## Add E2E UI Test Cases
+### Add E2E UI Test Cases
 
 This section will provide brief example how to add new E2E UI test cases.
 
@@ -284,11 +305,11 @@ let driver;
 const APP_TO_TEST = 'JES Explorer';
 
 describe('my test suite', function() {
-  before('prepare wendriver and login to mvd', async function() {
+  before('prepare webdriver and login to mvd', async function() {
     // init webdriver
     driver = await getDefaultDriver();
 
-    // load MVD login page
+    // login to MVD
     await loginMVD(
       driver,
       'https://my.host-name.com:zlux-port/',
@@ -310,7 +331,22 @@ describe('my test suite', function() {
 });
 ```
 
-## Add Installation (SSH) Test Cases
+If you want to see the browser, you will need to disable the headless mode and let the browser wait for you.
+
+To disable headless mode, you can find the line `options.headless();` in `test/e2e/utils.js` `getDefaultDriver` function and comment it out. With this change, you can see the browser window popout from your computer when you start the e2e tests.
+
+Then you can hold the test case to make it wait for you.
+
+```javascript
+  // ...
+
+  // hold my test case for 10 minutes so I can inspect on browser window
+  await driver.sleep(10 * 60 * 1000);
+
+  // ...
+```
+
+### Add Installation (SSH) Test Cases
 
 This section will provide brief example how to add new test cases to run SSH command on testing server.
 
