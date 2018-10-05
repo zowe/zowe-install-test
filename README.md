@@ -7,7 +7,7 @@ Contents of this readme:
 - [Programming Language And Main Testing Method](#programming-language-and-main-testing-method)
 - [Run Test Cases On Your Local](#run-test-cases-on-your-local)
   * [Prepare NPM Packages](#prepare-npm-packages)
-  * [Requirements For E2E UI Test](#requirements-for-e2e-ui-test)
+  * [Prerequisite For E2E UI Test](#prerequisite-for-e2e-ui-test)
   * [Start Test](#start-test)
 - [General Guideline For Adding Test Cases](#general-guideline-for-adding-test-cases)
   * [Test Cases Directory Structure](#test-cases-directory-structure)
@@ -19,6 +19,7 @@ Contents of this readme:
   * [Add API Test Cases](#add-api-test-cases)
   * [Add E2E UI Test Cases](#add-e2e-ui-test-cases)
   * [Add Installation (SSH) Test Cases](#add-installation-ssh-test-cases)
+- [Troubleshooting](#troubleshooting)
 
 
 ## Programming Language And Main Testing Method
@@ -36,11 +37,11 @@ _Please note, currently package.json doesn't include *Babel JS*, which means all
 
 Run `npm install` to install dependencies.
 
-### Requirements For E2E UI Test
+### Prerequisite For E2E UI Test
 
 By default, E2E UI test cases are launched by Selenium with Firefox driver. If you run test cases on your local, you need Firefox installed.
 
-The existing test cases are tested on Firefox v61.0.2 which is pre-installed in Jenkins Docker Slaves. I also tested them on v60.2.1 manually.
+The existing test cases are tested on Firefox v61.0.2 which is pre-installed in Jenkins Docker Slaves. In theory, the e2e test cases should be able to run on Firefox v53 and above.
 
 ### Start Test
 
@@ -387,4 +388,61 @@ describe('my test suite', function() {
       });
   });
 });
+```
+
+## Troubleshooting
+
+### Error 'ZOWE_ROOT_DIR' is not recognized as an internal or external command
+
+When you start test on Windows, you may see this error: `'ZOWE_ROOT_DIR' is not recognized as an internal or external command, operable program or batch file.`
+
+**Solution:**
+
+Run `npm install -g cross-env` and then run command
+
+```
+cross-env ZOWE_ROOT_DIR=/path/to/zowe SSH_HOST=test-server SSH_PORT=12022 SSH_USER=********* SSH_PASSWD=********* ZOSMF_PORT=10443 ZOWE_ZLUX_HTTPS_PORT=8544 ZOWE_EXPLORER_SERVER_HTTPS_PORT=7443 npm test
+```
+
+to start test.
+
+### Error: The geckodriver.exe executable could not be found on the current PATH
+
+You may see this error if you run e2e test cases on Windows:
+
+```
+   Error: The geckodriver.exe executable could not be found on the current PATH. Please download the latest version from https://github.com/mozilla/geckodriver/releases/ and ensure it can be found on your PATH.
+    at findGeckoDriver (node_modules\selenium-webdriver\firefox.js:427:11)
+    at new ServiceBuilder (node_modules\selenium-webdriver\firefox.js:516:22)
+    at getDefaultDriver (test\e2e\utils.js:128:19)
+    at Context.<anonymous> (test\e2e\test-01-login.js:41:20)
+```
+
+This is because it cannot find `geckodriver.exe`. This file is already installed under `node_modules\geckdriver`.
+
+**Solution:**
+
+Run this command to add it to `PATH`: `set "PATH=.\node_modules\geckodriver;%PATH%"`.
+
+### Error: SessionNotCreatedError: Unable to find a matching set of capabilities
+
+You may receive this error when you run e2e test cases:
+
+```
+   SessionNotCreatedError: Unable to find a matching set of capabilities
+    at Object.throwDecodedError (node_modules\selenium-webdriver\lib\error.js:550:15)
+    at parseHttpResponse (node_modules\selenium-webdriver\lib\http.js:542:13)
+    at Executor.execute (node_modules\selenium-webdriver\lib\http.js:468:26)
+    at <anonymous>
+    at process._tickCallback (internal/process/next_tick.js:189:7)
+```
+
+This could be caused by incompatible GechoDriver and Firefox. Here is more detail explanation on [Marionette and GeckoDriver](https://stackoverflow.com/a/43920453). You may find these lines in `test/e2e/utils.js` and try your combinations by changing binary path and marionette option.
+
+```javascript
+  if (browserType === 'firefox') {
+    // options.setBinary('/Applications/IBM Firefox.app/Contents/MacOS/firefox');
+    // options.setPreference('marionette', true)
+    //   .setPreference('marionette.logging', 'ALL');
+  } else if (browserType === 'chrome') {
 ```
