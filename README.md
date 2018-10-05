@@ -122,7 +122,7 @@ it('my test case', async function() {
 
 ### Save Screenshot And Add To HTML Report
 
-There is helper function `saveScreenshot` located in `test/e2e/utils.js`. You can use this function to save screenshot and add to HTML Report. For example:
+There is helper function `saveScreenshot` located in [test/e2e/utils.js](test/e2e/utils.js). You can use this function to save screenshot and add to HTML Report. For example:
 
 ```javascript
 // declare mochawesome/addContext
@@ -334,7 +334,7 @@ describe('my test suite', function() {
 
 If you want to see the browser, you will need to disable the headless mode and let the browser wait for you.
 
-To disable headless mode, you can find the line `options.headless();` in `test/e2e/utils.js` `getDefaultDriver` function and comment it out. With this change, you can see the browser window popout from your computer when you start the e2e tests.
+To disable headless mode, you can find the line `options.headless();` in [test/e2e/utils.js](test/e2e/utils.js) `getDefaultDriver` function and comment it out. With this change, you can see the browser window popout from your computer when you start the e2e tests.
 
 Then you can hold the test case to make it wait for you.
 
@@ -437,7 +437,7 @@ You may receive this error when you run e2e test cases:
     at process._tickCallback (internal/process/next_tick.js:189:7)
 ```
 
-This could be caused by incompatible GechoDriver and Firefox. Here is more detail explanation on [Marionette and GeckoDriver](https://stackoverflow.com/a/43920453). You may find these lines in `test/e2e/utils.js` and try your combinations by changing binary path and marionette option.
+This could be caused by incompatible GechoDriver and Firefox. Here is more detail explanation on [Marionette and GeckoDriver](https://stackoverflow.com/a/43920453). You may find these lines in [test/e2e/utils.js](test/e2e/utils.js) and try your combinations by changing binary path and marionette option.
 
 ```javascript
   if (browserType === 'firefox') {
