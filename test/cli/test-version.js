@@ -16,7 +16,7 @@ const exec = util.promisify(require('child_process').exec);
 
 describe('cli version', function() {
   it('command should return version without error', async function() {
-    const result = await exec('bright --version');
+    const result = await exec('zowe --version');
 
     debug('result:', result);
     addContext(this, {

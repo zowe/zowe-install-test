@@ -24,7 +24,12 @@ describe('cli list jobs of IZU*', function() {
     expect(process.env.SSH_USER, 'SSH_USER is not defined').to.not.be.empty;
     expect(process.env.SSH_PASSWD, 'SSH_PASSWD is not defined').to.not.be.empty;
 
-    const result = await createDefaultZOSMFProfile();
+    const result = await createDefaultZOSMFProfile(
+      process.env.SSH_HOST,
+      process.env.ZOSMF_PORT,
+      process.env.SSH_USER,
+      process.env.SSH_PASSWD
+    );
 
     debug('result:', result);
 
@@ -36,7 +41,7 @@ describe('cli list jobs of IZU*', function() {
   });
 
   it(`should have an active job ${ZOWE_JOB_NAME}`, async function() {
-    const result = await execZoweCli(`bright zos-jobs list jobs --owner IZU* --response-format-json --zosmf-profile ${defaultZOSMFProfileName}`);
+    const result = await execZoweCli(`zowe zos-jobs list jobs --owner IZU* --response-format-json --zosmf-profile ${defaultZOSMFProfileName}`);
 
     debug('result:', result);
     addContext(this, {
@@ -66,7 +71,7 @@ describe('cli list jobs of IZU*', function() {
       return;
     }
 
-    const result = await execZoweCli(`bright zos-jobs view job-status-by-jobid ${testJobId} --response-format-json --zosmf-profile ${defaultZOSMFProfileName}`);
+    const result = await execZoweCli(`zowe zos-jobs view job-status-by-jobid ${testJobId} --response-format-json --zosmf-profile ${defaultZOSMFProfileName}`);
 
     debug('result:', result);
     addContext(this, {
