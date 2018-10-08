@@ -28,7 +28,12 @@ describe('cli list data sets of tcpip.*', function() {
     expect(process.env.SSH_USER, 'SSH_USER is not defined').to.not.be.empty;
     expect(process.env.SSH_PASSWD, 'SSH_PASSWD is not defined').to.not.be.empty;
 
-    const result = await createDefaultZOSMFProfile();
+    const result = await createDefaultZOSMFProfile(
+      process.env.SSH_HOST,
+      process.env.ZOSMF_PORT,
+      process.env.SSH_USER,
+      process.env.SSH_PASSWD
+    );
 
     debug('result:', result);
 
@@ -40,7 +45,7 @@ describe('cli list data sets of tcpip.*', function() {
   });
 
   it(`should have an data set of ${TCPIP_DATA_DSNAME}`, async function() {
-    const result = await execZoweCli(`bright zos-files list data-set "tcpip.*" --response-format-json --zosmf-profile ${defaultZOSMFProfileName}`);
+    const result = await execZoweCli(`zowe zos-files list data-set "tcpip.*" --response-format-json --zosmf-profile ${defaultZOSMFProfileName}`);
 
     debug('result:', result);
     addContext(this, {
@@ -66,7 +71,7 @@ describe('cli list data sets of tcpip.*', function() {
 
   it('should be able to download file', async function() {
     const targetFile = '.tmp/' + TCPIP_DATA_DSNAME.replace(/\./g, '-') + '.txt';
-    const result = await execZoweCli(`bright zos-files download data-set ${TCPIP_DATA_DSNAME} --file "${targetFile}" --response-format-json --zosmf-profile ${defaultZOSMFProfileName}`);
+    const result = await execZoweCli(`zowe zos-files download data-set ${TCPIP_DATA_DSNAME} --file "${targetFile}" --response-format-json --zosmf-profile ${defaultZOSMFProfileName}`);
 
     debug('result:', result);
     addContext(this, {

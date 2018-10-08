@@ -20,7 +20,12 @@ describe('cli check zosmf status', function() {
     expect(process.env.SSH_USER, 'SSH_USER is not defined').to.not.be.empty;
     expect(process.env.SSH_PASSWD, 'SSH_PASSWD is not defined').to.not.be.empty;
 
-    const result = await createDefaultZOSMFProfile();
+    const result = await createDefaultZOSMFProfile(
+      process.env.SSH_HOST,
+      process.env.ZOSMF_PORT,
+      process.env.SSH_USER,
+      process.env.SSH_PASSWD
+    );
 
     debug('result:', result);
 
@@ -32,7 +37,7 @@ describe('cli check zosmf status', function() {
   });
 
   it('should be able to return zosmf status', async function() {
-    const result = await execZoweCli(`bright zosmf check status --zosmf-profile ${defaultZOSMFProfileName}`);
+    const result = await execZoweCli(`zowe zosmf check status --zosmf-profile ${defaultZOSMFProfileName}`);
 
     debug('result:', result);
     addContext(this, {

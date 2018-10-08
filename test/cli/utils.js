@@ -11,7 +11,6 @@
 const fs = require('fs');
 const path = require('path');
 const debug = require('debug')('test:cli:utils');
-const url = require('url');
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
 const writeFile = util.promisify(fs.writeFile);
@@ -82,24 +81,28 @@ const defaultZOSMFProfileName = 'zowe-install-test';
 /**
  * Create z/OSMF CLI profile
  *
+ * @param  {String} hostname  z/OSMF hostname
+ * @param  {String} port      z/OSMF port
+ * @param  {String} username  username
+ * @param  {String} password  password
+ * @param  {String} profile   profile name, optional
  * @return {Object}         exec result object with stdout, stderr properties
  */
-const createDefaultZOSMFProfile = async() => {
-  const zosmfUrl = url.parse(`https://${process.env.SSH_HOST}:${process.env.ZOSMF_PORT}/zosmf/`);
+const createDefaultZOSMFProfile = async(hostname, port, username, password, profile) => {
   const command = [
-    'bright',
+    'zowe',
     'profiles',
     'create',
     'zosmf-profile',
-    defaultZOSMFProfileName,
+    profile || defaultZOSMFProfileName,
     '--host',
-    zosmfUrl.hostname,
+    hostname,
     '--port',
-    zosmfUrl.port,
+    port,
     '--user',
-    process.env.SSH_USER,
+    username,
     '--password',
-    process.env.SSH_PASSWD,
+    password,
     '--reject-unauthorized',
     'false',
     '--overwrite',
