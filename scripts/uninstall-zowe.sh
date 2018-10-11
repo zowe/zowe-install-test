@@ -21,6 +21,8 @@
 SCRIPT_NAME=$(basename "$0")
 DEFAULT_CI_ZOWE_ROOT_DIR=/zaas1/zowe
 CI_ZOWE_ROOT_DIR=$DEFAULT_CI_ZOWE_ROOT_DIR
+PROFILE=~/.profile
+ZOWESVR_NAME=ZOWESVR
 
 # allow to exit by ctrl+c
 function finish {
@@ -159,10 +161,58 @@ echo "[${SCRIPT_NAME}] stopping Zowe ..."
 (exec "${CI_ZOWE_ROOT_DIR}/scripts/zowe-stop.sh")
 echo
 
-# removing service
-echo "[${SCRIPT_NAME}] removing JCL ..."
-run_script_with_timeout "tsocmd 'RDELETE STARTED (ZOWESVR.*)'" 10
-run_script_with_timeout "tsocmd 'SETR RACLIST(STARTED) REFRESH'" 10
+# removing environment viarables from .profile
+echo "[${SCRIPT_NAME}] cleaning $PROFILE ..."
+echo "[${SCRIPT_NAME}]   - before cleaning:"
+cat "${PROFILE}"
+echo "[${SCRIPT_NAME}]   -----------------"
+echo
+sed -E '/export +ZOWE_[^=]+=/d' "${PROFILE}" > "${PROFILE}.tmp" && mv "${PROFILE}.tmp" "${PROFILE}"
+echo "[${SCRIPT_NAME}]   - after cleaning:"
+cat "${PROFILE}"
+echo "[${SCRIPT_NAME}]   -----------------"
+echo
+
+# listing ZOWE_ environment variables
+echo "[${SCRIPT_NAME}] active ZOWE_* variables ..."
+ENV_VARS=$(env | grep ZOWE_ | awk -F= '{print $1}')
+for one in $ENV_VARS; do
+  echo "[${SCRIPT_NAME}]   - $one"
+done
+echo
+
+# removing ZOWESVR
+echo "[${SCRIPT_NAME}] deleting ${ZOWESVR_NAME} PROC ..."
+if [ ! -f "${CI_ZOWE_ROOT_DIR}/scripts/internal/opercmd" ]; then
+  echo "[${SCRIPT_NAME}][error] opercmd doesn't exist."
+  exit 1;
+fi
+# make sure profile noprefix
+export TSOPROFILE="noprefix"
+tsocmd profile noprefix
+# listing all proclibs and members
+FOUND_ZOWESVR_AT=
+procs=$("${CI_ZOWE_ROOT_DIR}/scripts/internal/opercmd" '$d proclib' | grep 'DSNAME=.*\.PROCLIB' | sed 's/.*DSNAME=\(.*\)\.PROCLIB.*/\1.PROCLIB/')
+for proclib in $procs
+do
+  echo "[${SCRIPT_NAME}] - finding in $proclib ..."
+  members=$(tsocmd listds "${proclib}" members | sed -e '1,/--MEMBERS--/d')
+  for member in $members
+  do
+    echo "[${SCRIPT_NAME}]   - ${member}"
+    if [ "${member}" = "${ZOWESVR_NAME}" ]; then
+      FOUND_ZOWESVR_AT=$proclib
+      break 2
+    fi
+  done
+done
+# do we find ZOWESVR?
+if [ -z "$FOUND_ZOWESVR_AT" ]; then
+  echo "[${SCRIPT_NAME}][warn] cannot find ${ZOWESVR_NAME} in PROCLIBs, skipped."
+else
+  echo "[${SCRIPT_NAME}] found ${ZOWESVR_NAME} in ${FOUND_ZOWESVR_AT}, deleting ..."
+  run_script_with_timeout "tsocmd DELETE '${FOUND_ZOWESVR_AT}(ZOWESVR)'" 10
+fi
 echo
 
 # removing folder
