@@ -141,26 +141,49 @@ describe(`test ${APP_TO_TEST}`, function() {
     debug('filter button clicked');
 
     // wait for results
-    await waitUntilElementIsGone(driver, 'div[mode=indeterminate]', treeContent);
-    debug('page reloaded');
+    try {
+      await driver.wait(
+        async() => {
+          const items = await getElements(treeContent, 'div.node ul li');
+          expect(items).to.be.an('array').that.have.lengthOf.above(0);
+          debug(`found ${items.length} of menu items`);
+          for (let i in items) {
+            const label = await getElement(items[i], '.node-label');
+            if (label) {
+              const text = await label.getText();
+              if (text === ZOWE_JOB_NAME) {
+                findZoweJob = parseInt(i, 10);
+                break;
+              }
+            }
+          }
+          if (findZoweJob > -1) {
+            return true;
+          }
+
+          await driver.sleep(300); // not too fast
+          return false;
+        },
+        DEFAULT_PAGE_LOADING_TIMEOUT
+      );
+    } catch (e) {
+      // try to save screenshot for debug purpose
+      await driver.switchTo().defaultContent();
+      const failureSS = await saveScreenshot(driver, testName, 'load-zowejob-failed');
+      addContext(this, failureSS);
+
+      const errName = e && e.name;
+      if (errName === 'TimeoutError') {
+        expect(errName).to.not.equal('TimeoutError');
+      } else {
+        expect(e).to.be.null;
+      }
+    }
 
     // save screenshot
     await saveScreenshotWithIframeAppContext(this, driver, testName, 'zowe-job-loaded', APP_TO_TEST, MVD_ATLAS_APP_CONTEXT);
     treeContent = await waitUntilElement(driver, MVD_EXPLORER_TREE_SECTION);
 
-    const items = await getElements(treeContent, 'div.node ul li');
-    expect(items).to.be.an('array').that.have.lengthOf.above(0);
-    debug(`found ${items.length} of menu items`);
-    for (let i in items) {
-      const label = await getElement(items[i], '.node-label');
-      if (label) {
-        const text = await label.getText();
-        if (text === ZOWE_JOB_NAME) {
-          findZoweJob = parseInt(i, 10);
-          break;
-        }
-      }
-    }
     expect(findZoweJob).to.be.above(-1);
     debug(`found ${ZOWE_JOB_NAME} at ${findZoweJob}`);
   });
