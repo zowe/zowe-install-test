@@ -57,6 +57,8 @@ let SCREENSHOT_FILECOUNT = 0;
 const MVD_IFRAME_APP_CONTEXT = ['rs-com-mvd-iframe-component > iframe'];
 // css selector to find MVD Atlas iframe app
 const MVD_ATLAS_APP_CONTEXT = ['rs-com-mvd-iframe-component > iframe', 'iframe#atlasIframe'];
+// css selector to find MVD iframe app content
+const MVD_IFRAME_APP_CONTENT = ['rs-com-mvd-iframe-component > iframe', 'iframe#zluxIframe'];
 
 /**
  * Get unqiue screen shot image name
@@ -140,7 +142,7 @@ const getDefaultDriver = async(browserType) => {
   if (browserType === 'firefox') {
     // options.setBinary('/Applications/IBM Firefox.app/Contents/MacOS/firefox');
     // options.setPreference('marionette', true)
-    //   .setPreference('marionette.logging', 'ALL');
+    // .setPreference('marionette.logging', 'ALL');
   } else if (browserType === 'chrome') {
     // options.setChromeBinaryPath('/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary');
     options.setChromeLogFile('./logs/chrome-options.log');
@@ -589,6 +591,7 @@ module.exports = {
   DEFAULT_SCREENSHOT_PATH,
   MVD_IFRAME_APP_CONTEXT,
   MVD_ATLAS_APP_CONTEXT,
+  MVD_IFRAME_APP_CONTENT,
 
   saveScreenshot,
   getDefaultDriver,
