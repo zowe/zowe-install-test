@@ -140,13 +140,14 @@ const getDefaultDriver = async(browserType) => {
   const options = new browser.Options()
     .setLoggingPrefs(loggingPrefs);
   if (browserType === 'firefox') {
+    options.setPreference('dom.disable_beforeunload', true);
     // options.setBinary('/Applications/IBM Firefox.app/Contents/MacOS/firefox');
     // options.setPreference('marionette', true)
     // .setPreference('marionette.logging', 'ALL');
   } else if (browserType === 'chrome') {
     // options.setChromeBinaryPath('/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary');
     options.setChromeLogFile('./logs/chrome-options.log');
-    options.addArguments('--no-sandbox', '--disable-gpu', '--allow-insecure-localhost', '--disable-dev-shm-usage');
+    options.addArguments('--no-sandbox', '--disable-gpu', '--allow-insecure-localhost', '--disable-dev-shm-usage', '--disable-popup-blocking');
   }
   // use headless mode
   options.headless();
