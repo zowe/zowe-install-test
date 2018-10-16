@@ -24,14 +24,14 @@ describe('test explorer server zos api', function() {
     expect(process.env.SSH_HOST, 'SSH_HOST is not defined').to.not.be.empty;
     expect(process.env.SSH_USER, 'SSH_USER is not defined').to.not.be.empty;
     expect(process.env.SSH_PASSWD, 'SSH_PASSWD is not defined').to.not.be.empty;
-    expect(process.env.ZOWE_GATEWAY_PORT, 'ZOWE_GATEWAY_PORT is not defined').to.not.be.empty;
+    expect(process.env.CI_APIM_GATEWAY_PORT, 'CI_APIM_GATEWAY_PORT is not defined').to.not.be.empty;
 
     REQ = axios.create({
-      baseURL: `https://${process.env.SSH_HOST}:${process.env.ZOWE_GATEWAY_PORT}`,
+      baseURL: `https://${process.env.SSH_HOST}:${process.env.CI_APIM_GATEWAY_PORT}`,
       timeout: 30000,
       headers: {'X-CSRF-ZOSMF-HEADER': ''}
     });
-    debug(`Explorer server URL: https://${process.env.SSH_HOST}:${process.env.ZOWE_GATEWAY_PORT}`);
+    debug(`Explorer server URL: https://${process.env.SSH_HOST}:${process.env.CI_APIM_GATEWAY_PORT}`);
   });
 
   it('should be able to get z/OS Info via the gateway port and endpoint (/api/v1/zosmf/info)', function() {
