@@ -93,12 +93,12 @@ describe('test explorer server docs', function() {
         expect(res.data).to.be.an('object');
         expect(res.data).to.nested.include({
           'swagger': '2.0',
-          'x-ibm-services[0]': '/Atlas',
+          'x-ibm-services[0]': '/api/v1',
         });
-        expect(res.data).to.have.nested.property('paths./Atlas/api/system/version');
-        expect(res.data).to.have.nested.property('paths./Atlas/api/jobs');
-        expect(res.data).to.have.nested.property('paths./Atlas/api/datasets/{filter}');
-        expect(res.data).to.have.nested.property('paths./Atlas/api/uss/files');
+        expect(res.data).to.have.nested.property('paths./api/v1/api/system/version');
+        expect(res.data).to.have.nested.property('paths./api/v1/api/jobs');
+        expect(res.data).to.have.nested.property('paths./api/v1/api/datasets/{filter}');
+        expect(res.data).to.have.nested.property('paths./api/v1/api/uss/files');
       });
   });
 
