@@ -46,7 +46,7 @@ describe('test explorer server uss files api', function() {
 
     const req = {
       method: 'get',
-      url: '/Atlas/api/uss/files/' + encodeURIComponent(testDir + '/' + DIR_TO_TEST),
+      url: '/api/v1/api/uss/files/' + encodeURIComponent(testDir + '/' + DIR_TO_TEST),
       auth: {
         username,
         password,
@@ -81,7 +81,7 @@ describe('test explorer server uss files api', function() {
 
     const req = {
       method: 'get',
-      url: '/Atlas/api/uss/files/' + encodeURIComponent(testDir + '/' + DIR_TO_TEST + '/' + FILE_TO_TEST) + '/content',
+      url: '/api/v1/api/uss/files/' + encodeURIComponent(testDir + '/' + DIR_TO_TEST + '/' + FILE_TO_TEST) + '/content',
       auth: {
         username,
         password,
