@@ -95,10 +95,10 @@ describe('test explorer server docs', function() {
           'swagger': '2.0',
           'x-ibm-services[0]': '/api/v1',
         });
-        expect(res.data).to.have.nested.property('paths./api/v1/api/system/version');
-        expect(res.data).to.have.nested.property('paths./api/v1/api/jobs');
-        expect(res.data).to.have.nested.property('paths./api/v1/api/datasets/{filter}');
-        expect(res.data).to.have.nested.property('paths./api/v1/api/uss/files');
+        expect(res.data).to.have.nested.property('paths./api/v1/system/version');
+        expect(res.data).to.have.nested.property('paths./api/v1/jobs');
+        expect(res.data).to.have.nested.property('paths./api/v1/datasets/{filter}');
+        expect(res.data).to.have.nested.property('paths./api/v1/uss/files');
       });
   });
 
