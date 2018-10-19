@@ -35,12 +35,12 @@ describe('test explorer server zos api', function() {
     debug(`Explorer server URL: https://${process.env.SSH_HOST}:${process.env.ZOWE_EXPLORER_SERVER_HTTPS_PORT}`);
   });
 
-  it('should be able to get z/OS PARMLIB (/api/v1/api/zos/parmlib)', function() {
+  it('should be able to get z/OS PARMLIB (/api/v1/zos/parmlib)', function() {
     const _this = this;
 
     const req = {
       method: 'get',
-      url: '/api/v1/api/zos/parmlib',
+      url: '/api/v1/zos/parmlib',
       auth: {
         username,
         password,
@@ -63,12 +63,12 @@ describe('test explorer server zos api', function() {
       });
   });
 
-  it('should be able to get z/OS SYSPLEX (/api/v1/api/zos/sysplex)', function() {
+  it('should be able to get z/OS SYSPLEX (/api/v1/zos/sysplex)', function() {
     const _this = this;
 
     const req = {
       method: 'get',
-      url: '/api/v1/api/zos/sysplex',
+      url: '/api/v1/zos/sysplex',
       auth: {
         username,
         password,
@@ -92,12 +92,12 @@ describe('test explorer server zos api', function() {
       });
   });
 
-  it('should be able to get z/OS username (/api/v1/api/zos/username)', function() {
+  it('should be able to get z/OS username (/api/v1/zos/username)', function() {
     const _this = this;
 
     const req = {
       method: 'get',
-      url: '/api/v1/api/zos/username',
+      url: '/api/v1/zos/username',
       auth: {
         username,
         password,
