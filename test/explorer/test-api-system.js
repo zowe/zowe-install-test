@@ -35,12 +35,12 @@ describe('test explorer server system api', function() {
     debug(`Explorer server URL: https://${process.env.SSH_HOST}:${process.env.ZOWE_EXPLORER_SERVER_HTTPS_PORT}`);
   });
 
-  it('should be able to get system version (/Atlas/api/system/version)', function() {
+  it('should be able to get system version (/api/v1/system/version)', function() {
     const _this = this;
 
     const req = {
       method: 'get',
-      url: '/Atlas/api/system/version',
+      url: '/api/v1/system/version',
       auth: {
         username,
         password,

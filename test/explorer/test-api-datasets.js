@@ -42,7 +42,7 @@ describe('test explorer server datasets api', function() {
 
     const req = {
       method: 'get',
-      url: '/Atlas/api/datasets/' + encodeURIComponent(DS_PATTERN_TO_TEST),
+      url: '/api/v1/datasets/' + encodeURIComponent(DS_PATTERN_TO_TEST),
       auth: {
         username,
         password,
@@ -70,7 +70,7 @@ describe('test explorer server datasets api', function() {
 
     const req = {
       method: 'get',
-      url: '/Atlas/api/datasets/' + encodeURIComponent(DS_TO_TEST) + '/content',
+      url: '/api/v1/datasets/' + encodeURIComponent(DS_TO_TEST) + '/content',
       auth: {
         username,
         password,

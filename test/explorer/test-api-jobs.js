@@ -42,7 +42,7 @@ describe('test explorer server jobs api', function() {
 
     const req = {
       method: 'get',
-      url: '/Atlas/api/jobs',
+      url: '/api/v1/jobs',
       params: {
         prefix: 'ZOWE*',
         owner: '*'
