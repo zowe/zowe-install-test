@@ -35,7 +35,7 @@ describe('test MVD login page', function() {
     expect(process.env.SSH_HOST, 'SSH_HOST is not defined').to.not.be.empty;
     expect(process.env.SSH_USER, 'SSH_USER is not defined').to.not.be.empty;
     expect(process.env.SSH_PASSWD, 'SSH_PASSWD is not defined').to.not.be.empty;
-    expect(process.env.ZOWE_ZLUX_HTTPS_PORT, 'ZOWE_ZLUX_HTTPS_PORT is not defined').to.not.be.empty;
+    expect(process.env.CI_ZLUX_HTTPS_PORT, 'CI_ZLUX_HTTPS_PORT is not defined').to.not.be.empty;
 
     // init webdriver
     driver = await getDefaultDriver();
@@ -43,7 +43,7 @@ describe('test MVD login page', function() {
 
     // load MVD login page
     debug('loading login page');
-    await driver.get(`https://${process.env.SSH_HOST}:${process.env.ZOWE_ZLUX_HTTPS_PORT}/`);
+    await driver.get(`https://${process.env.SSH_HOST}:${process.env.CI_ZLUX_HTTPS_PORT}/`);
     try {
       await driver.wait(
         async() => {

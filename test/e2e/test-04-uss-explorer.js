@@ -49,8 +49,8 @@ describe(`test ${APP_TO_TEST}`, function() {
     expect(process.env.SSH_HOST, 'SSH_HOST is not defined').to.not.be.empty;
     expect(process.env.SSH_USER, 'SSH_USER is not defined').to.not.be.empty;
     expect(process.env.SSH_PASSWD, 'SSH_PASSWD is not defined').to.not.be.empty;
-    expect(process.env.ZOWE_ROOT_DIR, 'ZOWE_ROOT_DIR is not defined').to.not.be.empty;
-    expect(process.env.ZOWE_ZLUX_HTTPS_PORT, 'ZOWE_ZLUX_HTTPS_PORT is not defined').to.not.be.empty;
+    expect(process.env.CI_ZOWE_ROOT_DIR, 'CI_ZOWE_ROOT_DIR is not defined').to.not.be.empty;
+    expect(process.env.CI_ZLUX_HTTPS_PORT, 'CI_ZLUX_HTTPS_PORT is not defined').to.not.be.empty;
 
     // init webdriver
     driver = await getDefaultDriver();
@@ -59,7 +59,7 @@ describe(`test ${APP_TO_TEST}`, function() {
     // load MVD login page
     await loginMVD(
       driver,
-      `https://${process.env.SSH_HOST}:${process.env.ZOWE_ZLUX_HTTPS_PORT}/`,
+      `https://${process.env.SSH_HOST}:${process.env.CI_ZLUX_HTTPS_PORT}/`,
       process.env.SSH_USER,
       process.env.SSH_PASSWD
     );
@@ -120,7 +120,7 @@ describe(`test ${APP_TO_TEST}`, function() {
     const inputPath = await getElement(treeContent, 'input#path');
     expect(inputPath).to.be.an('object');
     await inputPath.clear();
-    await inputPath.sendKeys(process.env.ZOWE_ROOT_DIR + Key.ENTER);
+    await inputPath.sendKeys(process.env.CI_ZOWE_ROOT_DIR + Key.ENTER);
     debug('inputPath updated');
 
     // wait for results

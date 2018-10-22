@@ -19,7 +19,7 @@ describe('verify installed files', function() {
     expect(process.env.SSH_PORT, 'SSH_PORT is not defined').to.not.be.empty;
     expect(process.env.SSH_USER, 'SSH_USER is not defined').to.not.be.empty;
     expect(process.env.SSH_PASSWD, 'SSH_PASSWD is not defined').to.not.be.empty;
-    expect(process.env.ZOWE_ROOT_DIR, 'ZOWE_ROOT_DIR is not defined').to.not.be.empty;
+    expect(process.env.CI_ZOWE_ROOT_DIR, 'CI_ZOWE_ROOT_DIR is not defined').to.not.be.empty;
 
     const password = process.env.SSH_PASSWD;
 
@@ -41,7 +41,7 @@ describe('verify installed files', function() {
   });
 
   it('installed folder should exist', function() {
-    return ssh.execCommand('test -d ' + process.env.ZOWE_ROOT_DIR)
+    return ssh.execCommand('test -d ' + process.env.CI_ZOWE_ROOT_DIR)
       .then(function(result) {
         expect(result.stderr).to.be.empty;
         expect(result.code).to.equal(0);
@@ -49,7 +49,7 @@ describe('verify installed files', function() {
   });
 
   it('scripts/zowe-start.sh should exist', function() {
-    return ssh.execCommand('test -f ' + process.env.ZOWE_ROOT_DIR + '/scripts/zowe-start.sh')
+    return ssh.execCommand('test -f ' + process.env.CI_ZOWE_ROOT_DIR + '/scripts/zowe-start.sh')
       .then(function(result) {
         expect(result.stderr).to.be.empty;
         expect(result.code).to.equal(0);
@@ -57,7 +57,7 @@ describe('verify installed files', function() {
   });
 
   it('scripts/internal/opercmd should exist', function() {
-    return ssh.execCommand('test -f ' + process.env.ZOWE_ROOT_DIR + '/scripts/internal/opercmd')
+    return ssh.execCommand('test -f ' + process.env.CI_ZOWE_ROOT_DIR + '/scripts/internal/opercmd')
       .then(function(result) {
         expect(result.stderr).to.be.empty;
         expect(result.code).to.equal(0);
@@ -65,7 +65,7 @@ describe('verify installed files', function() {
   });
 
   it('explorer-server/wlp/usr/servers/Atlas/server.xml should exist', function() {
-    return ssh.execCommand('test -f ' + process.env.ZOWE_ROOT_DIR + '/explorer-server/wlp/usr/servers/Atlas/server.xml')
+    return ssh.execCommand('test -f ' + process.env.CI_ZOWE_ROOT_DIR + '/explorer-server/wlp/usr/servers/Atlas/server.xml')
       .then(function(result) {
         expect(result.stderr).to.be.empty;
         expect(result.code).to.equal(0);

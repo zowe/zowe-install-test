@@ -15,14 +15,14 @@ const { execZoweCli, defaultZOSMFProfileName, createDefaultZOSMFProfile } = requ
 
 describe('cli check zosmf status', function() {
   before('verify environment variables', async function() {
-    expect(process.env.ZOSMF_PORT, 'ZOSMF_PORT is not defined').to.not.be.empty;
+    expect(process.env.CI_ZOSMF_PORT, 'CI_ZOSMF_PORT is not defined').to.not.be.empty;
     expect(process.env.SSH_HOST, 'SSH_HOST is not defined').to.not.be.empty;
     expect(process.env.SSH_USER, 'SSH_USER is not defined').to.not.be.empty;
     expect(process.env.SSH_PASSWD, 'SSH_PASSWD is not defined').to.not.be.empty;
 
     const result = await createDefaultZOSMFProfile(
       process.env.SSH_HOST,
-      process.env.ZOSMF_PORT,
+      process.env.CI_ZOSMF_PORT,
       process.env.SSH_USER,
       process.env.SSH_PASSWD
     );

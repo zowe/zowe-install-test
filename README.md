@@ -48,14 +48,15 @@ The existing test cases are tested on Firefox v61.0.2 which is pre-installed in 
 Example command:
 
 ```
-ZOWE_ROOT_DIR=/path/to/zowe \
+CI_ZOWE_ROOT_DIR=/path/to/zowe \
   SSH_HOST=test-server \
   SSH_PORT=12022 \
   SSH_USER=********* \
   SSH_PASSWD=********* \
-  ZOSMF_PORT=10443 \
-  ZOWE_ZLUX_HTTPS_PORT=8544 \
-  ZOWE_EXPLORER_SERVER_HTTPS_PORT=7443 \
+  CI_ZOSMF_PORT=10443 \
+  CI_ZLUX_HTTPS_PORT=8544 \
+  CI_APIM_GATEWAY_PORT=7554 \
+  CI_EXPLORER_HTTPS_PORT=7443 \
   npm test
 ```
 
@@ -85,14 +86,15 @@ debug('result:', result);
 To show debugging information on your local, you can add `DEBUG=test:*` to the test command:
 
 ```
-ZOWE_ROOT_DIR=/path/to/zowe \
+CI_ZOWE_ROOT_DIR=/path/to/zowe \
   SSH_HOST=test-server \
   SSH_PORT=12022 \
   SSH_USER=********* \
   SSH_PASSWD=********* \
-  ZOSMF_PORT=10443 \
-  ZOWE_ZLUX_HTTPS_PORT=8544 \
-  ZOWE_EXPLORER_SERVER_HTTPS_PORT=7443 \
+  CI_ZOSMF_PORT=10443 \
+  CI_ZLUX_HTTPS_PORT=8544 \
+  CI_APIM_GATEWAY_PORT=7554 \
+  CI_EXPLORER_HTTPS_PORT=7443 \
   DEBUG=test:* \
   npm test
 ```
@@ -392,16 +394,16 @@ describe('my test suite', function() {
 
 ## Troubleshooting
 
-### Error 'ZOWE_ROOT_DIR' is not recognized as an internal or external command
+### Error 'CI_ZOWE_ROOT_DIR' is not recognized as an internal or external command
 
-When you start test on Windows, you may see this error: `'ZOWE_ROOT_DIR' is not recognized as an internal or external command, operable program or batch file.`
+When you start test on Windows, you may see this error: `'CI_ZOWE_ROOT_DIR' is not recognized as an internal or external command, operable program or batch file.`
 
 **Solution:**
 
 Run `npm install -g cross-env` and then run command
 
 ```
-cross-env ZOWE_ROOT_DIR=/path/to/zowe SSH_HOST=test-server SSH_PORT=12022 SSH_USER=********* SSH_PASSWD=********* ZOSMF_PORT=10443 ZOWE_ZLUX_HTTPS_PORT=8544 ZOWE_EXPLORER_SERVER_HTTPS_PORT=7443 npm test
+cross-env CI_ZOWE_ROOT_DIR=/path/to/zowe SSH_HOST=test-server SSH_PORT=12022 SSH_USER=********* SSH_PASSWD=********* CI_ZOSMF_PORT=10443 CI_ZLUX_HTTPS_PORT=8544 CI_APIM_GATEWAY_PORT=7554 CI_EXPLORER_HTTPS_PORT=7443 npm test
 ```
 
 to start test.

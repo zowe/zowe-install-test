@@ -26,15 +26,15 @@ describe('test explorer server datasets api', function() {
     expect(process.env.SSH_HOST, 'SSH_HOST is not defined').to.not.be.empty;
     expect(process.env.SSH_USER, 'SSH_USER is not defined').to.not.be.empty;
     expect(process.env.SSH_PASSWD, 'SSH_PASSWD is not defined').to.not.be.empty;
-    expect(process.env.ZOWE_EXPLORER_SERVER_HTTPS_PORT, 'ZOWE_EXPLORER_SERVER_HTTPS_PORT is not defined').to.not.be.empty;
+    expect(process.env.CI_EXPLORER_HTTPS_PORT, 'CI_EXPLORER_HTTPS_PORT is not defined').to.not.be.empty;
 
     REQ = axios.create({
-      baseURL: `https://${process.env.SSH_HOST}:${process.env.ZOWE_EXPLORER_SERVER_HTTPS_PORT}`,
+      baseURL: `https://${process.env.SSH_HOST}:${process.env.CI_EXPLORER_HTTPS_PORT}`,
       timeout: 30000,
     });
     username = process.env.SSH_USER;
     password = process.env.SSH_PASSWD;
-    debug(`Explorer server URL: https://${process.env.SSH_HOST}:${process.env.ZOWE_EXPLORER_SERVER_HTTPS_PORT}`);
+    debug(`Explorer server URL: https://${process.env.SSH_HOST}:${process.env.CI_EXPLORER_HTTPS_PORT}`);
   });
 
   it(`should be able to list data sets of ${DS_PATTERN_TO_TEST}`, function() {

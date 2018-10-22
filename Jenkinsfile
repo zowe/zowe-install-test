@@ -66,91 +66,91 @@ customParameters.push(string(
 ))
 // >>>>>>>> parameters of installation config
 customParameters.push(string(
-  name: 'ZOWE_ROOT_DIR',
+  name: 'CI_ZOWE_ROOT_DIR',
   description: 'Zowe installation root directory',
   defaultValue: '/zaas1/zowe',
   trim: true,
   required: true
 ))
 customParameters.push(string(
-  name: 'INSTALL_DIR',
+  name: 'CI_INSTALL_DIR',
   description: 'Installation working directory',
   defaultValue: '/zaas1/zowe-install',
   trim: true,
   required: true
 ))
 customParameters.push(string(
-  name: 'ZOSMF_PORT',
+  name: 'CI_ZOSMF_PORT',
   description: 'Port of z/OSMF service',
   defaultValue: '10443',
   trim: true,
   required: true
 ))
 customParameters.push(string(
-  name: 'ZOWE_ZLUX_HTTP_PORT',
+  name: 'CI_ZLUX_HTTP_PORT',
   description: 'httpPort for Zowe zLux service',
   defaultValue: '8543',
   trim: true,
   required: true
 ))
 customParameters.push(string(
-  name: 'ZOWE_ZLUX_HTTPS_PORT',
+  name: 'CI_ZLUX_HTTPS_PORT',
   description: 'httpsPort for Zowe zLux service',
   defaultValue: '8544',
   trim: true,
   required: true
 ))
 customParameters.push(string(
-  name: 'ZOWE_ZLUX_ZSS_PORT',
+  name: 'CI_ZLUX_ZSS_PORT',
   description: 'zssPort for Zowe zLux service',
   defaultValue: '8542',
   trim: true,
   required: true
 ))
 customParameters.push(string(
-  name: 'ZOWE_EXPLORER_SERVER_HTTP_PORT',
+  name: 'CI_EXPLORER_HTTP_PORT',
   description: 'httpPort for Zowe explorer server',
   defaultValue: '7080',
   trim: true,
   required: true
 ))
 customParameters.push(string(
-  name: 'ZOWE_EXPLORER_SERVER_HTTPS_PORT',
+  name: 'CI_EXPLORER_HTTPS_PORT',
   description: 'httpsPort for Zowe explorer server',
   defaultValue: '7443',
   trim: true,
   required: true
 ))
 customParameters.push(string(
-  name: 'ZOWE_API_MEDIATION_CATALOG_HTTP_PORT',
+  name: 'CI_APIM_CATELOG_PORT',
   description: 'catalogHttpPort for Zowe API mediation',
   defaultValue: '7552',
   trim: true,
   required: true
 ))
 customParameters.push(string(
-  name: 'ZOWE_API_MEDIATION_DISCOVERY_HTTP_PORT',
+  name: 'CI_APIM_DISCOVERY_PORT',
   description: 'discoveryHttpPort for Zowe API mediation',
   defaultValue: '7553',
   trim: true,
   required: true
 ))
 customParameters.push(string(
-  name: 'ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT',
+  name: 'CI_APIM_GATEWAY_PORT',
   description: 'gatewayHttpsPort for Zowe API mediation',
   defaultValue: '7554',
   trim: true,
   required: true
 ))
 customParameters.push(string(
-  name: 'ZOWE_MVD_SSH_PORT',
+  name: 'CI_TERMINALS_SSH_PORT',
   description: 'sshPort for Zowe MVD terminals',
   defaultValue: '22',
   trim: true,
   required: true
 ))
 customParameters.push(string(
-  name: 'ZOWE_MVD_TELNET_PORT',
+  name: 'CI_TERMINALS_TELNET_PORT',
   description: 'telnetPort for Zowe MVD terminals',
   defaultValue: '23',
   trim: true,
@@ -268,7 +268,7 @@ EOF"""
             sleep time: 10, unit: 'MINUTES'
             // check if zD&T & z/OSMF are started
             timeout(120) {
-              sh "./scripts/is-website-ready.sh -r 720 -t 10 -c 20 https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOSMF_PORT}/zosmf/"
+              sh "./scripts/is-website-ready.sh -r 720 -t 10 -c 20 https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.CI_ZOSMF_PORT}/zosmf/"
             }
           }
         }
@@ -279,12 +279,12 @@ EOF"""
 
     utils.conditionalStage('install-zowe', !params.SKIP_INSTALLATION) {
       withCredentials([usernamePassword(credentialsId: params.TEST_IMAGE_GUEST_SSH_CREDENTIAL, passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
-        // create INSTALL_DIR
-        sh "SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} 'mkdir -p ${params.INSTALL_DIR}'"
+        // create CI_INSTALL_DIR
+        sh "SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} 'mkdir -p ${params.CI_INSTALL_DIR}'"
 
         // send file to test image host
         sh """SSHPASS=${PASSWORD} sshpass -e sftp -o BatchMode=no -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -b - -P ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
-cd ${params.INSTALL_DIR}
+cd ${params.CI_INSTALL_DIR}
 put scripts/temp-fixes-before-install.sh
 put scripts/temp-fixes-after-install.sh
 put scripts/install-zowe.sh
@@ -303,14 +303,14 @@ EOF"""
             uninstallZowe = " -u"
           }
           sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
-cd ${params.INSTALL_DIR} && \
+cd ${params.CI_INSTALL_DIR} && \
   (iconv -f ISO8859-1 -t IBM-1047 install-zowe.sh > install-zowe.sh.new) && mv install-zowe.sh.new install-zowe.sh && chmod +x install-zowe.sh
-./install-zowe.sh -n ${params.TEST_IMAGE_GUEST_SSH_HOST} -t ${params.ZOWE_ROOT_DIR} -i ${params.INSTALL_DIR}${skipTempFixes}${uninstallZowe} --zosmf-port ${params.ZOSMF_PORT}\
-  --apim-catelog-port ${params.ZOWE_API_MEDIATION_CATALOG_HTTP_PORT} --apim-discovery-port ${params.ZOWE_API_MEDIATION_DISCOVERY_HTTP_PORT} --apim-gateway-port ${params.ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT}\
-  --explorer-http-port ${params.ZOWE_EXPLORER_SERVER_HTTP_PORT} --explorer-https-port ${params.ZOWE_EXPLORER_SERVER_HTTPS_PORT}\
-  --zlux-http-port ${params.ZOWE_ZLUX_HTTP_PORT} --zlux-https-port ${params.ZOWE_ZLUX_HTTPS_PORT} --zlux-zss-port ${params.ZOWE_ZLUX_ZSS_PORT}\
-  --term-ssh-port ${params.ZOWE_MVD_SSH_PORT} --term-telnet-port ${params.ZOWE_MVD_TELNET_PORT}\
-  ${params.INSTALL_DIR}/zowe.pax || { echo "[install-zowe.sh] failed"; exit 1; }
+./install-zowe.sh -n ${params.TEST_IMAGE_GUEST_SSH_HOST} -t ${params.CI_ZOWE_ROOT_DIR} -i ${params.CI_INSTALL_DIR}${skipTempFixes}${uninstallZowe} --zosmf-port ${params.CI_ZOSMF_PORT}\
+  --apim-catelog-port ${params.CI_APIM_CATELOG_PORT} --apim-discovery-port ${params.CI_APIM_DISCOVERY_PORT} --apim-gateway-port ${params.CI_APIM_GATEWAY_PORT}\
+  --explorer-http-port ${params.CI_EXPLORER_HTTP_PORT} --explorer-https-port ${params.CI_EXPLORER_HTTPS_PORT}\
+  --zlux-http-port ${params.CI_ZLUX_HTTP_PORT} --zlux-https-port ${params.CI_ZLUX_HTTPS_PORT} --zlux-zss-port ${params.CI_ZLUX_ZSS_PORT}\
+  --term-ssh-port ${params.CI_TERMINALS_SSH_PORT} --term-telnet-port ${params.CI_TERMINALS_TELNET_PORT}\
+  ${params.CI_INSTALL_DIR}/zowe.pax || { echo "[install-zowe.sh] failed"; exit 1; }
 echo "[install-zowe.sh] succeeds" && exit 0
 EOF"""
         }
@@ -319,15 +319,15 @@ EOF"""
         sleep time: 2, unit: 'MINUTES'
         // check if zLux is started
         timeout(60) {
-          sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOWE_ZLUX_HTTPS_PORT}/"
+          sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.CI_ZLUX_HTTPS_PORT}/"
         }
         // check if explorer server is started
         timeout(60) {
-          sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 https://${USERNAME}:${PASSWORD}@${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOWE_EXPLORER_SERVER_HTTPS_PORT}/api/v1/api/jobs"
+          sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 https://${USERNAME}:${PASSWORD}@${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.CI_EXPLORER_HTTPS_PORT}/api/v1/api/jobs"
         }
         // check if zD&T & z/OSMF are started again in case z/OSMF is restarted
         timeout(60) {
-          sh "./scripts/is-website-ready.sh -r 720 -t 10 -c 20 https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOSMF_PORT}/zosmf/"
+          sh "./scripts/is-website-ready.sh -r 720 -t 10 -c 20 https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.CI_ZOSMF_PORT}/zosmf/"
         }
 
         // FIXME: wait more until the services are stable, otherwise UI test cases might fail randomly
@@ -335,7 +335,7 @@ EOF"""
         // FIXME: zLux login may hang there which blocks UI test cases
         // try a login to the zlux auth api
         def zluxAuth = sh(
-          script: "curl -d '{\\\"username\\\":\\\"${USERNAME}\\\",\\\"password\\\":\\\"${PASSWORD}\\\"}' -H 'Content-Type: application/json' -X POST -k https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOWE_ZLUX_HTTPS_PORT}/auth",
+          script: "curl -d '{\\\"username\\\":\\\"${USERNAME}\\\",\\\"password\\\":\\\"${PASSWORD}\\\"}' -H 'Content-Type: application/json' -X POST -k https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.CI_ZLUX_HTTPS_PORT}/auth",
           returnStdout: true
         ).trim()
         echo "zLux login successfully:"
@@ -349,7 +349,7 @@ EOF"""
         withCredentials([usernamePassword(credentialsId: params.TEST_IMAGE_GUEST_SSH_CREDENTIAL, passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
           // download cli
           sh """SSHPASS=${PASSWORD} sshpass -e sftp -o BatchMode=no -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -b - -P ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
-get ${params.INSTALL_DIR}/extracted/zowe-cli-bundle.zip
+get ${params.CI_INSTALL_DIR}/extracted/zowe-cli-bundle.zip
 EOF"""
           // install CLI
           sh 'unzip zowe-cli-bundle.zip'
@@ -366,15 +366,15 @@ EOF"""
         withCredentials([usernamePassword(credentialsId: params.TEST_IMAGE_GUEST_SSH_CREDENTIAL, passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
           // run tests
           try {
-            sh """ZOWE_ROOT_DIR=${params.ZOWE_ROOT_DIR} \
+            sh """CI_ZOWE_ROOT_DIR=${params.CI_ZOWE_ROOT_DIR} \
 SSH_HOST=${params.TEST_IMAGE_GUEST_SSH_HOST} \
 SSH_PORT=${params.TEST_IMAGE_GUEST_SSH_PORT} \
 SSH_USER=${USERNAME} \
 SSH_PASSWD=${PASSWORD} \
-ZOSMF_PORT=${params.ZOSMF_PORT} \
-ZOWE_ZLUX_HTTPS_PORT=${params.ZOWE_ZLUX_HTTPS_PORT} \
-ZOWE_EXPLORER_SERVER_HTTPS_PORT=${params.ZOWE_EXPLORER_SERVER_HTTPS_PORT} \
-CI_APIM_GATEWAY_PORT=${params.ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT} \
+CI_ZOSMF_PORT=${params.CI_ZOSMF_PORT} \
+CI_ZLUX_HTTPS_PORT=${params.CI_ZLUX_HTTPS_PORT} \
+CI_EXPLORER_HTTPS_PORT=${params.CI_EXPLORER_HTTPS_PORT} \
+CI_APIM_GATEWAY_PORT=${params.CI_APIM_GATEWAY_PORT} \
 DEBUG=${params.TEST_CASE_DEBUG_INFORMATION} \
 npm test"""
           } finally {
