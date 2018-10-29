@@ -92,14 +92,19 @@ describe('test MVD login page', function() {
     const usernameInput = await getElement(loginForm, 'input#usernameInput');
     expect(usernameInput).to.be.an('object');
     await usernameInput.clear();
+    await driver.sleep(2000);
     await usernameInput.sendKeys(process.env.SSH_USER);
+    await driver.sleep(2000);
     const passwordInput = await getElement(loginForm, 'input#passwordInput');
     expect(passwordInput).to.be.an('object');
     await passwordInput.clear();
+    await driver.sleep(2000);
     await passwordInput.sendKeys('wrong+passdword!');
+    await driver.sleep(2000);
     // submit login
     const loginButton = await getElement(driver, '#\\#loginButton');
     expect(loginButton).to.be.an('object');
+    await driver.sleep(3000);
     await loginButton.click();
     debug('login button clicked');
 
@@ -167,14 +172,19 @@ describe('test MVD login page', function() {
     const usernameInput = await getElement(loginForm, 'input#usernameInput');
     expect(usernameInput).to.be.an('object');
     await usernameInput.clear();
+    await driver.sleep(2000);
     await usernameInput.sendKeys(process.env.SSH_USER);
+    await driver.sleep(2000);
     const passwordInput = await getElement(loginForm, 'input#passwordInput');
     expect(passwordInput).to.be.an('object');
     await passwordInput.clear();
+    await driver.sleep(2000);
     await passwordInput.sendKeys(process.env.SSH_PASSWD);
+    await driver.sleep(2000);
     // submit login
     const loginButton = await getElement(driver, '#\\#loginButton');
     expect(loginButton).to.be.an('object');
+    await driver.sleep(3000);
     await loginButton.click();
     debug('login button clicked');
     // wait for login error or successfully
@@ -264,6 +274,7 @@ describe('test MVD login page', function() {
     expect(menuIcon).to.be.an('object');
 
     // popup menu
+    await driver.sleep(3000);
     await menuIcon.click();
     await driver.sleep(1000);
 
@@ -299,6 +310,7 @@ describe('test MVD login page', function() {
     expect(userIcon).to.be.an('object');
 
     // popup user info
+    await driver.sleep(3000);
     await userIcon.click();
     await driver.sleep(1000);
 
@@ -319,6 +331,7 @@ describe('test MVD login page', function() {
     const signoutText = await signout.getText();
     expect(signoutText).to.equal('Sign Out');
 
+    await driver.sleep(3000);
     await signout.click();
     await waitUntilElement(driver, '#\\#loginButton');
 
