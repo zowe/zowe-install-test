@@ -15,13 +15,11 @@ const addContext = require('mochawesome/addContext');
 const testName = path.basename(__filename, path.extname(__filename));
 
 const {
-  DEFAULT_PAGE_LOADING_TIMEOUT,
   MVD_IFRAME_APP_CONTENT,
   saveScreenshot,
   getDefaultDriver,
   waitUntilElement,
   getElement,
-  getElements,
   loginMVD,
   launchApp,
   locateApp,
