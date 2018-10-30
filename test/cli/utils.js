@@ -101,7 +101,7 @@ const createDefaultZOSMFProfile = async(hostname, port, username, password, prof
     port,
     '--user',
     username,
-    '--password',
+    '--pass',
     password,
     '--reject-unauthorized',
     'false',
