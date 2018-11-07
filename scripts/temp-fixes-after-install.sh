@@ -28,12 +28,17 @@ echo "[${SCRIPT_NAME}]    CI_HOSTNAME                : $CI_HOSTNAME"
 ################################################################################
 # Error when starting explore-server:
 # [ERROR ] CWPKI0033E: The keystore located at safkeyringhybrid:///IZUKeyring.IZUDFLT did not load because of the following error: Errors encountered loading keyring. Keyring could not be loaded as a JCECCARACFKS or JCERACFKS keystore.
+echo
+echo "[${SCRIPT_NAME}] change ZOWESVR RACF user ..."
 (exec sh -c 'tsocmd "RDEFINE STARTED ZOWESVR.* UACC(NONE) STDATA(USER(IZUSVR) GROUP(IZUADMIN) PRIVILEGED(NO) TRUSTED(NO) TRACE(YES))"')
 (exec sh -c 'tsocmd "SETROPTS RACLIST(STARTED) REFRESH"')
+echo
 
 ################################################################################
 # Error when starting explore-server:
 # without ZOSMF_HOST, explorer-server will get connection refused error on 
+echo
+echo "[${SCRIPT_NAME}] validating explorer server server.env ..."
 cd "${CI_ZOWE_ROOT_DIR}/explorer-server/wlp/usr/servers/Atlas"
 iconv -f IBM-850 -t IBM-1047 server.env > server.env.1047
 echo "[${SCRIPT_NAME}] current server.env:"
@@ -43,6 +48,8 @@ if [ -z "$HAS_ZOSMF_HOST" ]; then
   echo "[${SCRIPT_NAME}] need to add ZOSMF_HOST"
   echo "" >> server.env.1047
   echo "ZOSMF_HOST=10.1.1.2" >> server.env.1047
+  echo "[${SCRIPT_NAME}] updated server.env:"
+  cat server.env.1047
   iconv -f IBM-1047 -t IBM-850 server.env.1047 > server.env
 else
   echo "[${SCRIPT_NAME}] ZOSMF_HOST is set, no need to fix."
@@ -51,6 +58,7 @@ rm server.env.1047
 
 ################################################################################
 # explorer JES/MVS/USS has internal host name, convert to public domain
+echo
 echo "[${SCRIPT_NAME}] checking hostname in explorer-* ..."
 ZDNT_HOSTNAME=S0W1
 FILES_TO_UPDATE="explorer-JES explorer-USS explorer-MVS api_catalog"
