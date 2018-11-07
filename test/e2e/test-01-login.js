@@ -158,7 +158,7 @@ describe('test MVD login page', function() {
     let error = await getElementText(driver, 'p.login-error');
     expect(error).to.be.a('string');
     error = error.trim();
-    expect(error).to.match(/authentication\s*failed/g);
+    expect(error).to.match(/authentication\s*failed/i);
   });
 
 
