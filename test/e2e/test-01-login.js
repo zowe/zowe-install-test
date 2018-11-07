@@ -75,6 +75,7 @@ describe('test MVD login page', function() {
 
 
   it('should redirect to login page', async function() {
+    await driver.sleep(5000);
     // save screenshot
     const file = await saveScreenshot(driver, testName, 'login');
     addContext(this, file);
@@ -157,11 +158,12 @@ describe('test MVD login page', function() {
     let error = await getElementText(driver, 'p.login-error');
     expect(error).to.be.a('string');
     error = error.trim();
-    expect(error).to.include('Authentication failed');
+    expect(error).to.match(/authentication\s*failed/g);
   });
 
 
   it('should login successfully with correct password', async function() {
+    await driver.sleep(5000);
     // save screenshot
     const file0 = await saveScreenshot(driver, testName, 'before-login');
     addContext(this, file0);
@@ -234,6 +236,7 @@ describe('test MVD login page', function() {
     }
     debug('login done');
 
+    await driver.sleep(10000); // wait a little bit more
     // save screenshot
     const file = await saveScreenshot(driver, testName, 'login-successfully');
     addContext(this, file);
