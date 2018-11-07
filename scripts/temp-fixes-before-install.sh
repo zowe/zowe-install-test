@@ -26,6 +26,11 @@ echo "[${SCRIPT_NAME}]    CI_ZOWE_ROOT_DIR           : $CI_ZOWE_ROOT_DIR"
 echo "[${SCRIPT_NAME}]    FULL_EXTRACTED_ZOWE_FOLDER : $FULL_EXTRACTED_ZOWE_FOLDER"
 CI_PWD=$(pwd)
 
+
+################################################################################
+# NODE_HOME is not specified on the pre-reqs image
+export NODE_HOME=/Z23B/usr/lpp/IBM/cnj/IBM/node-v6.13.0-os390-s390x
+
 ################################################################################
 echo
 echo "[${SCRIPT_NAME}] done."
