@@ -33,32 +33,33 @@ echo "[${SCRIPT_NAME}]    CI_HOSTNAME                : $CI_HOSTNAME"
 
 ################################################################################
 # Error when starting explore-server:
-# CWWKB0234E JAVA_HOME location  does not exist
-# CWWKB0210E Failed to resolve JAVA_HOME
+# without ZOSMF_HOST, explorer-server will get connection refused error on 
 cd "${CI_ZOWE_ROOT_DIR}/explorer-server/wlp/usr/servers/Atlas"
-CURRENT_SERVER_ENV=$(iconv -f IBM-850 -t IBM-1047 server.env)
-if [ "$CURRENT_SERVER_ENV" = "JAVA_HOME=" ]; then
-  echo "[${SCRIPT_NAME}] current server.env: $CURRENT_SERVER_ENV"
-  echo "[${SCRIPT_NAME}] need to fix"
-  echo "JAVA_HOME=/usr/lpp/java/J8.0_64" > server.env.1047
+iconv -f IBM-850 -t IBM-1047 server.env > server.env.1047
+echo "[${SCRIPT_NAME}] current server.env:"
+cat server.env.1047
+HAS_ZOSMF_HOST=$(cat server.env.1047 | grep 'ZOSMF_HOST=')
+if [ -z "$HAS_ZOSMF_HOST" ]; then
+  echo "[${SCRIPT_NAME}] need to add ZOSMF_HOST"
+  echo "" >> server.env.1047
+  echo "ZOSMF_HOST=10.1.1.2" >> server.env.1047
   iconv -f IBM-1047 -t IBM-850 server.env.1047 > server.env
-  rm server.env.1047
 else
-  echo "[${SCRIPT_NAME}] current server.env: $CURRENT_SERVER_ENV"
-  echo "[${SCRIPT_NAME}] JAVA_HOME is set properly, no need to fix."
+  echo "[${SCRIPT_NAME}] ZOSMF_HOST is set, no need to fix."
 fi
+rm server.env.1047
 
 ################################################################################
 # explorer JES/MVS/USS has internal host name, convert to public domain
 echo "[${SCRIPT_NAME}] checking hostname in explorer-* ..."
-ZDNT_HOSTNAME=S0W1.DAL-EBIS.IHOST.COM
+ZDNT_HOSTNAME=S0W1
 FILES_TO_UPDATE="explorer-JES explorer-USS explorer-MVS api_catalog"
 for one in $FILES_TO_UPDATE; do
   ZDNT_FILE=$CI_ZOWE_ROOT_DIR/${one}/web/index.html
   echo "[${SCRIPT_NAME}]   - checking $ZDNT_FILE ..."
   HAS_WRONG_HOSTNAME=$(grep $ZDNT_HOSTNAME $ZDNT_FILE)
   if [ -n "$HAS_WRONG_HOSTNAME" ]; then
-    sed "s/${ZDNT_HOSTNAME}/${CI_HOSTNAME}/" $ZDNT_FILE > index.html.tmp
+    sed "s#//${ZDNT_HOSTNAME}:\([0-9]\+\)/#//${CI_HOSTNAME}:\1/#" $ZDNT_FILE > index.html.tmp
     mv index.html.tmp $ZDNT_FILE
     echo "[${SCRIPT_NAME}]     - updated."
   else

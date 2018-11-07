@@ -96,7 +96,7 @@ fi
 
 ################################################################################
 # restart the image
-echo "[${SCRIPT_NAME}] restarting VNC to start onboot.sh ..."
+echo "[${SCRIPT_NAME}] restarting zOSaaS ..."
 sudo systemctl restart zaasHelper.service
 
 ################################################################################
