@@ -330,15 +330,13 @@ EOF"""
           sh "./scripts/is-website-ready.sh -r 720 -t 10 -c 20 https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOSMF_PORT}/zosmf/"
         }
 
-        // FIXME: wait more until the services are stable, otherwise UI test cases might fail randomly
-        sleep time: 30, unit: 'MINUTES'
         // FIXME: zLux login may hang there which blocks UI test cases
         // try a login to the zlux auth api
         def zluxAuth = sh(
           script: "curl -d '{\\\"username\\\":\\\"${USERNAME}\\\",\\\"password\\\":\\\"${PASSWORD}\\\"}' -H 'Content-Type: application/json' -X POST -k https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOWE_ZLUX_HTTPS_PORT}/auth",
           returnStdout: true
         ).trim()
-        echo "zLux login successfully:"
+        echo "zLux login result:"
         echo zluxAuth
       }
     }
