@@ -332,7 +332,7 @@ describe('test MVD login page', function() {
     const signout = await getElement(popup, 'button');
     expect(signout).to.be.an('object');
     const signoutText = await signout.getText();
-    expect(signoutText).to.equal('Sign Out');
+    expect(signoutText).to.equal('Log out');
 
     await driver.sleep(3000);
     await signout.click();
