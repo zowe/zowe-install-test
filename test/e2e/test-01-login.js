@@ -18,6 +18,7 @@ const {
   PRE_INSTALLED_APPS,
   PRE_PINNED_APPS,
   DEFAULT_PAGE_LOADING_TIMEOUT,
+  DEFAULT_ELEMENT_CHECK_INTERVAL,
   getElements,
   getElement,
   getElementText,

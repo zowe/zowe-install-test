@@ -19,6 +19,7 @@ const { Key, until } = require('selenium-webdriver');
 const { ZOWE_JOB_NAME } = require('../constants');
 const {
   DEFAULT_PAGE_LOADING_TIMEOUT,
+  DEFAULT_ELEMENT_CHECK_INTERVAL,
   MVD_ATLAS_APP_CONTEXT,
   saveScreenshot,
   getDefaultDriver,
@@ -161,7 +162,7 @@ describe(`test ${APP_TO_TEST}`, function() {
             return true;
           }
 
-          await driver.sleep(300); // not too fast
+          await driver.sleep(DEFAULT_ELEMENT_CHECK_INTERVAL); // not too fast
           return false;
         },
         DEFAULT_PAGE_LOADING_TIMEOUT
@@ -270,7 +271,7 @@ describe(`test ${APP_TO_TEST}`, function() {
             }
           }
 
-          await driver.sleep(300); // not too fast
+          await driver.sleep(DEFAULT_ELEMENT_CHECK_INTERVAL); // not too fast
           return false;
         },
         DEFAULT_PAGE_LOADING_TIMEOUT
@@ -350,7 +351,7 @@ describe(`test ${APP_TO_TEST}`, function() {
             return true;
           }
 
-          await driver.sleep(300); // not too fast
+          await driver.sleep(DEFAULT_ELEMENT_CHECK_INTERVAL); // not too fast
           return false;
         },
         DEFAULT_PAGE_LOADING_TIMEOUT

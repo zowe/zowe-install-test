@@ -51,6 +51,8 @@ const PRE_PINNED_APPS = [
 
 // timeout of HTTP request to Zowe services, default is 3m
 const DEFAULT_PAGE_LOADING_TIMEOUT = 180000;
+// interval to check if element is in place
+const DEFAULT_ELEMENT_CHECK_INTERVAL = 500;
 // where to save screenshots
 const DEFAULT_SCREENSHOT_PATH = './reports';
 // screenshots unqiue index
@@ -194,7 +196,7 @@ const loginMVD = async(driver, url, username, password) => {
           return true;
         }
 
-        await driver.sleep(300); // not too fast
+        await driver.sleep(DEFAULT_ELEMENT_CHECK_INTERVAL); // not too fast
         return false;
       },
       DEFAULT_PAGE_LOADING_TIMEOUT
@@ -256,7 +258,7 @@ const loginMVD = async(driver, url, username, password) => {
           }
         }
 
-        await driver.sleep(300); // not too fast
+        await driver.sleep(DEFAULT_ELEMENT_CHECK_INTERVAL); // not too fast
         return result;
       },
       DEFAULT_PAGE_LOADING_TIMEOUT
@@ -372,7 +374,7 @@ const waitUntilElements = async(driver, selector, parent) => {
           return true;
         }
 
-        await driver.sleep(300); // not too fast
+        await driver.sleep(DEFAULT_ELEMENT_CHECK_INTERVAL); // not too fast
         return false;
       },
       DEFAULT_PAGE_LOADING_TIMEOUT
@@ -418,7 +420,7 @@ const waitUntilElementIsGone = async(driver, selector, parent) => {
           return true;
         }
 
-        await driver.sleep(300); // not too fast
+        await driver.sleep(DEFAULT_ELEMENT_CHECK_INTERVAL); // not too fast
         return false;
       },
       DEFAULT_PAGE_LOADING_TIMEOUT
@@ -592,6 +594,7 @@ module.exports = {
   PRE_INSTALLED_APPS,
   PRE_PINNED_APPS,
   DEFAULT_PAGE_LOADING_TIMEOUT,
+  DEFAULT_ELEMENT_CHECK_INTERVAL,
   DEFAULT_SCREENSHOT_PATH,
   MVD_IFRAME_APP_CONTEXT,
   MVD_ATLAS_APP_CONTEXT,
