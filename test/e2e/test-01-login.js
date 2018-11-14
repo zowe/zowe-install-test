@@ -53,7 +53,7 @@ describe('test MVD login page', function() {
             return true;
           }
 
-          await driver.sleep(300); // not too fast
+          await driver.sleep(DEFAULT_ELEMENT_CHECK_INTERVAL); // not too fast
           return false;
         },
         DEFAULT_PAGE_LOADING_TIMEOUT
@@ -131,7 +131,7 @@ describe('test MVD login page', function() {
             }
           }
 
-          await driver.sleep(300); // not too fast
+          await driver.sleep(DEFAULT_ELEMENT_CHECK_INTERVAL); // not too fast
           return result;
         },
         DEFAULT_PAGE_LOADING_TIMEOUT
@@ -217,7 +217,7 @@ describe('test MVD login page', function() {
             }
           }
 
-          await driver.sleep(300); // not too fast
+          await driver.sleep(DEFAULT_ELEMENT_CHECK_INTERVAL); // not too fast
           return result;
         },
         DEFAULT_PAGE_LOADING_TIMEOUT
