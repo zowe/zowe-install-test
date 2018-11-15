@@ -50,14 +50,18 @@ const execZoweCli = async(command) => {
     keyringExists = false;
   }
 
-  if (keyringExists) {
-    const fn = path.join(__dirname, wrapperFileName);
+  try {
+    if (keyringExists) {
+      const fn = path.join(__dirname, wrapperFileName);
 
-    await writeFile(fn, wrapperFileContent + command);
-    await chmod(fn, 0o755);
-    result = await exec(`dbus-launch ${fn}`);
-  } else {
-    result = await exec(command);
+      await writeFile(fn, wrapperFileContent + command);
+      await chmod(fn, 0o755);
+      result = await exec(`dbus-launch ${fn}`);
+    } else {
+      result = await exec(command);
+    }
+  } catch (e) {
+    result = e;
   }
 
   debug('cli result:', result);
