@@ -38,7 +38,7 @@ let driver;
 const APP_TO_TEST = 'MVS Explorer';
 const DS_TO_TEST = 'TCPIP.TCPIP.DATA';
 
-const MVD_EXPLORER_TREE_SECTION = 'div.tree-card > div > div:nth-child(2)';
+const MVD_EXPLORER_TREE_SECTION = 'div.tree-card > div > div';
 
 let appLaunched = false;
 let testDsIndex = -1;
