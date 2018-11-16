@@ -268,7 +268,7 @@ EOF"""
             sleep time: 10, unit: 'MINUTES'
             // check if zD&T & z/OSMF are started
             timeout(120) {
-              sh "./scripts/is-website-ready.sh -r 720 -t 10 -c 20 https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOSMF_PORT}/zosmf/"
+              sh "./scripts/is-website-ready.sh -r 720 -t 10 -c 20 https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOSMF_PORT}/zosmf/info"
             }
           }
         }
@@ -327,9 +327,11 @@ EOF"""
         }
         // check if zD&T & z/OSMF are started again in case z/OSMF is restarted
         timeout(60) {
-          sh "./scripts/is-website-ready.sh -r 720 -t 10 -c 20 https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOSMF_PORT}/zosmf/"
+          sh "./scripts/is-website-ready.sh -r 720 -t 10 -c 20 https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOSMF_PORT}/zosmf/info"
         }
 
+        // wait a while before starting test
+        sleep time: 10, unit: 'MINUTES'
         // FIXME: zLux login may hang there which blocks UI test cases
         // try a login to the zlux auth api
         def zluxAuth = sh(
