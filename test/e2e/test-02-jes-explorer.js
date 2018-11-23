@@ -19,6 +19,7 @@ const { Key, until } = require('selenium-webdriver');
 const { ZOWE_JOB_NAME } = require('../constants');
 const {
   DEFAULT_PAGE_LOADING_TIMEOUT,
+  DEFAULT_ELEMENT_CHECK_INTERVAL,
   MVD_ATLAS_APP_CONTEXT,
   saveScreenshot,
   getDefaultDriver,
@@ -144,24 +145,30 @@ describe.skip(`test ${APP_TO_TEST}`, function() {
     try {
       await driver.wait(
         async() => {
-          const items = await getElements(treeContent, 'div.node ul li');
+          const items = await getElements(treeContent, 'div.node > ul > div');
           expect(items).to.be.an('array').that.have.lengthOf.above(0);
           debug(`found ${items.length} of menu items`);
-          for (let i in items) {
-            const label = await getElement(items[i], '.node-label');
-            if (label) {
-              const text = await label.getText();
-              if (text === ZOWE_JOB_NAME) {
-                findZoweJob = parseInt(i, 10);
-                break;
+          try {
+            for (let i in items) {
+              const label = await getElement(items[i], 'li .react-contextmenu-wrapper span.content-link span');
+              if (label) {
+                const text = await label.getText();
+                // find active zowesvr job
+                if (text.indexOf(ZOWE_JOB_NAME) > -1 && text.indexOf('[ACTIVE]') > -1) {
+                  findZoweJob = parseInt(i, 10);
+                  break;
+                }
               }
             }
+          } catch (itemsErr) {
+            // ignore error
+            findZoweJob = -1;
           }
           if (findZoweJob > -1) {
             return true;
           }
 
-          await driver.sleep(300); // not too fast
+          await driver.sleep(DEFAULT_ELEMENT_CHECK_INTERVAL); // not too fast
           return false;
         },
         DEFAULT_PAGE_LOADING_TIMEOUT
@@ -197,80 +204,39 @@ describe.skip(`test ${APP_TO_TEST}`, function() {
     await switchToIframeAppContext(driver, APP_TO_TEST, MVD_ATLAS_APP_CONTEXT);
     let treeContent = await getElement(driver, MVD_EXPLORER_TREE_SECTION);
     expect(treeContent).to.be.an('object');
-    const items = await getElements(treeContent, 'div.node ul li');
+    const items = await getElements(treeContent, 'div.node ul > div');
     const zoweJob = items[findZoweJob];
 
     // find the expand icon and click to load children
-    const expandButton = await getElement(zoweJob, 'div.react-contextmenu-wrapper button');
+    const expandButton = await getElement(zoweJob, 'li div.react-contextmenu-wrapper svg.node-icon');
     expect(expandButton).to.be.an('object');
     await expandButton.click();
     debug(`${ZOWE_JOB_NAME} job expand icon is clicked`);
 
-    // find the active one
-    const items2 = await getElements(zoweJob, 'div.node ul li');
-    expect(items2).to.be.an('array').that.have.lengthOf.above(0);
-    debug(`found ${items2.length} of menu items`);
-    let findActiveZoweJob = -1;
-    for (let i in items2) {
-      const label = await getElement(items2[i], '.node-label');
-      if (label) {
-        const text = await label.getText();
-        if (text.indexOf('[ACTIVE') > -1) {
-          findActiveZoweJob = parseInt(i, 10);
-          break;
-        }
-      }
-    }
-    expect(findActiveZoweJob).to.be.above(-1);
-    debug(`found active ${ZOWE_JOB_NAME} at ${findActiveZoweJob}`);
-    const activeZoweJob = items2[findActiveZoweJob];
-
-    // find the expand icon and click to load children
-    const expandButton2 = await getElement(activeZoweJob, 'div.react-contextmenu-wrapper button');
-    expect(expandButton2).to.be.an('object');
-    await expandButton2.click();
-    debug(`Active ${ZOWE_JOB_NAME} job expand icon is clicked`);
-
-    // find the files entry
-    const items3 = await getElements(activeZoweJob, 'div.node ul li');
-    expect(items3).to.be.an('array').that.have.lengthOf.above(0);
-    debug(`found ${items3.length} of menu items`);
-    let findZoweJobFiles = -1;
-    for (let i in items3) {
-      const label = await getElement(items3[i], '.node-label');
-      if (label) {
-        const text = await label.getText();
-        if (text.toLowerCase() === 'files') {
-          findZoweJobFiles = parseInt(i, 10);
-          break;
-        }
-      }
-    }
-    expect(findZoweJobFiles).to.be.above(-1);
-    debug(`found active ${ZOWE_JOB_NAME} at ${findZoweJobFiles}`);
-    const zoweJobFiles = items3[findZoweJobFiles];
-
-    // find the expand icon and click to load children
-    const expandButton3 = await getElement(zoweJobFiles, 'div.react-contextmenu-wrapper button');
-    expect(expandButton3).to.be.an('object');
-    await expandButton3.click();
-    debug(`Active ${ZOWE_JOB_NAME} job files expand icon is clicked`);
-
-    // wait until loading... text is gone
+    // find the JESJCL
+    let findZoweJclFile = -1;
     await driver.sleep(1000);
     try {
       await driver.wait(
         async() => {
-          const firstItem = await getElement(zoweJobFiles, 'div.node ul li:nth-child(1)');
-          if (firstItem) {
-            const text = await firstItem.getText();
-
-            if (text.toLowerCase().indexOf('loading...') === -1) {
-              return true;
+          const items2 = await getElements(zoweJob, 'ul li');
+          expect(items2).to.be.an('array').that.have.lengthOf.above(0);
+          debug(`found ${items2.length} of menu items`);
+          for (let i in items2) {
+            const label = await getElement(items2[i], 'span.content-link span');
+            if (label) {
+              const text = await label.getText();
+              if (text === JCL_TO_TEST) {
+                findZoweJclFile = parseInt(i, 10);
+                break;
+              }
             }
           }
+          if (findZoweJclFile > -1) {
+            return true;
+          }
 
-          await driver.sleep(300); // not too fast
+          await driver.sleep(DEFAULT_ELEMENT_CHECK_INTERVAL); // not too fast
           return false;
         },
         DEFAULT_PAGE_LOADING_TIMEOUT
@@ -278,7 +244,7 @@ describe.skip(`test ${APP_TO_TEST}`, function() {
     } catch (e) {
       // try to save screenshot for debug purpose
       await driver.switchTo().defaultContent();
-      const failureSS = await saveScreenshot(driver, testName, 'load-items-failed');
+      const failureSS = await saveScreenshot(driver, testName, 'load-zowejob-items-failed');
       addContext(this, failureSS);
 
       const errName = e && e.name;
@@ -288,29 +254,13 @@ describe.skip(`test ${APP_TO_TEST}`, function() {
         expect(e).to.be.null;
       }
     }
-    debug(`Active ${ZOWE_JOB_NAME} job files list is updated`);
-
-    // find the files entry
-    const items4 = await getElements(zoweJobFiles, 'div.node ul li');
-    expect(items4).to.be.an('array').that.have.lengthOf.above(0);
-    debug(`found ${items4.length} of menu items`);
-    let findZoweJclFile = -1;
-    for (let i in items4) {
-      const label = await getElement(items4[i], '.node-label');
-      if (label) {
-        const text = await label.getText();
-        if (text === JCL_TO_TEST) {
-          findZoweJclFile = parseInt(i, 10);
-          break;
-        }
-      }
-    }
     expect(findZoweJclFile).to.be.above(-1);
-    debug(`found active ${ZOWE_JOB_NAME} at ${findZoweJclFile}`);
-    const zoweJclFile = items4[findZoweJclFile];
+    debug(`found ${JCL_TO_TEST} at ${findZoweJclFile}`);
+    const items2 = await getElements(zoweJob, 'ul li');
+    const zoweJclFile = items2[findZoweJclFile];
 
     // find the expand icon and click to load children
-    const contentLink = await getElement(zoweJclFile, 'div.react-contextmenu-wrapper span.content-link');
+    const contentLink = await getElement(zoweJclFile, 'span.content-link');
     expect(contentLink).to.be.an('object');
     await contentLink.click();
     debug(`Active ${ZOWE_JOB_NAME} ${JCL_TO_TEST} file content link is clicked`);
@@ -330,7 +280,7 @@ describe.skip(`test ${APP_TO_TEST}`, function() {
           if (header) {
             const text = await header.getText();
 
-            if (text === JCL_TO_TEST) {
+            if (text.indexOf(ZOWE_JOB_NAME) > -1 && text.indexOf(JCL_TO_TEST) > -1) {
               isHeaderReady = true;
             }
           }
@@ -350,7 +300,7 @@ describe.skip(`test ${APP_TO_TEST}`, function() {
             return true;
           }
 
-          await driver.sleep(300); // not too fast
+          await driver.sleep(DEFAULT_ELEMENT_CHECK_INTERVAL); // not too fast
           return false;
         },
         DEFAULT_PAGE_LOADING_TIMEOUT

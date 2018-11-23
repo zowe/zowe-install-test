@@ -18,6 +18,7 @@ const { Key, until } = require('selenium-webdriver');
 
 const {
   DEFAULT_PAGE_LOADING_TIMEOUT,
+  DEFAULT_ELEMENT_CHECK_INTERVAL,
   MVD_ATLAS_APP_CONTEXT,
   saveScreenshot,
   getDefaultDriver,
@@ -178,7 +179,7 @@ describe.skip(`test ${APP_TO_TEST}`, function() {
             return true;
           }
 
-          await driver.sleep(300); // not too fast
+          await driver.sleep(DEFAULT_ELEMENT_CHECK_INTERVAL); // not too fast
           return false;
         },
         DEFAULT_PAGE_LOADING_TIMEOUT
@@ -235,7 +236,7 @@ describe.skip(`test ${APP_TO_TEST}`, function() {
             return true;
           }
 
-          await driver.sleep(300); // not too fast
+          await driver.sleep(DEFAULT_ELEMENT_CHECK_INTERVAL); // not too fast
           return false;
         },
         DEFAULT_PAGE_LOADING_TIMEOUT

@@ -18,6 +18,7 @@ const {
   PRE_INSTALLED_APPS,
   PRE_PINNED_APPS,
   DEFAULT_PAGE_LOADING_TIMEOUT,
+  DEFAULT_ELEMENT_CHECK_INTERVAL,
   getElements,
   getElement,
   getElementText,
@@ -52,7 +53,7 @@ describe('test MVD login page', function() {
             return true;
           }
 
-          await driver.sleep(300); // not too fast
+          await driver.sleep(DEFAULT_ELEMENT_CHECK_INTERVAL); // not too fast
           return false;
         },
         DEFAULT_PAGE_LOADING_TIMEOUT
@@ -130,7 +131,7 @@ describe('test MVD login page', function() {
             }
           }
 
-          await driver.sleep(300); // not too fast
+          await driver.sleep(DEFAULT_ELEMENT_CHECK_INTERVAL); // not too fast
           return result;
         },
         DEFAULT_PAGE_LOADING_TIMEOUT
@@ -216,7 +217,7 @@ describe('test MVD login page', function() {
             }
           }
 
-          await driver.sleep(300); // not too fast
+          await driver.sleep(DEFAULT_ELEMENT_CHECK_INTERVAL); // not too fast
           return result;
         },
         DEFAULT_PAGE_LOADING_TIMEOUT
@@ -332,7 +333,7 @@ describe('test MVD login page', function() {
     const signout = await getElement(popup, 'button');
     expect(signout).to.be.an('object');
     const signoutText = await signout.getText();
-    expect(signoutText).to.equal('Sign Out');
+    expect(signoutText).to.equal('Log out');
 
     await driver.sleep(3000);
     await signout.click();
