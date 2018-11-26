@@ -64,6 +64,19 @@ customParameters.push(string(
   defaultValue: 'zowe-install-packaging :: master',
   trim: true
 ))
+customParameters.push(string(
+  name: 'ZOWE_CLI_ARTIFACTORY_PATTERN',
+  description: 'Zowe artifactory download pattern',
+  defaultValue: 'libs-snapshot-local/org/zowe/cli/zowe-cli-package/*.zip',
+  trim: true,
+  required: true
+))
+customParameters.push(string(
+  name: 'ZOWE_CLI_ARTIFACTORY_BUILD',
+  description: 'Zowe artifactory download build',
+  defaultValue: 'Zowe CLI Bundle :: master',
+  trim: true
+))
 // >>>>>>>> parameters of installation config
 customParameters.push(string(
   name: 'ZOWE_ROOT_DIR',
@@ -234,9 +247,11 @@ node ('ibm-jenkins-slave-nvm') {
       tasks["download_zowe"] = {
         // download artifactories
         def server = Artifactory.server params.ARTIFACTORY_SERVER
-        def downloadSpec = readFile "artifactory-download-spec.json"
+        def downloadSpec = readFile "artifactory-download-spec.json.template"
         downloadSpec = downloadSpec.replaceAll(/\{ARTIFACTORY_PATTERN\}/, params.ZOWE_ARTIFACTORY_PATTERN)
         downloadSpec = downloadSpec.replaceAll(/\{ARTIFACTORY_BUILD\}/, params.ZOWE_ARTIFACTORY_BUILD)
+        downloadSpec = downloadSpec.replaceAll(/\{CLI_ARTIFACTORY_PATTERN\}/, params.ZOWE_CLI_ARTIFACTORY_PATTERN)
+        downloadSpec = downloadSpec.replaceAll(/\{CLI_ARTIFACTORY_BUILD\}/, params.ZOWE_CLI_ARTIFACTORY_BUILD)
         timeout(20) {
           server.download(downloadSpec)
         }
@@ -347,12 +362,8 @@ EOF"""
     stage('install-cli') {
       ansiColor('xterm') {
         withCredentials([usernamePassword(credentialsId: params.TEST_IMAGE_GUEST_SSH_CREDENTIAL, passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
-          // download cli
-          sh """SSHPASS=${PASSWORD} sshpass -e sftp -o BatchMode=no -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -b - -P ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
-get ${params.INSTALL_DIR}/extracted/zowe-cli-bundle.zip
-EOF"""
           // install CLI
-          sh 'unzip zowe-cli-bundle.zip'
+          sh 'unzip .tmp/zowe-cli-package.zip'
           sh 'npm install -g zowe-cli-*.tgz'
         }
       }
