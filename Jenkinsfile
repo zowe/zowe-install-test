@@ -268,18 +268,18 @@ node ('ibm-jenkins-slave-nvm') {
             withCredentials([usernamePassword(credentialsId: params.TEST_IMAGE_HOST_SSH_CREDENTIAL, passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
               // send script to test image host
               sh """SSHPASS=${PASSWORD} sshpass -e sftp -o BatchMode=no -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -b - -P ${params.TEST_IMAGE_HOST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_HOST_SSH_HOST} << EOF
-  put scripts/refresh-zosaas.sh /home/ibmsys1
-  put scripts/temp-fixes-prereqs-image.sh /home/ibmsys1
-  chmod 755 /home/ibmsys1/refresh-zosaas.sh
-  chmod 755 /home/ibmsys1/temp-fixes-prereqs-image.sh
-  EOF"""
+put scripts/refresh-zosaas.sh /home/ibmsys1
+put scripts/temp-fixes-prereqs-image.sh /home/ibmsys1
+chmod 755 /home/ibmsys1/refresh-zosaas.sh
+chmod 755 /home/ibmsys1/temp-fixes-prereqs-image.sh
+EOF"""
 
               // run refresh-zosaas.sh
               timeout(90) {
                 sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_HOST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_HOST_SSH_HOST} << EOF
-  ~/refresh-zosaas.sh
-  exit 0
-  EOF"""
+~/refresh-zosaas.sh
+exit 0
+EOF"""
               }
 
               // wait a while before testing z/OSMF
@@ -302,13 +302,13 @@ node ('ibm-jenkins-slave-nvm') {
 
           // send file to test image host
           sh """SSHPASS=${PASSWORD} sshpass -e sftp -o BatchMode=no -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -b - -P ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
-  cd ${params.INSTALL_DIR}
-  put scripts/temp-fixes-before-install.sh
-  put scripts/temp-fixes-after-install.sh
-  put scripts/install-zowe.sh
-  put scripts/uninstall-zowe.sh
-  put .tmp/zowe.pax
-  EOF"""
+cd ${params.INSTALL_DIR}
+put scripts/temp-fixes-before-install.sh
+put scripts/temp-fixes-after-install.sh
+put scripts/install-zowe.sh
+put scripts/uninstall-zowe.sh
+put .tmp/zowe.pax
+EOF"""
 
           // run install-zowe.sh
           timeout(30) {
@@ -321,16 +321,16 @@ node ('ibm-jenkins-slave-nvm') {
               uninstallZowe = " -u"
             }
             sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
-  cd ${params.INSTALL_DIR} && \
-    (iconv -f ISO8859-1 -t IBM-1047 install-zowe.sh > install-zowe.sh.new) && mv install-zowe.sh.new install-zowe.sh && chmod +x install-zowe.sh
-  ./install-zowe.sh -n ${params.TEST_IMAGE_GUEST_SSH_HOST} -t ${params.ZOWE_ROOT_DIR} -i ${params.INSTALL_DIR}${skipTempFixes}${uninstallZowe} --zosmf-port ${params.ZOSMF_PORT}\
-    --apim-catelog-port ${params.ZOWE_API_MEDIATION_CATALOG_HTTP_PORT} --apim-discovery-port ${params.ZOWE_API_MEDIATION_DISCOVERY_HTTP_PORT} --apim-gateway-port ${params.ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT}\
-    --explorer-http-port ${params.ZOWE_EXPLORER_SERVER_HTTP_PORT} --explorer-https-port ${params.ZOWE_EXPLORER_SERVER_HTTPS_PORT}\
-    --zlux-http-port ${params.ZOWE_ZLUX_HTTP_PORT} --zlux-https-port ${params.ZOWE_ZLUX_HTTPS_PORT} --zlux-zss-port ${params.ZOWE_ZLUX_ZSS_PORT}\
-    --term-ssh-port ${params.ZOWE_MVD_SSH_PORT} --term-telnet-port ${params.ZOWE_MVD_TELNET_PORT}\
-    ${params.INSTALL_DIR}/zowe.pax || { echo "[install-zowe.sh] failed"; exit 1; }
-  echo "[install-zowe.sh] succeeds" && exit 0
-  EOF"""
+cd ${params.INSTALL_DIR} && \
+  (iconv -f ISO8859-1 -t IBM-1047 install-zowe.sh > install-zowe.sh.new) && mv install-zowe.sh.new install-zowe.sh && chmod +x install-zowe.sh
+./install-zowe.sh -n ${params.TEST_IMAGE_GUEST_SSH_HOST} -t ${params.ZOWE_ROOT_DIR} -i ${params.INSTALL_DIR}${skipTempFixes}${uninstallZowe} --zosmf-port ${params.ZOSMF_PORT}\
+  --apim-catelog-port ${params.ZOWE_API_MEDIATION_CATALOG_HTTP_PORT} --apim-discovery-port ${params.ZOWE_API_MEDIATION_DISCOVERY_HTTP_PORT} --apim-gateway-port ${params.ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT}\
+  --explorer-http-port ${params.ZOWE_EXPLORER_SERVER_HTTP_PORT} --explorer-https-port ${params.ZOWE_EXPLORER_SERVER_HTTPS_PORT}\
+  --zlux-http-port ${params.ZOWE_ZLUX_HTTP_PORT} --zlux-https-port ${params.ZOWE_ZLUX_HTTPS_PORT} --zlux-zss-port ${params.ZOWE_ZLUX_ZSS_PORT}\
+  --term-ssh-port ${params.ZOWE_MVD_SSH_PORT} --term-telnet-port ${params.ZOWE_MVD_TELNET_PORT}\
+  ${params.INSTALL_DIR}/zowe.pax || { echo "[install-zowe.sh] failed"; exit 1; }
+echo "[install-zowe.sh] succeeds" && exit 0
+EOF"""
           }
 
           // wait a while before testing zLux
@@ -381,15 +381,15 @@ node ('ibm-jenkins-slave-nvm') {
             // run tests
             try {
               sh """ZOWE_ROOT_DIR=${params.ZOWE_ROOT_DIR} \
-  SSH_HOST=${params.TEST_IMAGE_GUEST_SSH_HOST} \
-  SSH_PORT=${params.TEST_IMAGE_GUEST_SSH_PORT} \
-  SSH_USER=${USERNAME} \
-  SSH_PASSWD=${PASSWORD} \
-  ZOSMF_PORT=${params.ZOSMF_PORT} \
-  ZOWE_ZLUX_HTTPS_PORT=${params.ZOWE_ZLUX_HTTPS_PORT} \
-  ZOWE_EXPLORER_SERVER_HTTPS_PORT=${params.ZOWE_EXPLORER_SERVER_HTTPS_PORT} \
-  DEBUG=${params.TEST_CASE_DEBUG_INFORMATION} \
-  npm test"""
+SSH_HOST=${params.TEST_IMAGE_GUEST_SSH_HOST} \
+SSH_PORT=${params.TEST_IMAGE_GUEST_SSH_PORT} \
+SSH_USER=${USERNAME} \
+SSH_PASSWD=${PASSWORD} \
+ZOSMF_PORT=${params.ZOSMF_PORT} \
+ZOWE_ZLUX_HTTPS_PORT=${params.ZOWE_ZLUX_HTTPS_PORT} \
+ZOWE_EXPLORER_SERVER_HTTPS_PORT=${params.ZOWE_EXPLORER_SERVER_HTTPS_PORT} \
+DEBUG=${params.TEST_CASE_DEBUG_INFORMATION} \
+npm test"""
             } finally {
               // publish report
               junit 'reports/junit.xml'
