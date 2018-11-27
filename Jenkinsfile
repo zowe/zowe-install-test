@@ -366,8 +366,10 @@ EOF"""
         ansiColor('xterm') {
           withCredentials([usernamePassword(credentialsId: params.TEST_IMAGE_GUEST_SSH_CREDENTIAL, passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
             // install CLI
-            sh 'unzip .tmp/zowe-cli-package.zip'
-            sh 'npm install -g zowe-cli-*.tgz'
+            if (!params.SKIP_INSTALLATION) {
+              sh 'unzip .tmp/zowe-cli-package.zip'
+              sh 'npm install -g zowe-cli-*.tgz'
+            }
           }
         }
       }
