@@ -489,12 +489,6 @@ if [[ "$EXIT_CODE" != "0" ]]; then
 fi
 echo
 
-# move cli bundle out for next step
-if [ "$HAS_EXTRA_ZOWE_FOLDER" = "1" ]; then
-  echo "[${SCRIPT_NAME}] mv cli bundle out ..."
-  mv $FULL_EXTRACTED_ZOWE_FOLDER/files/zowe-cli-bundle.zip $CI_INSTALL_DIR/extracted
-fi
-
 ################################################################################
 echo
 echo "[${SCRIPT_NAME}] done."
