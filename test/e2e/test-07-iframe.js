@@ -28,7 +28,7 @@ const {
 let driver;
 
 const APP_TO_TEST = 'IFrame Sample';
-const APP_ID_TO_LAUNCH = 'com.rs.mvd.tn3270';
+const APP_ID_TO_LAUNCH = 'org.zowe.terminal.tn3270';
 const APP_NAME_TO_LAUNCH = 'TN3270';
 
 let appLaunched = false;
