@@ -64,6 +64,19 @@ customParameters.push(string(
   defaultValue: 'zowe-install-packaging :: master',
   trim: true
 ))
+customParameters.push(string(
+  name: 'ZOWE_CLI_ARTIFACTORY_PATTERN',
+  description: 'Zowe artifactory download pattern',
+  defaultValue: 'libs-snapshot-local/org/zowe/cli/zowe-cli-package/*.zip',
+  trim: true,
+  required: true
+))
+customParameters.push(string(
+  name: 'ZOWE_CLI_ARTIFACTORY_BUILD',
+  description: 'Zowe artifactory download build',
+  defaultValue: 'Zowe CLI Bundle :: master',
+  trim: true
+))
 // >>>>>>>> parameters of installation config
 customParameters.push(string(
   name: 'ZOWE_ROOT_DIR',
@@ -228,62 +241,65 @@ node ('ibm-jenkins-slave-nvm') {
       }
     }
 
-    utils.conditionalStage('prepare', !params.SKIP_INSTALLATION) {
-      def tasks = [:]
+    // lock testing server
+    lock("testing-server-${params.TEST_IMAGE_HOST_SSH_HOST}") {
 
-      tasks["download_zowe"] = {
-        // download artifactories
-        def server = Artifactory.server params.ARTIFACTORY_SERVER
-        def downloadSpec = readFile "artifactory-download-spec.json"
-        downloadSpec = downloadSpec.replaceAll(/\{ARTIFACTORY_PATTERN\}/, params.ZOWE_ARTIFACTORY_PATTERN)
-        downloadSpec = downloadSpec.replaceAll(/\{ARTIFACTORY_BUILD\}/, params.ZOWE_ARTIFACTORY_BUILD)
-        timeout(20) {
-          server.download(downloadSpec)
+      utils.conditionalStage('prepare', !params.SKIP_INSTALLATION) {
+        def tasks = [:]
+
+        tasks["download_zowe"] = {
+          // download artifactories
+          def server = Artifactory.server params.ARTIFACTORY_SERVER
+          def downloadSpec = readFile "artifactory-download-spec-zos.json.template"
+          downloadSpec = downloadSpec.replaceAll(/\{ARTIFACTORY_PATTERN\}/, params.ZOWE_ARTIFACTORY_PATTERN)
+          downloadSpec = downloadSpec.replaceAll(/\{ARTIFACTORY_BUILD\}/, params.ZOWE_ARTIFACTORY_BUILD)
+          timeout(20) {
+            server.download(downloadSpec)
+          }
+
+          // verify downloaded files
+          sh "ls -la .tmp"
         }
 
-        // verify downloaded files
-        sh "ls -la .tmp"
-      }
-
-      if (!params.SKIP_RESET_IMAGE) {
-        tasks["reset_test_image"] = {
-          withCredentials([usernamePassword(credentialsId: params.TEST_IMAGE_HOST_SSH_CREDENTIAL, passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
-            // send script to test image host
-            sh """SSHPASS=${PASSWORD} sshpass -e sftp -o BatchMode=no -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -b - -P ${params.TEST_IMAGE_HOST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_HOST_SSH_HOST} << EOF
+        if (!params.SKIP_RESET_IMAGE) {
+          tasks["reset_test_image"] = {
+            withCredentials([usernamePassword(credentialsId: params.TEST_IMAGE_HOST_SSH_CREDENTIAL, passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
+              // send script to test image host
+              sh """SSHPASS=${PASSWORD} sshpass -e sftp -o BatchMode=no -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -b - -P ${params.TEST_IMAGE_HOST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_HOST_SSH_HOST} << EOF
 put scripts/refresh-zosaas.sh /home/ibmsys1
 put scripts/temp-fixes-prereqs-image.sh /home/ibmsys1
 chmod 755 /home/ibmsys1/refresh-zosaas.sh
 chmod 755 /home/ibmsys1/temp-fixes-prereqs-image.sh
 EOF"""
 
-            // run refresh-zosaas.sh
-            timeout(90) {
-              sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_HOST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_HOST_SSH_HOST} << EOF
+              // run refresh-zosaas.sh
+              timeout(90) {
+                sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_HOST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_HOST_SSH_HOST} << EOF
 ~/refresh-zosaas.sh
 exit 0
 EOF"""
-            }
+              }
 
-            // wait a while before testing z/OSMF
-            sleep time: 10, unit: 'MINUTES'
-            // check if zD&T & z/OSMF are started
-            timeout(120) {
-              sh "./scripts/is-website-ready.sh -r 720 -t 10 -c 20 https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOSMF_PORT}/zosmf/info"
+              // wait a while before testing z/OSMF
+              sleep time: 10, unit: 'MINUTES'
+              // check if zD&T & z/OSMF are started
+              timeout(120) {
+                sh "./scripts/is-website-ready.sh -r 720 -t 10 -c 20 https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOSMF_PORT}/zosmf/info"
+              }
             }
           }
         }
+
+        parallel tasks
       }
 
-      parallel tasks
-    }
+      utils.conditionalStage('install-zowe', !params.SKIP_INSTALLATION) {
+        withCredentials([usernamePassword(credentialsId: params.TEST_IMAGE_GUEST_SSH_CREDENTIAL, passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
+          // create INSTALL_DIR
+          sh "SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} 'mkdir -p ${params.INSTALL_DIR}'"
 
-    utils.conditionalStage('install-zowe', !params.SKIP_INSTALLATION) {
-      withCredentials([usernamePassword(credentialsId: params.TEST_IMAGE_GUEST_SSH_CREDENTIAL, passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
-        // create INSTALL_DIR
-        sh "SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} 'mkdir -p ${params.INSTALL_DIR}'"
-
-        // send file to test image host
-        sh """SSHPASS=${PASSWORD} sshpass -e sftp -o BatchMode=no -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -b - -P ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
+          // send file to test image host
+          sh """SSHPASS=${PASSWORD} sshpass -e sftp -o BatchMode=no -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -b - -P ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
 cd ${params.INSTALL_DIR}
 put scripts/temp-fixes-before-install.sh
 put scripts/temp-fixes-after-install.sh
@@ -292,17 +308,17 @@ put scripts/uninstall-zowe.sh
 put .tmp/zowe.pax
 EOF"""
 
-        // run install-zowe.sh
-        timeout(30) {
-          def skipTempFixes = ""
-          def uninstallZowe = ""
-          if (params.SKIP_TEMP_FIXES) {
-            skipTempFixes = " -s"
-          }
-          if (params.SKIP_RESET_IMAGE) {
-            uninstallZowe = " -u"
-          }
-          sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
+          // run install-zowe.sh
+          timeout(30) {
+            def skipTempFixes = ""
+            def uninstallZowe = ""
+            if (params.SKIP_TEMP_FIXES) {
+              skipTempFixes = " -s"
+            }
+            if (params.SKIP_RESET_IMAGE) {
+              uninstallZowe = " -u"
+            }
+            sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
 cd ${params.INSTALL_DIR} && \
   (iconv -f ISO8859-1 -t IBM-1047 install-zowe.sh > install-zowe.sh.new) && mv install-zowe.sh.new install-zowe.sh && chmod +x install-zowe.sh
 ./install-zowe.sh -n ${params.TEST_IMAGE_GUEST_SSH_HOST} -t ${params.ZOWE_ROOT_DIR} -i ${params.INSTALL_DIR}${skipTempFixes}${uninstallZowe} --zosmf-port ${params.ZOSMF_PORT}\
@@ -313,60 +329,62 @@ cd ${params.INSTALL_DIR} && \
   ${params.INSTALL_DIR}/zowe.pax || { echo "[install-zowe.sh] failed"; exit 1; }
 echo "[install-zowe.sh] succeeds" && exit 0
 EOF"""
-        }
+          }
 
-        // wait a while before testing zLux
-        sleep time: 2, unit: 'MINUTES'
-        // check if zLux is started
-        timeout(60) {
-          sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOWE_ZLUX_HTTPS_PORT}/"
-        }
-        // check if explorer server is started
-        timeout(60) {
-          sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 https://${USERNAME}:${PASSWORD}@${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOWE_EXPLORER_SERVER_HTTPS_PORT}/api/v1/jobs"
-        }
-        // check if zD&T & z/OSMF are started again in case z/OSMF is restarted
-        timeout(60) {
-          sh "./scripts/is-website-ready.sh -r 720 -t 10 -c 20 https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOSMF_PORT}/zosmf/info"
-        }
+          // wait a while before testing zLux
+          sleep time: 2, unit: 'MINUTES'
+          // check if zLux is started
+          timeout(60) {
+            sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOWE_ZLUX_HTTPS_PORT}/"
+          }
+          // check if explorer server is started
+          timeout(60) {
+            sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 https://${USERNAME}:${PASSWORD}@${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOWE_EXPLORER_SERVER_HTTPS_PORT}/api/v1/jobs"
+          }
+          // check if zD&T & z/OSMF are started again in case z/OSMF is restarted
+          timeout(60) {
+            sh "./scripts/is-website-ready.sh -r 720 -t 10 -c 20 https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOSMF_PORT}/zosmf/info"
+          }
 
-        // wait a while before starting test
-        sleep time: 10, unit: 'MINUTES'
-        // FIXME: zLux login may hang there which blocks UI test cases
-        // try a login to the zlux auth api
-        def zluxAuth = sh(
-          script: "curl -d '{\\\"username\\\":\\\"${USERNAME}\\\",\\\"password\\\":\\\"${PASSWORD}\\\"}' -H 'Content-Type: application/json' -X POST -k https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOWE_ZLUX_HTTPS_PORT}/auth",
-          returnStdout: true
-        ).trim()
-        echo "zLux login result:"
-        echo zluxAuth
-      }
-    }
-
-
-    stage('install-cli') {
-      ansiColor('xterm') {
-        withCredentials([usernamePassword(credentialsId: params.TEST_IMAGE_GUEST_SSH_CREDENTIAL, passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
-          // download cli
-          sh """SSHPASS=${PASSWORD} sshpass -e sftp -o BatchMode=no -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -b - -P ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
-get ${params.INSTALL_DIR}/extracted/zowe-cli-bundle.zip
-EOF"""
-          // install CLI
-          sh 'unzip zowe-cli-bundle.zip'
-          sh 'npm install -g zowe-cli-*.tgz'
+          // wait a while before starting test
+          sleep time: 10, unit: 'MINUTES'
+          // FIXME: zLux login may hang there which blocks UI test cases
+          // try a login to the zlux auth api
+          def zluxAuth = sh(
+            script: "curl -d '{\\\"username\\\":\\\"${USERNAME}\\\",\\\"password\\\":\\\"${PASSWORD}\\\"}' -H 'Content-Type: application/json' -X POST -k https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOWE_ZLUX_HTTPS_PORT}/auth",
+            returnStdout: true
+          ).trim()
+          echo "zLux login result:"
+          echo zluxAuth
         }
       }
-    }
 
-    stage('test') {
-      ansiColor('xterm') {
-        sh "npm install"
-        sh "npm run lint"
+      stage('download-and-install-cli') {
+        ansiColor('xterm') {
+          withCredentials([usernamePassword(credentialsId: params.TEST_IMAGE_GUEST_SSH_CREDENTIAL, passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
+            // install CLI
+            def server = Artifactory.server params.ARTIFACTORY_SERVER
+            def downloadSpec = readFile "artifactory-download-spec-cli.json.template"
+            downloadSpec = downloadSpec.replaceAll(/\{CLI_ARTIFACTORY_PATTERN\}/, params.ZOWE_CLI_ARTIFACTORY_PATTERN)
+            downloadSpec = downloadSpec.replaceAll(/\{CLI_ARTIFACTORY_BUILD\}/, params.ZOWE_CLI_ARTIFACTORY_BUILD)
+            timeout(time: 5, unit: 'MINUTES' ) {
+              server.download(downloadSpec)
+            }
+            sh 'unzip .tmp/zowe-cli-package.zip'
+            sh 'npm install -g zowe-cli-*.tgz'
+          }
+        }
+      }
 
-        withCredentials([usernamePassword(credentialsId: params.TEST_IMAGE_GUEST_SSH_CREDENTIAL, passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
-          // run tests
-          try {
-            sh """ZOWE_ROOT_DIR=${params.ZOWE_ROOT_DIR} \
+      stage('test') {
+        ansiColor('xterm') {
+          sh "npm install"
+          sh "npm run lint"
+
+          withCredentials([usernamePassword(credentialsId: params.TEST_IMAGE_GUEST_SSH_CREDENTIAL, passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
+            // run tests
+            try {
+              sh """ZOWE_ROOT_DIR=${params.ZOWE_ROOT_DIR} \
 SSH_HOST=${params.TEST_IMAGE_GUEST_SSH_HOST} \
 SSH_PORT=${params.TEST_IMAGE_GUEST_SSH_PORT} \
 SSH_USER=${USERNAME} \
@@ -376,18 +394,19 @@ ZOWE_ZLUX_HTTPS_PORT=${params.ZOWE_ZLUX_HTTPS_PORT} \
 ZOWE_EXPLORER_SERVER_HTTPS_PORT=${params.ZOWE_EXPLORER_SERVER_HTTPS_PORT} \
 DEBUG=${params.TEST_CASE_DEBUG_INFORMATION} \
 npm test"""
-          } finally {
-            // publish report
-            junit 'reports/junit.xml'
-            publishHTML([
-              allowMissing: false,
-              alwaysLinkToLastBuild: false,
-              keepAll: false,
-              reportDir: 'reports',
-              reportFiles: 'index.html',
-              reportName: 'Test Result HTML Report',
-              reportTitles: ''
-            ])
+            } finally {
+              // publish report
+              junit 'reports/junit.xml'
+              publishHTML([
+                allowMissing: false,
+                alwaysLinkToLastBuild: false,
+                keepAll: false,
+                reportDir: 'reports',
+                reportFiles: 'index.html',
+                reportName: 'Test Result HTML Report',
+                reportTitles: ''
+              ])
+            }
           }
         }
       }
