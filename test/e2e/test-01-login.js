@@ -18,6 +18,7 @@ const {
   PRE_INSTALLED_APPS,
   PRE_PINNED_APPS,
   DEFAULT_PAGE_LOADING_TIMEOUT,
+  DEFAULT_ELEMENT_CHECK_INTERVAL,
   getElements,
   getElement,
   getElementText,
@@ -52,7 +53,7 @@ describe('test MVD login page', function() {
             return true;
           }
 
-          await driver.sleep(300); // not too fast
+          await driver.sleep(DEFAULT_ELEMENT_CHECK_INTERVAL); // not too fast
           return false;
         },
         DEFAULT_PAGE_LOADING_TIMEOUT
@@ -75,6 +76,7 @@ describe('test MVD login page', function() {
 
 
   it('should redirect to login page', async function() {
+    await driver.sleep(5000);
     // save screenshot
     const file = await saveScreenshot(driver, testName, 'login');
     addContext(this, file);
@@ -92,14 +94,19 @@ describe('test MVD login page', function() {
     const usernameInput = await getElement(loginForm, 'input#usernameInput');
     expect(usernameInput).to.be.an('object');
     await usernameInput.clear();
+    await driver.sleep(2000);
     await usernameInput.sendKeys(process.env.SSH_USER);
+    await driver.sleep(2000);
     const passwordInput = await getElement(loginForm, 'input#passwordInput');
     expect(passwordInput).to.be.an('object');
     await passwordInput.clear();
+    await driver.sleep(2000);
     await passwordInput.sendKeys('wrong+passdword!');
+    await driver.sleep(2000);
     // submit login
     const loginButton = await getElement(driver, '#\\#loginButton');
     expect(loginButton).to.be.an('object');
+    await driver.sleep(3000);
     await loginButton.click();
     debug('login button clicked');
 
@@ -124,7 +131,7 @@ describe('test MVD login page', function() {
             }
           }
 
-          await driver.sleep(300); // not too fast
+          await driver.sleep(DEFAULT_ELEMENT_CHECK_INTERVAL); // not too fast
           return result;
         },
         DEFAULT_PAGE_LOADING_TIMEOUT
@@ -152,11 +159,12 @@ describe('test MVD login page', function() {
     let error = await getElementText(driver, 'p.login-error');
     expect(error).to.be.a('string');
     error = error.trim();
-    expect(error).to.include('Authentication failed');
+    expect(error).to.match(/authentication\s*failed/i);
   });
 
 
   it('should login successfully with correct password', async function() {
+    await driver.sleep(5000);
     // save screenshot
     const file0 = await saveScreenshot(driver, testName, 'before-login');
     addContext(this, file0);
@@ -167,14 +175,19 @@ describe('test MVD login page', function() {
     const usernameInput = await getElement(loginForm, 'input#usernameInput');
     expect(usernameInput).to.be.an('object');
     await usernameInput.clear();
+    await driver.sleep(2000);
     await usernameInput.sendKeys(process.env.SSH_USER);
+    await driver.sleep(2000);
     const passwordInput = await getElement(loginForm, 'input#passwordInput');
     expect(passwordInput).to.be.an('object');
     await passwordInput.clear();
+    await driver.sleep(2000);
     await passwordInput.sendKeys(process.env.SSH_PASSWD);
+    await driver.sleep(2000);
     // submit login
     const loginButton = await getElement(driver, '#\\#loginButton');
     expect(loginButton).to.be.an('object');
+    await driver.sleep(3000);
     await loginButton.click();
     debug('login button clicked');
     // wait for login error or successfully
@@ -204,7 +217,7 @@ describe('test MVD login page', function() {
             }
           }
 
-          await driver.sleep(300); // not too fast
+          await driver.sleep(DEFAULT_ELEMENT_CHECK_INTERVAL); // not too fast
           return result;
         },
         DEFAULT_PAGE_LOADING_TIMEOUT
@@ -224,6 +237,7 @@ describe('test MVD login page', function() {
     }
     debug('login done');
 
+    await driver.sleep(10000); // wait a little bit more
     // save screenshot
     const file = await saveScreenshot(driver, testName, 'login-successfully');
     addContext(this, file);
@@ -264,6 +278,7 @@ describe('test MVD login page', function() {
     expect(menuIcon).to.be.an('object');
 
     // popup menu
+    await driver.sleep(3000);
     await menuIcon.click();
     await driver.sleep(1000);
 
@@ -299,6 +314,7 @@ describe('test MVD login page', function() {
     expect(userIcon).to.be.an('object');
 
     // popup user info
+    await driver.sleep(3000);
     await userIcon.click();
     await driver.sleep(1000);
 
@@ -317,8 +333,9 @@ describe('test MVD login page', function() {
     const signout = await getElement(popup, 'button');
     expect(signout).to.be.an('object');
     const signoutText = await signout.getText();
-    expect(signoutText).to.equal('Sign Out');
+    expect(signoutText).to.equal('Log out');
 
+    await driver.sleep(3000);
     await signout.click();
     await waitUntilElement(driver, '#\\#loginButton');
 

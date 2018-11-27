@@ -18,6 +18,7 @@ const { Key, until } = require('selenium-webdriver');
 
 const {
   DEFAULT_PAGE_LOADING_TIMEOUT,
+  DEFAULT_ELEMENT_CHECK_INTERVAL,
   MVD_ATLAS_APP_CONTEXT,
   saveScreenshot,
   getDefaultDriver,
@@ -37,7 +38,7 @@ let driver;
 const APP_TO_TEST = 'MVS Explorer';
 const DS_TO_TEST = 'TCPIP.TCPIP.DATA';
 
-const MVD_EXPLORER_TREE_SECTION = 'div.tree-card > div > div:nth-child(2)';
+const MVD_EXPLORER_TREE_SECTION = 'div.tree-card > div > div';
 
 let appLaunched = false;
 let testDsIndex = -1;
@@ -176,7 +177,7 @@ describe(`test ${APP_TO_TEST}`, function() {
             return true;
           }
 
-          await driver.sleep(300); // not too fast
+          await driver.sleep(DEFAULT_ELEMENT_CHECK_INTERVAL); // not too fast
           return false;
         },
         DEFAULT_PAGE_LOADING_TIMEOUT

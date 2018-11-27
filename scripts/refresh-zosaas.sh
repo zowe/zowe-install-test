@@ -21,8 +21,8 @@
 SCRIPT_NAME=$(basename "$0")
 SCRIPT_PWD=$(pwd)
 TASK_USERNAME=ibmsys1
-PATH_ZIPPED=/zaas1/techinfo/zVolumesZipped
-PATH_UNZIPPED=/zaas1/zVolumes
+PATH_ZIPPED=/zaas1/zimage/zVolumesZipped
+PATH_UNZIPPED=/zaas1/zimage/zVolumes
 
 # allow to exit by ctrl+c
 function finish() {
@@ -37,10 +37,6 @@ WHOAMI=$(whoami)
 if [ "$WHOAMI" != "$TASK_USERNAME" ]; then
   echo "[${SCRIPT_NAME}] not login as ${TASK_USERNAME}, exit"
   exit 1
-fi
-HOSTNAME=$(hostname)
-if [[ "$HOSTNAME" == "river" ]]; then
-  PATH_ZIPPED=/zaas1/techinfo/zVolumesZipped/prereqs/techinfo/zVolumesZipped
 fi
 ################################################################################
 echo "[${SCRIPT_NAME}] refreshing zOSaaS started ..."
@@ -63,18 +59,6 @@ if [ -n "$AWSSTAT" ]; then
   awsstop
   echo "[${SCRIPT_NAME}] current zOSaaS stopped."
   echo
-
-  echo "[${SCRIPT_NAME}] killing other processes started by onboot.sh"
-  ONBOOT_PID=$(ps -ef -o pid,comm | grep onboot.sh | grep -v grep | awk '{print $1}')
-  if [ -n "$ONBOOT_PID" ]; then
-    echo "[${SCRIPT_NAME}]     - killing process group of onboot.sh PID=$ONBOOT_PID"
-    kill -- -$ONBOOT_PID
-  else
-    echo "[${SCRIPT_NAME}]     - cannot find process group of onboot.sh"
-  fi
-  echo "[${SCRIPT_NAME}]     - killing x3270 processes..."
-  pkill -9 -x x3270
-  echo "[${SCRIPT_NAME}]     - done."
 else
   echo "[${SCRIPT_NAME}] zOSaaS is not running."
 fi
@@ -112,21 +96,8 @@ fi
 
 ################################################################################
 # restart the image
-# FIXME: we cannot simply restart image to bring up zD&T, waiting for v4
-# echo "[${SCRIPT_NAME}] rebooting image ..."
-# sudo shutdown -r 1
-# echo "[${SCRIPT_NAME}] please manually start zD&T..."
-# echo
-# echo "[${SCRIPT_NAME}] to manually start, please follow these steps:"
-# echo "[${SCRIPT_NAME}] 1. start SSH tunnel on VNC port 5901"
-# echo "[${SCRIPT_NAME}]    $ ssh -L 5901:localhost:5901 ibmsys1@river.zowe.org"
-# echo "[${SCRIPT_NAME}] 2. use vncviewer or other tools (like screen sharing) to connect to vnc"
-# echo "[${SCRIPT_NAME}]    $ vncviewer localhost:1"
-# echo "[${SCRIPT_NAME}] 3. from VNC Terminal command line, run command:"
-# echo "[${SCRIPT_NAME}]    $ /zaas1/scripts/onboot.sh"
-# echo "[${SCRIPT_NAME}] 4. go back to Jenkins job and click Continue."
-echo "[${SCRIPT_NAME}] restarting VNC to start onboot.sh ..."
-sudo systemctl restart vncserver.service
+echo "[${SCRIPT_NAME}] restarting zOSaaS ..."
+sudo systemctl restart zaasHelper.service
 
 ################################################################################
 echo

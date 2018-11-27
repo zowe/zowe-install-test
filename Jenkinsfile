@@ -268,7 +268,7 @@ EOF"""
             sleep time: 10, unit: 'MINUTES'
             // check if zD&T & z/OSMF are started
             timeout(120) {
-              sh "./scripts/is-website-ready.sh -r 720 -t 10 -c 20 https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOSMF_PORT}/zosmf/"
+              sh "./scripts/is-website-ready.sh -r 720 -t 10 -c 20 https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOSMF_PORT}/zosmf/info"
             }
           }
         }
@@ -327,18 +327,18 @@ EOF"""
         }
         // check if zD&T & z/OSMF are started again in case z/OSMF is restarted
         timeout(60) {
-          sh "./scripts/is-website-ready.sh -r 720 -t 10 -c 20 https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOSMF_PORT}/zosmf/"
+          sh "./scripts/is-website-ready.sh -r 720 -t 10 -c 20 https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOSMF_PORT}/zosmf/info"
         }
 
-        // FIXME: wait more until the services are stable, otherwise UI test cases might fail randomly
-        sleep time: 30, unit: 'MINUTES'
+        // wait a while before starting test
+        sleep time: 10, unit: 'MINUTES'
         // FIXME: zLux login may hang there which blocks UI test cases
         // try a login to the zlux auth api
         def zluxAuth = sh(
           script: "curl -d '{\\\"username\\\":\\\"${USERNAME}\\\",\\\"password\\\":\\\"${PASSWORD}\\\"}' -H 'Content-Type: application/json' -X POST -k https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOWE_ZLUX_HTTPS_PORT}/auth",
           returnStdout: true
         ).trim()
-        echo "zLux login successfully:"
+        echo "zLux login result:"
         echo zluxAuth
       }
     }
