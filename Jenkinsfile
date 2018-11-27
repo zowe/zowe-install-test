@@ -250,11 +250,9 @@ node ('ibm-jenkins-slave-nvm') {
         tasks["download_zowe"] = {
           // download artifactories
           def server = Artifactory.server params.ARTIFACTORY_SERVER
-          def downloadSpec = readFile "artifactory-download-spec.json.template"
+          def downloadSpec = readFile "artifactory-download-spec-zos.json.template"
           downloadSpec = downloadSpec.replaceAll(/\{ARTIFACTORY_PATTERN\}/, params.ZOWE_ARTIFACTORY_PATTERN)
           downloadSpec = downloadSpec.replaceAll(/\{ARTIFACTORY_BUILD\}/, params.ZOWE_ARTIFACTORY_BUILD)
-          downloadSpec = downloadSpec.replaceAll(/\{CLI_ARTIFACTORY_PATTERN\}/, params.ZOWE_CLI_ARTIFACTORY_PATTERN)
-          downloadSpec = downloadSpec.replaceAll(/\{CLI_ARTIFACTORY_BUILD\}/, params.ZOWE_CLI_ARTIFACTORY_BUILD)
           timeout(20) {
             server.download(downloadSpec)
           }
@@ -361,15 +359,19 @@ EOF"""
         }
       }
 
-
-      stage('install-cli') {
+      stage('download-and-install-cli') {
         ansiColor('xterm') {
           withCredentials([usernamePassword(credentialsId: params.TEST_IMAGE_GUEST_SSH_CREDENTIAL, passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
             // install CLI
-            if (!params.SKIP_INSTALLATION) {
-              sh 'unzip .tmp/zowe-cli-package.zip'
-              sh 'npm install -g zowe-cli-*.tgz'
+            def server = Artifactory.server params.ARTIFACTORY_SERVER
+            def downloadSpec = readFile "artifactory-download-spec-cli.json.template"
+            downloadSpec = downloadSpec.replaceAll(/\{CLI_ARTIFACTORY_PATTERN\}/, params.ZOWE_CLI_ARTIFACTORY_PATTERN)
+            downloadSpec = downloadSpec.replaceAll(/\{CLI_ARTIFACTORY_BUILD\}/, params.ZOWE_CLI_ARTIFACTORY_BUILD)
+            timeout(time: 5, unit: 'MINUTES' ) {
+              server.download(downloadSpec)
             }
+            sh 'unzip .tmp/zowe-cli-package.zip'
+            sh 'npm install -g zowe-cli-*.tgz'
           }
         }
       }

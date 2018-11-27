@@ -1,10 +1,5 @@
 {
   "files": [{
-    "pattern": "{ARTIFACTORY_PATTERN}",
-    "target": ".tmp/zowe.pax",
-    "flat": "true",
-    "build": "{ARTIFACTORY_BUILD}"
-  }, {
     "pattern": "{CLI_ARTIFACTORY_PATTERN}",
     "target": ".tmp/zowe-cli-package.zip",
     "flat": "true",
