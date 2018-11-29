@@ -375,7 +375,17 @@ EOF"""
           }
         }
       }
-
+      stage('download-and-install-apiml-e2e') {
+        ansiColor('xterm') {
+          withCredentials([usernamePassword(credentialsId: params.TEST_IMAGE_GUEST_SSH_CREDENTIAL, passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
+            // install CLI
+            git branch: 'master', credentialsId: 'zowe-robot-github', url: 'https://github.com/zowe/api-layer.git'
+            sh 'cd api-catalog-ui/frontend'
+            sh 'npm install'
+            sh '../../'
+          }
+        }
+      }
       stage('test') {
         ansiColor('xterm') {
           sh "npm install"
@@ -394,6 +404,11 @@ ZOWE_ZLUX_HTTPS_PORT=${params.ZOWE_ZLUX_HTTPS_PORT} \
 ZOWE_EXPLORER_SERVER_HTTPS_PORT=${params.ZOWE_EXPLORER_SERVER_HTTPS_PORT} \
 DEBUG=${params.TEST_CASE_DEBUG_INFORMATION} \
 npm test"""
+              sh "cd api-layer/api-catalog-ui/frontend/"
+              sh  """
+                  API_CATALOG_BASE_URL=${params.TEST_IMAGE_GUEST_SSH_HOST}/${params.TEST_IMAGE_APIML_PORT}
+              npm run test:e2e:ci 
+              """    
             } finally {
               // publish report
               junit 'reports/junit.xml'
