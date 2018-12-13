@@ -431,7 +431,7 @@ if [[ "$CI_UNINSTALL" = "yes" ]]; then
   cd $CI_INSTALL_DIR
   RUN_SCRIPT=uninstall-zowe.sh
   if [ -f "$RUN_SCRIPT" ]; then
-    run_script_with_timeout "${RUN_SCRIPT}" 300
+    run_script_with_timeout "${RUN_SCRIPT} -t ${CI_ZOWE_ROOT_DIR} -m ${CI_PROCLIB_MEMBER_NAME}" 300
     EXIT_CODE=$?
     if [[ "$EXIT_CODE" != "0" ]]; then
       echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
@@ -535,7 +535,7 @@ if [ "$CI_SKIP_TEMP_FIXES" != "yes" ]; then
   cd $CI_INSTALL_DIR
   RUN_SCRIPT=temp-fixes-after-install.sh
   if [ -f "$RUN_SCRIPT" ]; then
-    run_script_with_timeout "${RUN_SCRIPT} ${CI_ZOWE_ROOT_DIR} ${CI_HOSTNAME}" 1800
+    run_script_with_timeout "${RUN_SCRIPT} ${CI_ZOWE_ROOT_DIR} ${CI_HOSTNAME} ${CI_PROCLIB_MEMBER_NAME}" 1800
     EXIT_CODE=$?
     if [[ "$EXIT_CODE" != "0" ]]; then
       echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
