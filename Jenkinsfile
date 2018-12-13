@@ -93,6 +93,20 @@ customParameters.push(string(
   required: true
 ))
 customParameters.push(string(
+  name: 'PROCLIB_DS',
+  description: 'PROCLIB data set name',
+  defaultValue: 'auto',
+  trim: true,
+  required: true
+))
+customParameters.push(string(
+  name: 'PROCLIB_MEMBER',
+  description: 'PROCLIB member name',
+  defaultValue: 'ZOWESVR',
+  trim: true,
+  required: true
+))
+customParameters.push(string(
   name: 'ZOSMF_PORT',
   description: 'Port of z/OSMF service',
   defaultValue: '10443',
@@ -136,21 +150,21 @@ customParameters.push(string(
 ))
 customParameters.push(string(
   name: 'ZOWE_API_MEDIATION_CATALOG_HTTP_PORT',
-  description: 'catalogHttpPort for Zowe API mediation',
+  description: 'catalogPort for Zowe API mediation',
   defaultValue: '7552',
   trim: true,
   required: true
 ))
 customParameters.push(string(
   name: 'ZOWE_API_MEDIATION_DISCOVERY_HTTP_PORT',
-  description: 'discoveryHttpPort for Zowe API mediation',
+  description: 'discoveryPort for Zowe API mediation',
   defaultValue: '7553',
   trim: true,
   required: true
 ))
 customParameters.push(string(
   name: 'ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT',
-  description: 'gatewayHttpsPort for Zowe API mediation',
+  description: 'gatewayPort for Zowe API mediation',
   defaultValue: '7554',
   trim: true,
   required: true
@@ -322,7 +336,8 @@ EOF"""
 cd ${params.INSTALL_DIR} && \
   (iconv -f ISO8859-1 -t IBM-1047 install-zowe.sh > install-zowe.sh.new) && mv install-zowe.sh.new install-zowe.sh && chmod +x install-zowe.sh
 ./install-zowe.sh -n ${params.TEST_IMAGE_GUEST_SSH_HOST} -t ${params.ZOWE_ROOT_DIR} -i ${params.INSTALL_DIR}${skipTempFixes}${uninstallZowe} --zosmf-port ${params.ZOSMF_PORT}\
-  --apim-catelog-port ${params.ZOWE_API_MEDIATION_CATALOG_HTTP_PORT} --apim-discovery-port ${params.ZOWE_API_MEDIATION_DISCOVERY_HTTP_PORT} --apim-gateway-port ${params.ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT}\
+  --proc-ds ${params.PROCLIB_DS} --proc-member ${params.PROCLIB_MEMBER}\
+  --apim-catalog-port ${params.ZOWE_API_MEDIATION_CATALOG_HTTP_PORT} --apim-discovery-port ${params.ZOWE_API_MEDIATION_DISCOVERY_HTTP_PORT} --apim-gateway-port ${params.ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT}\
   --explorer-http-port ${params.ZOWE_EXPLORER_SERVER_HTTP_PORT} --explorer-https-port ${params.ZOWE_EXPLORER_SERVER_HTTPS_PORT}\
   --zlux-http-port ${params.ZOWE_ZLUX_HTTP_PORT} --zlux-https-port ${params.ZOWE_ZLUX_HTTPS_PORT} --zlux-zss-port ${params.ZOWE_ZLUX_ZSS_PORT}\
   --term-ssh-port ${params.ZOWE_MVD_SSH_PORT} --term-telnet-port ${params.ZOWE_MVD_TELNET_PORT}\
@@ -390,6 +405,7 @@ SSH_PORT=${params.TEST_IMAGE_GUEST_SSH_PORT} \
 SSH_USER=${USERNAME} \
 SSH_PASSWD=${PASSWORD} \
 ZOSMF_PORT=${params.ZOSMF_PORT} \
+ZOWE_DS_MEMBER=${params.PROCLIB_MEMBER} \
 ZOWE_ZLUX_HTTPS_PORT=${params.ZOWE_ZLUX_HTTPS_PORT} \
 ZOWE_EXPLORER_SERVER_HTTPS_PORT=${params.ZOWE_EXPLORER_SERVER_HTTPS_PORT} \
 DEBUG=${params.TEST_CASE_DEBUG_INFORMATION} \

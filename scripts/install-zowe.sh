@@ -22,9 +22,13 @@ SCRIPT_NAME=$(basename "$0")
 DEFAULT_CI_ZOSMF_PORT=10443
 DEFAULT_CI_ZOWE_ROOT_DIR=/zaas1/zowe
 DEFAULT_CI_INSTALL_DIR=/zaas1/zowe-install
-DEFAULT_CI_APIM_CATELOG_PORT=7552
+DEFAULT_CI_APIM_CATALOG_PORT=7552
 DEFAULT_CI_APIM_DISCOVERY_PORT=7553
 DEFAULT_CI_APIM_GATEWAY_PORT=7554
+DEFAULT_CI_APIM_EXT_CERT=
+DEFAULT_CI_APIM_EXT_CERT_ALIAS=
+DEFAULT_CI_APIM_EXT_CERT_AUTH=
+DEFAULT_CI_APIM_VERIFY_CERT=true
 DEFAULT_CI_EXPLORER_HTTP_PORT=7080
 DEFAULT_CI_EXPLORER_HTTPS_PORT=7443
 DEFAULT_CI_ZLUX_HTTP_PORT=8543
@@ -32,6 +36,8 @@ DEFAULT_CI_ZLUX_HTTPS_PORT=8544
 DEFAULT_CI_ZLUX_ZSS_PORT=8542
 DEFAULT_CI_TERMINALS_SSH_PORT=22
 DEFAULT_CI_TERMINALS_TELNET_PORT=23
+DEFAULT_CI_PROCLIB_DS_NAME=auto
+DEFAULT_CI_PROCLIB_MEMBER_NAME=ZOWESVR
 CI_ZOWE_CONFIG_FILE=zowe-install.yaml
 CI_ZOWE_PAX=
 CI_SKIP_TEMP_FIXES=no
@@ -40,9 +46,13 @@ CI_HOSTNAME=
 CI_ZOSMF_PORT=$DEFAULT_CI_ZOSMF_PORT
 CI_ZOWE_ROOT_DIR=$DEFAULT_CI_ZOWE_ROOT_DIR
 CI_INSTALL_DIR=$DEFAULT_CI_INSTALL_DIR
-CI_APIM_CATELOG_PORT=$DEFAULT_CI_APIM_CATELOG_PORT
+CI_APIM_CATALOG_PORT=$DEFAULT_CI_APIM_CATALOG_PORT
 CI_APIM_DISCOVERY_PORT=$DEFAULT_CI_APIM_DISCOVERY_PORT
 CI_APIM_GATEWAY_PORT=$DEFAULT_CI_APIM_GATEWAY_PORT
+CI_APIM_EXT_CERT=$DEFAULT_CI_APIM_EXT_CERT
+CI_APIM_EXT_CERT_ALIAS=$DEFAULT_CI_APIM_EXT_CERT_ALIAS
+CI_APIM_EXT_CERT_AUTH=$DEFAULT_CI_APIM_EXT_CERT_AUTH
+CI_APIM_VERIFY_CERT=$DEFAULT_CI_APIM_VERIFY_CERT
 CI_EXPLORER_HTTP_PORT=$DEFAULT_CI_EXPLORER_HTTP_PORT
 CI_EXPLORER_HTTPS_PORT=$DEFAULT_CI_EXPLORER_HTTPS_PORT
 CI_ZLUX_HTTP_PORT=$DEFAULT_CI_ZLUX_HTTP_PORT
@@ -50,6 +60,8 @@ CI_ZLUX_HTTPS_PORT=$DEFAULT_CI_ZLUX_HTTPS_PORT
 CI_ZLUX_ZSS_PORT=$DEFAULT_CI_ZLUX_ZSS_PORT
 CI_TERMINALS_SSH_PORT=$DEFAULT_CI_TERMINALS_SSH_PORT
 CI_TERMINALS_TELNET_PORT=$DEFAULT_CI_TERMINALS_TELNET_PORT
+CI_PROCLIB_DS_NAME=$DEFAULT_CI_PROCLIB_DS_NAME
+CI_PROCLIB_MEMBER_NAME=$DEFAULT_CI_PROCLIB_MEMBER_NAME
 
 # allow to exit by ctrl+c
 function finish {
@@ -190,12 +202,20 @@ function usage {
   echo "                        Optional, default is $DEFAULT_CI_ZOWE_ROOT_DIR."
   echo "  -i|--install-dir      Installation working folder."
   echo "                        Optional, default is $DEFAULT_CI_INSTALL_DIR."
-  echo "  --apim-catelog-port   catalogHttpPort for api-mediation."
-  echo "                        Optional, default is $DEFAULT_CI_APIM_CATELOG_PORT."
-  echo "  --apim-discovery-port discoveryHttpPort for api-mediation."
+  echo "  --apim-catalog-port   catalogPort for api-mediation."
+  echo "                        Optional, default is $DEFAULT_CI_APIM_CATALOG_PORT."
+  echo "  --apim-discovery-port discoveryPort for api-mediation."
   echo "                        Optional, default is $DEFAULT_CI_APIM_DISCOVERY_PORT."
-  echo "  --apim-gateway-port   gatewayHttpsPort for api-mediation."
+  echo "  --apim-gateway-port   gatewayPort for api-mediation."
   echo "                        Optional, default is $DEFAULT_CI_APIM_GATEWAY_PORT."
+  echo "  --apim-cert           externalCertificate for api-mediation."
+  echo "                        Optional, default is $DEFAULT_CI_APIM_EXT_CERT."
+  echo "  --apim-cert-alias     externalCertificateAlias for api-mediation."
+  echo "                        Optional, default is $DEFAULT_CI_APIM_EXT_CERT_ALIAS."
+  echo "  --apim-ca             externalCertificateAuthorities for api-mediation."
+  echo "                        Optional, default is $DEFAULT_CI_APIM_EXT_CERT_AUTH."
+  echo "  --apim-verify-cert    verifyCertificatesOfServices for api-mediation."
+  echo "                        Optional, default is $DEFAULT_CI_APIM_VERIFY_CERT."
   echo "  --explorer-http-port  httpPort for explorer-server."
   echo "                        Optional, default is $DEFAULT_CI_EXPLORER_HTTP_PORT."
   echo "  --explorer-https-port httpsPort for explorer-server."
@@ -210,6 +230,10 @@ function usage {
   echo "                        Optional, default is $DEFAULT_CI_TERMINALS_SSH_PORT."
   echo "  --term-telnet-port    telnetPort for MVD terminals."
   echo "                        Optional, default is $DEFAULT_CI_TERMINALS_TELNET_PORT."
+  echo "  --proc-ds             dsName for PROCLIB."
+  echo "                        Optional, default is $DEFAULT_CI_PROCLIB_DS_NAME."
+  echo "  --proc-member         memberName for PROCLIB."
+  echo "                        Optional, default is $DEFAULT_CI_PROCLIB_MEMBER_NAME."
   echo
 }
 
@@ -251,8 +275,8 @@ while [ $# -gt 0 ]; do
       shift # past argument
       shift # past value
       ;;
-    --apim-catelog-port)
-      CI_APIM_CATELOG_PORT="$2"
+    --apim-catalog-port)
+      CI_APIM_CATALOG_PORT="$2"
       shift # past argument
       shift # past value
       ;;
@@ -263,6 +287,26 @@ while [ $# -gt 0 ]; do
       ;;
     --apim-gateway-port)
       CI_APIM_GATEWAY_PORT="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    --apim-cert)
+      CI_APIM_EXT_CERT="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    --apim-cert-alias)
+      CI_APIM_EXT_CERT_ALIAS="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    --apim-ca)
+      CI_APIM_EXT_CERT_AUTH="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    --apim-verify-cert)
+      CI_APIM_VERIFY_CERT="$2"
       shift # past argument
       shift # past value
       ;;
@@ -298,6 +342,16 @@ while [ $# -gt 0 ]; do
       ;;
     --term-telnet-port)
       CI_TERMINALS_TELNET_PORT="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    --proc-ds)
+      CI_PROCLIB_DS_NAME="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    --proc-member)
+      CI_PROCLIB_MEMBER_NAME="$2"
       shift # past argument
       shift # past value
       ;;
@@ -350,20 +404,27 @@ echo "[${SCRIPT_NAME}]   - z/OSMF port         : $CI_ZOSMF_PORT"
 echo "[${SCRIPT_NAME}]   - temporary folder    : $CI_INSTALL_DIR"
 echo "[${SCRIPT_NAME}]   - install.            :"
 echo "[${SCRIPT_NAME}]     - rootDir           : $CI_ZOWE_ROOT_DIR"
+echo "[${SCRIPT_NAME}]   - zowe-server-proclib :"
+echo "[${SCRIPT_NAME}]     - dsName            : $CI_PROCLIB_DS_NAME"
+echo "[${SCRIPT_NAME}]     - memberName        : $CI_PROCLIB_MEMBER_NAME"
 echo "[${SCRIPT_NAME}]   - api-mediation       :"
-echo "[${SCRIPT_NAME}]     - catalogHttpPort   : $CI_APIM_CATELOG_PORT"
-echo "[${SCRIPT_NAME}]     - discoveryHttpPort : $CI_APIM_DISCOVERY_PORT"
-echo "[${SCRIPT_NAME}]     - gatewayHttpsPort  : $CI_APIM_GATEWAY_PORT"
+echo "[${SCRIPT_NAME}]     - catalogPort       : $CI_APIM_CATALOG_PORT"
+echo "[${SCRIPT_NAME}]     - discoveryPort     : $CI_APIM_DISCOVERY_PORT"
+echo "[${SCRIPT_NAME}]     - gatewayPort       : $CI_APIM_GATEWAY_PORT"
+echo "[${SCRIPT_NAME}]     - externalCertificate            : $CI_APIM_EXT_CERT"
+echo "[${SCRIPT_NAME}]     - externalCertificateAlias       : $CI_APIM_EXT_CERT_ALIAS"
+echo "[${SCRIPT_NAME}]     - externalCertificateAuthorities : $CI_APIM_EXT_CERT_AUTH"
+echo "[${SCRIPT_NAME}]     - verifyCertificatesOfServices   : $CI_APIM_VERIFY_CERT"
 echo "[${SCRIPT_NAME}]   - explorer-server     :"
 echo "[${SCRIPT_NAME}]     - httpPort          : $CI_EXPLORER_HTTP_PORT"
 echo "[${SCRIPT_NAME}]     - httpsPort         : $CI_EXPLORER_HTTPS_PORT"
-echo "[${SCRIPT_NAME}]   - zlux-server.        :"
+echo "[${SCRIPT_NAME}]   - zlux-server         :"
 echo "[${SCRIPT_NAME}]     - httpPort          : $CI_ZLUX_HTTP_PORT"
 echo "[${SCRIPT_NAME}]     - httpsPort         : $CI_ZLUX_HTTPS_PORT"
 echo "[${SCRIPT_NAME}]     - zssPort           : $CI_ZLUX_ZSS_PORT"
-echo "[${SCRIPT_NAME}]   - terminals.          :"
+echo "[${SCRIPT_NAME}]   - terminals           :"
 echo "[${SCRIPT_NAME}]     - sshPort           : $CI_TERMINALS_SSH_PORT"
-echo "[${SCRIPT_NAME}]     - telnetPort.       : $CI_TERMINALS_TELNET_PORT"
+echo "[${SCRIPT_NAME}]     - telnetPort        : $CI_TERMINALS_TELNET_PORT"
 echo
 
 if [[ "$CI_UNINSTALL" = "yes" ]]; then
@@ -411,9 +472,15 @@ echo "[${SCRIPT_NAME}] configure installation yaml ..."
 cd $FULL_EXTRACTED_ZOWE_FOLDER/install
 cat "${CI_ZOWE_CONFIG_FILE}" | \
   sed -e "/^install:/,\$s#rootDir=.*\$#rootDir=${CI_ZOWE_ROOT_DIR}#" | \
-  sed -e "/^api-mediation:/,\$s#catalogHttpPort=.*\$#catalogHttpPort=${CI_APIM_CATELOG_PORT}#" | \
-  sed -e "/^api-mediation:/,\$s#discoveryHttpPort=.*\$#discoveryHttpPort=${CI_APIM_DISCOVERY_PORT}#" | \
-  sed -e "/^api-mediation:/,\$s#gatewayHttpsPort=.*\$#gatewayHttpsPort=${CI_APIM_GATEWAY_PORT}#" | \
+  sed -e "/^zowe-server-proclib:/,\$s#dsName=.*\$#dsName=${CI_PROCLIB_DS_NAME}#" | \
+  sed -e "/^zowe-server-proclib:/,\$s#memberName=.*\$#memberName=${CI_PROCLIB_MEMBER_NAME}#" | \
+  sed -e "/^api-mediation:/,\$s#catalogPort=.*\$#catalogPort=${CI_APIM_CATALOG_PORT}#" | \
+  sed -e "/^api-mediation:/,\$s#discoveryPort=.*\$#discoveryPort=${CI_APIM_DISCOVERY_PORT}#" | \
+  sed -e "/^api-mediation:/,\$s#gatewayPort=.*\$#gatewayPort=${CI_APIM_GATEWAY_PORT}#" | \
+  sed -e "/^api-mediation:/,\$s#externalCertificate=.*\$#externalCertificate=${CI_APIM_EXT_CERT}#" | \
+  sed -e "/^api-mediation:/,\$s#externalCertificateAlias=.*\$#externalCertificateAlias=${CI_APIM_EXT_CERT_ALIAS}#" | \
+  sed -e "/^api-mediation:/,\$s#externalCertificateAuthorities=.*\$#externalCertificateAuthorities=${CI_APIM_EXT_CERT_AUTH}#" | \
+  sed -e "/^api-mediation:/,\$s#verifyCertificatesOfServices=.*\$#verifyCertificatesOfServices=${CI_APIM_VERIFY_CERT}#" | \
   sed -e "/^explorer-server:/,\$s#httpPort=.*\$#httpPort=${CI_EXPLORER_HTTP_PORT}#" | \
   sed -e "/^explorer-server:/,\$s#httpsPort=.*\$#httpsPort=${CI_EXPLORER_HTTPS_PORT}#" | \
   sed -e "/^zlux-server:/,\$s#httpPort=.*\$#httpPort=${CI_ZLUX_HTTP_PORT}#" | \
