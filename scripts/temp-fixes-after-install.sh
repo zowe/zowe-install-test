@@ -21,17 +21,19 @@
 SCRIPT_NAME=$(basename "$0")
 CI_ZOWE_ROOT_DIR=$1
 CI_HOSTNAME=$2
+CI_ZOWE_DS_MEMBER=$3
 echo "[${SCRIPT_NAME}] started ..."
 echo "[${SCRIPT_NAME}]    CI_ZOWE_ROOT_DIR           : $CI_ZOWE_ROOT_DIR"
 echo "[${SCRIPT_NAME}]    CI_HOSTNAME                : $CI_HOSTNAME"
+echo "[${SCRIPT_NAME}]    CI_ZOWE_DS_MEMBER          : $CI_ZOWE_DS_MEMBER"
 
 ################################################################################
 # Error when starting explore-server:
 # [ERROR ] CWPKI0033E: The keystore located at safkeyringhybrid:///IZUKeyring.IZUDFLT did not load because of the following error: Errors encountered loading keyring. Keyring could not be loaded as a JCECCARACFKS or JCERACFKS keystore.
 echo
-echo "[${SCRIPT_NAME}] change ZOWESVR RACF user ..."
-(exec sh -c 'tsocmd "RDEFINE STARTED ZOWESVR.* UACC(NONE) STDATA(USER(IZUSVR) GROUP(IZUADMIN) PRIVILEGED(NO) TRUSTED(NO) TRACE(YES))"')
-(exec sh -c 'tsocmd "SETROPTS RACLIST(STARTED) REFRESH"')
+echo "[${SCRIPT_NAME}] change ${CI_ZOWE_DS_MEMBER} RACF user ..."
+(exec sh -c "tsocmd \"RDEFINE STARTED ${CI_ZOWE_DS_MEMBER}.* UACC(NONE) STDATA(USER(IZUSVR) GROUP(IZUADMIN) PRIVILEGED(NO) TRUSTED(NO) TRACE(YES))\"")
+(exec sh -c "tsocmd \"SETROPTS RACLIST(STARTED) REFRESH\"")
 echo
 
 ################################################################################
