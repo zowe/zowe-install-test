@@ -27,22 +27,6 @@ echo "[${SCRIPT_NAME}]    FULL_EXTRACTED_ZOWE_FOLDER : $FULL_EXTRACTED_ZOWE_FOLD
 CI_PWD=$(pwd)
 
 ################################################################################
-# NODE_HOME is not specified on the pre-reqs image
-echo
-if [ -z "$NODE_HOME" ]; then
-  echo "[${SCRIPT_NAME}] NODE_HOME is missing, need to fix:"
-  # write to ~/.profile
-  if [ ! -f "~/.profile" ]; then
-    touch ~/.profile
-  fi
-  echo "export NODE_HOME=/Z23B/usr/lpp/IBM/cnj/IBM/node-v6.13.0-os390-s390x" >> ~/.profile
-  . ~/.profile > /dev/null
-else
-  echo "[${SCRIPT_NAME}] NODE_HOME is in place, no need to fix."
-fi
-echo "[${SCRIPT_NAME}] NODE_HOME=$NODE_HOME"
-
-################################################################################
 echo
 echo "[${SCRIPT_NAME}] done."
 exit 0
