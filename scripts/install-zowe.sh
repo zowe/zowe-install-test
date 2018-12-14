@@ -510,7 +510,7 @@ fi
 # run pre-install verify script
 echo "[${SCRIPT_NAME}] run pre-install verify script ..."
 cd $FULL_EXTRACTED_ZOWE_FOLDER/install
-RUN_SCRIPT=zowe-verify-pre-install.sh
+RUN_SCRIPT=zowe-check-prereqs.sh
 if [ -f "$RUN_SCRIPT" ]; then
   run_script_with_timeout $RUN_SCRIPT 1800
   EXIT_CODE=$?
