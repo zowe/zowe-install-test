@@ -88,8 +88,11 @@ describe('cli list data sets of tcpip.*', function() {
     expect(res.success).to.be.true;
     expect(res.data).to.be.an('object');
     expect(res.data.success).to.be.true;
-    expect(res.data.apiResponse).to.be.a('string');
-    expect(res.data.apiResponse).to.include('Name of Data Set:');
+    expect(res.data.commandResponse).to.be.a('string');
+    expect(res.data.commandResponse).to.include('Data set downloaded successfully');
+    expect(res.data.apiResponse).to.be.a('object');
+    expect(res.data.apiResponse.type).to.be.a('string');
+    expect(res.data.apiResponse.type).to.include('Buffer');
 
     // file should be downloaded
     const file = await fsReadfile(targetFile);
