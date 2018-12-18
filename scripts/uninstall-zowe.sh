@@ -20,9 +20,10 @@
 # constants
 SCRIPT_NAME=$(basename "$0")
 DEFAULT_CI_ZOWE_ROOT_DIR=/zaas1/zowe
+DEFAULT_CI_ZOWE_DS_MEMBER=ZOWESVR
 CI_ZOWE_ROOT_DIR=$DEFAULT_CI_ZOWE_ROOT_DIR
 PROFILE=~/.profile
-ZOWESVR_NAME=ZOWESVR
+CI_ZOWE_DS_MEMBER=$DEFAULT_CI_ZOWE_DS_MEMBER
 
 # allow to exit by ctrl+c
 function finish {
@@ -122,9 +123,10 @@ function usage {
   echo "Options:"
   echo "  -h  Display this help message."
   echo "  -t  Zowe installation folder. Optional, default is $DEFAULT_CI_ZOWE_ROOT_DIR."
+  echo "  -m  Zowe PROCLIB data set member name. Optional, default is $DEFAULT_CI_ZOWE_DS_MEMBER."
   echo
 }
-while getopts ":ht:" opt; do
+while getopts ":ht:m:" opt; do
   case ${opt} in
     h)
       usage
@@ -132,6 +134,9 @@ while getopts ":ht:" opt; do
       ;;
     t)
       CI_ZOWE_ROOT_DIR=$OPTARG
+      ;;
+    m)
+      CI_ZOWE_DS_MEMBER=$OPTARG
       ;;
     \?)
       echo "[${SCRIPT_NAME}][error] invalid option: -$OPTARG" >&2
@@ -182,7 +187,7 @@ done
 echo
 
 # removing ZOWESVR
-echo "[${SCRIPT_NAME}] deleting ${ZOWESVR_NAME} PROC ..."
+echo "[${SCRIPT_NAME}] deleting ${CI_ZOWE_DS_MEMBER} PROC ..."
 if [ ! -f "${CI_ZOWE_ROOT_DIR}/scripts/internal/opercmd" ]; then
   echo "[${SCRIPT_NAME}][error] opercmd doesn't exist."
   exit 1;
@@ -200,7 +205,7 @@ do
   for member in $members
   do
     echo "[${SCRIPT_NAME}]   - ${member}"
-    if [ "${member}" = "${ZOWESVR_NAME}" ]; then
+    if [ "${member}" = "${CI_ZOWE_DS_MEMBER}" ]; then
       FOUND_ZOWESVR_AT=$proclib
       break 2
     fi
@@ -208,10 +213,10 @@ do
 done
 # do we find ZOWESVR?
 if [ -z "$FOUND_ZOWESVR_AT" ]; then
-  echo "[${SCRIPT_NAME}][warn] cannot find ${ZOWESVR_NAME} in PROCLIBs, skipped."
+  echo "[${SCRIPT_NAME}][warn] cannot find ${CI_ZOWE_DS_MEMBER} in PROCLIBs, skipped."
 else
-  echo "[${SCRIPT_NAME}] found ${ZOWESVR_NAME} in ${FOUND_ZOWESVR_AT}, deleting ..."
-  run_script_with_timeout "tsocmd DELETE '${FOUND_ZOWESVR_AT}(ZOWESVR)'" 10
+  echo "[${SCRIPT_NAME}] found ${CI_ZOWE_DS_MEMBER} in ${FOUND_ZOWESVR_AT}, deleting ..."
+  run_script_with_timeout "tsocmd DELETE '${FOUND_ZOWESVR_AT}(${CI_ZOWE_DS_MEMBER})'" 10
 fi
 echo
 

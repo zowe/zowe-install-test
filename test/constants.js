@@ -9,7 +9,7 @@
  */
 
 // default Zowe JES job name
-const ZOWE_JOB_NAME = 'ZOWESVR';
+const ZOWE_JOB_NAME = process.env.ZOWE_DS_MEMBER || 'ZOWESVR';
 
 module.exports = {
   ZOWE_JOB_NAME,
