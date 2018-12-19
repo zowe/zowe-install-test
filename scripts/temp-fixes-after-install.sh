@@ -36,9 +36,13 @@ echo "[${SCRIPT_NAME}] change ${CI_ZOWE_DS_MEMBER} RACF user ..."
 (exec sh -c "tsocmd \"SETROPTS RACLIST(STARTED) REFRESH\"")
 echo
 
+################################################################################
+# Error during zowe-install:
+# Exporting certificate zOSMFCA from z/OSMF:
+# keytool error (likely untranslated): java.io.FileNotFoundException: /zaas1/zowe-install/extracted/zowe-0.9.5/install/../temp_2018-12-19/zosmf_cert_zOSMFCA.cer (EDC5111I Permission denied.)
 echo
 echo "[${SCRIPT_NAME}] import z/OSMF certificates which requires superuser permission ..."
-(exec sh -c "cd ${CI_ZOWE_ROOT_DIR}/api-mediation && su && scripts/apiml_cm.sh --action trust-zosmf --zosmf-keyring IZUKeyring.IZUDFLT --zosmf-userid IZUSVR")
+(exec sh -c "cd ${CI_ZOWE_ROOT_DIR}/api-mediation && su && export PATH=\$ZOWE_JAVA_HOME/bin:\$PATH && scripts/apiml_cm.sh --action trust-zosmf --zosmf-keyring IZUKeyring.IZUDFLT --zosmf-userid IZUSVR")
 echo
 
 ################################################################################
