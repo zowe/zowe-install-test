@@ -363,8 +363,8 @@ EOF"""
           // post install verify script
           timeout(20) {
             sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
-cd ${params.ZOWE_ROOT_DIR} && \
-  scripts/zowe-verify.sh || { echo "[zowe-verify.sh] failed"; exit 1; }
+cd ${params.ZOWE_ROOT_DIR}/scripts && \
+  zowe-verify.sh || { echo "[zowe-verify.sh] failed"; exit 1; }
 echo "[zowe-verify.sh] succeeds" && exit 0
 EOF"""
           }
