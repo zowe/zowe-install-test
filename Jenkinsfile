@@ -323,7 +323,7 @@ put .tmp/zowe.pax
 EOF"""
 
           // run install-zowe.sh
-          timeout(30) {
+          timeout(60) {
             def skipTempFixes = ""
             def uninstallZowe = ""
             if (params.SKIP_TEMP_FIXES) {
@@ -359,6 +359,14 @@ EOF"""
           // check if zD&T & z/OSMF are started again in case z/OSMF is restarted
           timeout(60) {
             sh "./scripts/is-website-ready.sh -r 720 -t 10 -c 20 https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOSMF_PORT}/zosmf/info"
+          }
+          // post install verify script
+          timeout(20) {
+            sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
+cd ${params.ZOWE_ROOT_DIR} && \
+  scripts/zowe-verify.sh || { echo "[zowe-verify.sh] failed"; exit 1; }
+echo "[zowe-verify.sh] succeeds" && exit 0
+EOF"""
           }
 
           // wait a while before starting test

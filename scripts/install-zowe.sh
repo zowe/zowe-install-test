@@ -557,19 +557,6 @@ if [ "$CI_SKIP_TEMP_FIXES" != "yes" ]; then
   fi
 fi
 
-# run post-install verify script
-echo "[${SCRIPT_NAME}] run post-install verify script ..."
-cd $CI_ZOWE_ROOT_DIR/scripts
-RUN_SCRIPT=zowe-verify.sh
-if [ -f "$RUN_SCRIPT" ]; then
-  run_script_with_timeout $RUN_SCRIPT 1800
-  EXIT_CODE=$?
-  if [[ "$EXIT_CODE" != "0" ]]; then
-    echo "[${SCRIPT_NAME}][warning] ${RUN_SCRIPT} failed."
-  fi
-fi
-echo
-
 # start zowe
 echo "[${SCRIPT_NAME}] start Zowe ..."
 cd $CI_ZOWE_ROOT_DIR/scripts
