@@ -388,6 +388,9 @@ cd $CI_INSTALL_DIR
 if [ -f "temp-fixes-after-install.sh" ]; then
   ensure_script_encoding temp-fixes-after-install.sh
 fi
+if [ -f "temp-fixes-after-started.sh" ]; then
+  ensure_script_encoding temp-fixes-after-started.sh
+fi
 if [ -f "temp-fixes-before-install.sh" ]; then
   ensure_script_encoding temp-fixes-before-install.sh
 fi
