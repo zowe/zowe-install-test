@@ -366,7 +366,7 @@ EOF"""
             // always exit 0 to ignore failures in zowe-verify.sh
             sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
 cd ${params.INSTALL_DIR} && \
-  temp-fixes-after-started.sh || { echo "[temp-fixes-after-started.sh] failed"; exit 0; }
+  temp-fixes-after-started.sh "${params.ZOWE_ROOT_DIR}" || { echo "[temp-fixes-after-started.sh] failed"; exit 0; }
 echo "[temp-fixes-after-started.sh] succeeds" && exit 0
 EOF"""
           }
