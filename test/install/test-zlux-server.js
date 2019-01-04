@@ -81,12 +81,12 @@ describe(`test zLux server https://${process.env.SSH_HOST}:${process.env.ZOWE_ZL
   });
 
   describe('GET /ZLUX/plugins', function() {
-    it('/com.ibm.atlas.atlasJES/web/index.html should return ok', function() {
+    it('/org.zowe.explorer-jes/web/index.html should return ok', function() {
       const _this = this;
 
       const req = {
         method: 'get',
-        url: '/ZLUX/plugins/com.ibm.atlas.atlasJES/web/index.html'
+        url: '/ZLUX/plugins/org.zowe.explorer-jes/web/index.html'
       };
       debug('request', req);
 
