@@ -27,6 +27,23 @@ echo "[${SCRIPT_NAME}]    FULL_EXTRACTED_ZOWE_FOLDER : $FULL_EXTRACTED_ZOWE_FOLD
 CI_PWD=$(pwd)
 
 ################################################################################
+# import z/OSMF cert fail due to permission error, so we need to make sure
+#    verifyCertificatesOfServices
+# is set to false for install yaml file
+cd $FULL_EXTRACTED_ZOWE_FOLDER/install
+CI_ZOWE_CONFIG_FILE=zowe-install.yaml
+echo "Current value of ${CI_ZOWE_CONFIG_FILE} verifyCertificatesOfServices:"
+cat "${CI_ZOWE_CONFIG_FILE}" | grep verifyCertificatesOfServices
+echo "Changing to false ..."
+cat "${CI_ZOWE_CONFIG_FILE}" | \
+  sed -e "/^api-mediation:/,\$s#verifyCertificatesOfServices=.*\$#verifyCertificatesOfServices=false#" \
+  > "${CI_ZOWE_CONFIG_FILE}.tmp"
+mv "${CI_ZOWE_CONFIG_FILE}.tmp" "${CI_ZOWE_CONFIG_FILE}"
+echo
+
+cd $CI_PWD
+
+################################################################################
 echo
 echo "[${SCRIPT_NAME}] done."
 exit 0
