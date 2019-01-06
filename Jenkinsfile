@@ -317,13 +317,14 @@ EOF"""
 cd ${params.INSTALL_DIR}
 put scripts/temp-fixes-before-install.sh
 put scripts/temp-fixes-after-install.sh
+put scripts/temp-fixes-after-started.sh
 put scripts/install-zowe.sh
 put scripts/uninstall-zowe.sh
 put .tmp/zowe.pax
 EOF"""
 
           // run install-zowe.sh
-          timeout(30) {
+          timeout(60) {
             def skipTempFixes = ""
             def uninstallZowe = ""
             if (params.SKIP_TEMP_FIXES) {
@@ -359,6 +360,15 @@ EOF"""
           // check if zD&T & z/OSMF are started again in case z/OSMF is restarted
           timeout(60) {
             sh "./scripts/is-website-ready.sh -r 720 -t 10 -c 20 https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOSMF_PORT}/zosmf/info"
+          }
+          // post install verify script
+          timeout(30) {
+            // always exit 0 to ignore failures in zowe-verify.sh
+            sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
+cd ${params.INSTALL_DIR} && \
+  temp-fixes-after-started.sh "${params.ZOWE_ROOT_DIR}" || { echo "[temp-fixes-after-started.sh] failed"; exit 0; }
+echo "[temp-fixes-after-started.sh] succeeds" && exit 0
+EOF"""
           }
 
           // wait a while before starting test

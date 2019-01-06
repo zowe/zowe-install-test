@@ -388,6 +388,9 @@ cd $CI_INSTALL_DIR
 if [ -f "temp-fixes-after-install.sh" ]; then
   ensure_script_encoding temp-fixes-after-install.sh
 fi
+if [ -f "temp-fixes-after-started.sh" ]; then
+  ensure_script_encoding temp-fixes-after-started.sh
+fi
 if [ -f "temp-fixes-before-install.sh" ]; then
   ensure_script_encoding temp-fixes-before-install.sh
 fi
@@ -556,19 +559,6 @@ if [ "$CI_SKIP_TEMP_FIXES" != "yes" ]; then
     fi
   fi
 fi
-
-# run post-install verify script
-echo "[${SCRIPT_NAME}] run post-install verify script ..."
-cd $CI_ZOWE_ROOT_DIR/scripts
-RUN_SCRIPT=zowe-verify.sh
-if [ -f "$RUN_SCRIPT" ]; then
-  run_script_with_timeout $RUN_SCRIPT 1800
-  EXIT_CODE=$?
-  if [[ "$EXIT_CODE" != "0" ]]; then
-    echo "[${SCRIPT_NAME}][warning] ${RUN_SCRIPT} failed."
-  fi
-fi
-echo
 
 # start zowe
 echo "[${SCRIPT_NAME}] start Zowe ..."
