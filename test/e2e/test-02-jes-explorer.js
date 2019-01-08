@@ -20,7 +20,7 @@ const { ZOWE_JOB_NAME } = require('../constants');
 const {
   DEFAULT_PAGE_LOADING_TIMEOUT,
   DEFAULT_ELEMENT_CHECK_INTERVAL,
-  MVD_ATLAS_APP_CONTEXT,
+  MVD_IFRAME_APP_CONTENT,
   saveScreenshot,
   getDefaultDriver,
   getElement,
@@ -43,7 +43,7 @@ const MVD_EXPLORER_TREE_SECTION = '#tree-text-content';
 let appLaunched = false;
 let findZoweJob = -1;
 
-describe.skip(`test ${APP_TO_TEST}`, function() {
+describe(`test ${APP_TO_TEST}`, function() {
   before('verify environment variable and load login page', async function() {
     expect(process.env.SSH_HOST, 'SSH_HOST is not defined').to.not.be.empty;
     expect(process.env.SSH_USER, 'SSH_USER is not defined').to.not.be.empty;
@@ -81,7 +81,7 @@ describe.skip(`test ${APP_TO_TEST}`, function() {
     debug('app iframe found');
 
     // wait for atlas iframe
-    const atlas = await waitUntilIframe(driver, 'iframe#atlasIframe');
+    const atlas = await waitUntilIframe(driver, 'iframe#zluxIframe');
     expect(atlas).to.be.an('object');
     debug('atlas iframe is ready');
 
@@ -90,7 +90,7 @@ describe.skip(`test ${APP_TO_TEST}`, function() {
     await alert.sendKeys(process.env.SSH_USER + Key.TAB + process.env.SSH_PASSWD);
     await alert.accept();
     // to avoid StaleElementReferenceError, find the iframes context again
-    await switchToIframeAppContext(driver, APP_TO_TEST, MVD_ATLAS_APP_CONTEXT);
+    await switchToIframeAppContext(driver, APP_TO_TEST, MVD_IFRAME_APP_CONTENT);
     debug('atlas login successfully');
 
     // wait for page is loaded
@@ -100,7 +100,7 @@ describe.skip(`test ${APP_TO_TEST}`, function() {
     debug('page is fully loaded');
 
     // save screenshot
-    await saveScreenshotWithIframeAppContext(this, driver, testName, 'app-loaded', APP_TO_TEST, MVD_ATLAS_APP_CONTEXT);
+    await saveScreenshotWithIframeAppContext(this, driver, testName, 'app-loaded', APP_TO_TEST, MVD_IFRAME_APP_CONTENT);
 
     appLaunched = true;
   });
@@ -122,17 +122,24 @@ describe.skip(`test ${APP_TO_TEST}`, function() {
     const filterInputs = await getElements(treeContent, 'input');
     for (let input of filterInputs) {
       const id = await input.getAttribute('id');
-      if (id.indexOf('-Owner-') > -1) {
+      if (id.indexOf('-owner-') > -1) {
         await input.clear();
         await input.sendKeys('IZU*');
-      } else if (id.indexOf('-Prefix-') > -1) {
+      } else if (id.indexOf('-prefix-') > -1) {
         await input.clear();
         await input.sendKeys('*');
       }
     }
+    // find status dropdown
+    const filterStatusDropdown = await getElement(treeContent, '#filter-status-field button');
+    expect(filterStatusDropdown).to.be.an('object');
+    await filterStatusDropdown.click();
     debug('filter form updated');
+    const filterStatusActive = await waitUntilElement(driver, '#status-ACTIVE');
+    expect(filterStatusActive).to.be.an('object');
+    await filterStatusActive.click();
     // save screenshot
-    await saveScreenshotWithIframeAppContext(this, driver, testName, 'reset-filter', APP_TO_TEST, MVD_ATLAS_APP_CONTEXT);
+    await saveScreenshotWithIframeAppContext(this, driver, testName, 'reset-filter', APP_TO_TEST, MVD_IFRAME_APP_CONTENT);
     treeContent = await waitUntilElement(driver, MVD_EXPLORER_TREE_SECTION);
 
     // submit filter
@@ -188,7 +195,7 @@ describe.skip(`test ${APP_TO_TEST}`, function() {
     }
 
     // save screenshot
-    await saveScreenshotWithIframeAppContext(this, driver, testName, 'zowe-job-loaded', APP_TO_TEST, MVD_ATLAS_APP_CONTEXT);
+    await saveScreenshotWithIframeAppContext(this, driver, testName, 'zowe-job-loaded', APP_TO_TEST, MVD_IFRAME_APP_CONTENT);
     treeContent = await waitUntilElement(driver, MVD_EXPLORER_TREE_SECTION);
 
     expect(findZoweJob).to.be.above(-1);
@@ -201,7 +208,7 @@ describe.skip(`test ${APP_TO_TEST}`, function() {
     }
 
     // prepare app context and find the li of DS_TO_TEST
-    await switchToIframeAppContext(driver, APP_TO_TEST, MVD_ATLAS_APP_CONTEXT);
+    await switchToIframeAppContext(driver, APP_TO_TEST, MVD_IFRAME_APP_CONTENT);
     let treeContent = await getElement(driver, MVD_EXPLORER_TREE_SECTION);
     expect(treeContent).to.be.an('object');
     const items = await getElements(treeContent, 'div.node ul > div');
@@ -266,7 +273,7 @@ describe.skip(`test ${APP_TO_TEST}`, function() {
     debug(`Active ${ZOWE_JOB_NAME} ${JCL_TO_TEST} file content link is clicked`);
 
     // save screenshot
-    await saveScreenshotWithIframeAppContext(this, driver, testName, 'jcl-loading', APP_TO_TEST, MVD_ATLAS_APP_CONTEXT);
+    await saveScreenshotWithIframeAppContext(this, driver, testName, 'jcl-loading', APP_TO_TEST, MVD_IFRAME_APP_CONTENT);
 
     // wait for right panel updated
     await driver.sleep(1000);
@@ -321,7 +328,7 @@ describe.skip(`test ${APP_TO_TEST}`, function() {
     debug(`Active ${ZOWE_JOB_NAME} ${JCL_TO_TEST} file content is loaded`);
 
     // save screenshot
-    await saveScreenshotWithIframeAppContext(this, driver, testName, 'jcl-loaded', APP_TO_TEST, MVD_ATLAS_APP_CONTEXT);
+    await saveScreenshotWithIframeAppContext(this, driver, testName, 'jcl-loaded', APP_TO_TEST, MVD_IFRAME_APP_CONTENT);
   });
 
 
