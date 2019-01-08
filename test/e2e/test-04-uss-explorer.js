@@ -19,7 +19,7 @@ const { Key, until } = require('selenium-webdriver');
 const {
   DEFAULT_PAGE_LOADING_TIMEOUT,
   DEFAULT_ELEMENT_CHECK_INTERVAL,
-  MVD_ATLAS_APP_CONTEXT,
+  MVD_IFRAME_APP_CONTENT,
   saveScreenshot,
   getDefaultDriver,
   getElement,
@@ -84,16 +84,16 @@ describe.skip(`test ${APP_TO_TEST}`, function() {
     debug('app iframe found');
 
     // wait for atlas iframe
-    const atlas = await waitUntilIframe(driver, 'iframe#atlasIframe');
+    const atlas = await waitUntilIframe(driver, 'iframe#zluxIframe');
     expect(atlas).to.be.an('object');
-    debug('atlas iframe is ready');
+    debug('zlux iframe is ready');
 
     // FIXME: shouldn't pop out authentication
     const alert = await driver.wait(until.alertIsPresent(), DEFAULT_PAGE_LOADING_TIMEOUT);
     await alert.sendKeys(process.env.SSH_USER + Key.TAB + process.env.SSH_PASSWD);
     await alert.accept();
     // to avoid StaleElementReferenceError, find the iframes context again
-    await switchToIframeAppContext(driver, APP_TO_TEST, MVD_ATLAS_APP_CONTEXT);
+    await switchToIframeAppContext(driver, APP_TO_TEST, MVD_IFRAME_APP_CONTENT);
     debug('atlas login successfully');
 
     // wait for page is loaded
@@ -105,7 +105,7 @@ describe.skip(`test ${APP_TO_TEST}`, function() {
     debug('page is fully loaded');
 
     // save screenshot
-    await saveScreenshotWithIframeAppContext(this, driver, testName, 'app-loaded', APP_TO_TEST, MVD_ATLAS_APP_CONTEXT);
+    await saveScreenshotWithIframeAppContext(this, driver, testName, 'app-loaded', APP_TO_TEST, MVD_IFRAME_APP_CONTENT);
 
     appLaunched = true;
   });
@@ -130,7 +130,7 @@ describe.skip(`test ${APP_TO_TEST}`, function() {
     debug('page reloaded');
 
     // save screenshot
-    await saveScreenshotWithIframeAppContext(this, driver, testName, 'file-list-loaded', APP_TO_TEST, MVD_ATLAS_APP_CONTEXT);
+    await saveScreenshotWithIframeAppContext(this, driver, testName, 'file-list-loaded', APP_TO_TEST, MVD_IFRAME_APP_CONTENT);
     treeContent = await waitUntilElement(driver, MVD_EXPLORER_TREE_SECTION);
 
     // load children of DIR_TO_TEST
@@ -157,7 +157,7 @@ describe.skip(`test ${APP_TO_TEST}`, function() {
     }
 
     // prepare app context and find the li of DIR_TO_TEST
-    await switchToIframeAppContext(driver, APP_TO_TEST, MVD_ATLAS_APP_CONTEXT);
+    await switchToIframeAppContext(driver, APP_TO_TEST, MVD_IFRAME_APP_CONTENT);
     const treeContent = await getElement(driver, MVD_EXPLORER_TREE_SECTION);
     expect(treeContent).to.be.an('object');
     const items = await getElements(treeContent, 'div.node ul li');
@@ -257,7 +257,7 @@ describe.skip(`test ${APP_TO_TEST}`, function() {
     debug('right panel is loaded');
 
     // save screenshot
-    await saveScreenshotWithIframeAppContext(this, driver, testName, 'file-content-loaded', APP_TO_TEST, MVD_ATLAS_APP_CONTEXT);
+    await saveScreenshotWithIframeAppContext(this, driver, testName, 'file-content-loaded', APP_TO_TEST, MVD_IFRAME_APP_CONTENT);
   });
 
 
