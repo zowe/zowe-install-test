@@ -16,7 +16,7 @@ const addContext = require('mochawesome/addContext');
 
 let REQ, username, password;
 let testDir;
-const DIR_TO_TEST = 'uss-explorer';
+const DIR_TO_TEST = 'uss_explorer';
 const FILE_TO_TEST = 'pluginDefinition.json';
 
 // allow self signed certs
