@@ -138,6 +138,8 @@ describe(`test ${APP_TO_TEST}`, function() {
     const filterStatusActive = await waitUntilElement(driver, '#status-ACTIVE');
     expect(filterStatusActive).to.be.an('object');
     await filterStatusActive.click();
+    // wait a little more until the dropdown disappeared
+    await driver.sleep(3 * 1000);
     // save screenshot
     await saveScreenshotWithIframeAppContext(this, driver, testName, 'reset-filter', APP_TO_TEST, MVD_IFRAME_APP_CONTENT);
     treeContent = await waitUntilElement(driver, MVD_EXPLORER_TREE_SECTION);
