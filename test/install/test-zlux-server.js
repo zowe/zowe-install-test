@@ -105,12 +105,12 @@ describe(`test zLux server https://${process.env.SSH_HOST}:${process.env.ZOWE_ZL
         });
     });
 
-    it('/com.ibm.atlas.atlasMVS/web/index.html should return ok', function() {
+    it('/org.zowe.explorer-mvs/web/index.html should return ok', function() {
       const _this = this;
 
       const req = {
         method: 'get',
-        url: '/ZLUX/plugins/com.ibm.atlas.atlasMVS/web/index.html'
+        url: '/ZLUX/plugins/org.zowe.explorer-mvs/web/index.html'
       };
       debug('request', req);
 

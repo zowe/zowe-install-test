@@ -60,8 +60,6 @@ let SCREENSHOT_FILECOUNT = 0;
 
 // css selector to find MVD iframe app
 const MVD_IFRAME_APP_CONTEXT = ['rs-com-mvd-iframe-component > iframe'];
-// css selector to find MVD Atlas iframe app
-const MVD_ATLAS_APP_CONTEXT = ['rs-com-mvd-iframe-component > iframe', 'iframe#atlasIframe'];
 // css selector to find MVD iframe app content
 const MVD_IFRAME_APP_CONTENT = ['rs-com-mvd-iframe-component > iframe', 'iframe#zluxIframe'];
 
@@ -597,7 +595,6 @@ module.exports = {
   DEFAULT_ELEMENT_CHECK_INTERVAL,
   DEFAULT_SCREENSHOT_PATH,
   MVD_IFRAME_APP_CONTEXT,
-  MVD_ATLAS_APP_CONTEXT,
   MVD_IFRAME_APP_CONTENT,
 
   saveScreenshot,
