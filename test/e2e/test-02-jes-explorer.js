@@ -154,8 +154,7 @@ describe(`test ${APP_TO_TEST}`, function() {
     try {
       await driver.wait(
         async() => {
-          const items = await getElements(treeContent, 'div.node > ul > div');
-          expect(items).to.be.an('array').that.have.lengthOf.above(0);
+          const items = await getElements(treeContent, 'ul#job-list div.job-instance');
           debug(`found ${items.length} of menu items`);
           try {
             for (let i in items) {
@@ -192,6 +191,7 @@ describe(`test ${APP_TO_TEST}`, function() {
       if (errName === 'TimeoutError') {
         expect(errName).to.not.equal('TimeoutError');
       } else {
+        debug(`error finding job: ${e}`);
         expect(e).to.be.null;
       }
     }
