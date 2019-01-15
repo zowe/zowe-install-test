@@ -45,7 +45,8 @@ describe('test explorer server jobs api', function() {
       url: '/api/v1/jobs',
       params: {
         prefix: 'ZOWE*',
-        owner: '*'
+        owner: '*',
+        status: 'ACTIVE',
       },
       auth: {
         username,
@@ -66,8 +67,8 @@ describe('test explorer server jobs api', function() {
         expect(res.status).to.equal(200);
         expect(res.data).to.be.an('array');
         expect(res.data).to.have.lengthOf(1);
-        expect(res.data[0]).to.have.all.keys('name', 'jobInstances');
-        expect(res.data[0].name).to.equal(ZOWE_JOB_NAME);
+        expect(res.data[0]).to.have.any.keys('jobName', 'jobId', 'owner', 'status', 'type', 'subsystem');
+        expect(res.data[0].jobName).to.equal(ZOWE_JOB_NAME);
       });
   });
 });
