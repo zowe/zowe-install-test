@@ -128,16 +128,38 @@ customParameters.push(string(
   required: true
 ))
 customParameters.push(string(
-  name: 'ZOWE_EXPLORER_SERVER_HTTP_PORT',
-  description: 'httpPort for Zowe explorer server',
-  defaultValue: '7080',
+  name: 'ZOWE_EXPLORER_JOBS_PORT',
+  description: 'jobsPort for Zowe explorer server',
+  defaultValue: '8545',
   trim: true,
   required: true
 ))
 customParameters.push(string(
-  name: 'ZOWE_EXPLORER_SERVER_HTTPS_PORT',
-  description: 'httpsPort for Zowe explorer server',
-  defaultValue: '7443',
+  customPara_UI_JES_PORT
+  name: 'ZOWE_EXPLORER_DATASETS_PORT',
+  description: 'dataSetsPort for Zowe explorer server',
+  defaultValue: '8547',
+  trim: true,
+  required: true
+))
+customParameters.push(string(
+  name: 'ZOWE_EXPLORER_UI_JES_PORT',
+  description: 'explorerJESUI for Zowe explorer UI',
+  defaultValue: '8546',
+  trim: true,
+  required: true
+))
+customParameters.push(string(
+  name: 'ZOWE_EXPLORER_UI_MVS_PORT',
+  description: 'explorerMVSUI for Zowe explorer UI',
+  defaultValue: '8548',
+  trim: true,
+  required: true
+))
+customParameters.push(string(
+  name: 'ZOWE_EXPLORER_UI_USS_PORT',
+  description: 'explorerUSSUI for Zowe explorer UI',
+  defaultValue: '8550',
   trim: true,
   required: true
 ))
@@ -332,7 +354,8 @@ cd ${params.INSTALL_DIR} && \
 ./install-zowe.sh -n ${params.TEST_IMAGE_GUEST_SSH_HOST} -t ${params.ZOWE_ROOT_DIR} -i ${params.INSTALL_DIR}${skipTempFixes}${uninstallZowe} --zosmf-port ${params.ZOSMF_PORT}\
   --proc-ds ${params.PROCLIB_DS} --proc-member ${params.PROCLIB_MEMBER}\
   --apim-catalog-port ${params.ZOWE_API_MEDIATION_CATALOG_HTTP_PORT} --apim-discovery-port ${params.ZOWE_API_MEDIATION_DISCOVERY_HTTP_PORT} --apim-gateway-port ${params.ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT}\
-  --explorer-http-port ${params.ZOWE_EXPLORER_SERVER_HTTP_PORT} --explorer-https-port ${params.ZOWE_EXPLORER_SERVER_HTTPS_PORT}\
+  --explorer-jobs-port ${params.ZOWE_EXPLORER_JOBS_PORT} --explorer-datasets-port ${params.ZOWE_EXPLORER_DATASETS_PORT}\
+  --explorer-ui-jes-port ${params.ZOWE_EXPLORER_UI_JES_PORT} --explorer-ui-mvs-port ${params.ZOWE_EXPLORER_UI_MVS_PORT} --explorer-ui-uss-port ${params.ZOWE_EXPLORER_UI_USS_PORT}\
   --zlux-https-port ${params.ZOWE_ZLUX_HTTPS_PORT} --zlux-zss-port ${params.ZOWE_ZLUX_ZSS_PORT}\
   --term-ssh-port ${params.ZOWE_MVD_SSH_PORT} --term-telnet-port ${params.ZOWE_MVD_TELNET_PORT}\
   ${params.INSTALL_DIR}/zowe.pax || { echo "[install-zowe.sh] failed"; exit 1; }
@@ -348,7 +371,11 @@ EOF"""
           }
           // check if explorer server is started
           timeout(60) {
-            sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 https://${USERNAME}:${PASSWORD}@${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOWE_EXPLORER_SERVER_HTTPS_PORT}/api/v1/jobs"
+            sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 https://${USERNAME}:${PASSWORD}@${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOWE_EXPLORER_JOBS_PORT}/api/v1/jobs"
+          }
+          // check if apiml gateway is started
+          timeout(60) {
+            sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 https://${USERNAME}:${PASSWORD}@${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT}/"
           }
           // check if zD&T & z/OSMF are started again in case z/OSMF is restarted
           timeout(60) {
@@ -410,7 +437,11 @@ SSH_PASSWD=${PASSWORD} \
 ZOSMF_PORT=${params.ZOSMF_PORT} \
 ZOWE_DS_MEMBER=${params.PROCLIB_MEMBER} \
 ZOWE_ZLUX_HTTPS_PORT=${params.ZOWE_ZLUX_HTTPS_PORT} \
-ZOWE_EXPLORER_SERVER_HTTPS_PORT=${params.ZOWE_EXPLORER_SERVER_HTTPS_PORT} \
+ZOWE_EXPLORER_JOBS_PORT=${params.ZOWE_EXPLORER_JOBS_PORT} \
+ZOWE_EXPLORER_DATASETS_PORT=${params.ZOWE_EXPLORER_DATASETS_PORT} \
+ZOWE_EXPLORER_UI_JES_PORT=${params.ZOWE_EXPLORER_UI_JES_PORT} \
+ZOWE_EXPLORER_UI_MVS_PORT=${params.ZOWE_EXPLORER_UI_MVS_PORT} \
+ZOWE_EXPLORER_UI_USS_PORT=${params.ZOWE_EXPLORER_UI_USS_PORT} \
 DEBUG=${params.TEST_CASE_DEBUG_INFORMATION} \
 npm test"""
             } finally {

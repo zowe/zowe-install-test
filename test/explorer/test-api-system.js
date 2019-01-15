@@ -19,7 +19,7 @@ let REQ, username, password;
 // allow self signed certs
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-describe('test explorer server system api', function() {
+describe.skip('test explorer server system api', function() {
   before('verify environment variables', function() {
     expect(process.env.SSH_HOST, 'SSH_HOST is not defined').to.not.be.empty;
     expect(process.env.SSH_USER, 'SSH_USER is not defined').to.not.be.empty;
