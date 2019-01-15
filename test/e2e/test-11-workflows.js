@@ -13,25 +13,19 @@ const expect = require('chai').expect;
 const debug = require('debug')('test:e2e:login');
 const addContext = require('mochawesome/addContext');
 const testName = path.basename(__filename, path.extname(__filename));
+
 const {
-  MVD_IFRAME_APP_CONTEXT,
   saveScreenshot,
   getDefaultDriver,
-  getElement,
   waitUntilElement,
-  waitUntilIframe,
   loginMVD,
   launchApp,
   locateApp,
-  saveScreenshotWithIframeAppContext,
 } = require('./utils');
 let driver;
 
-const APP_TO_TEST = 'IFrame Sample';
-const APP_ID_TO_LAUNCH = 'org.zowe.terminal.tn3270';
-const APP_NAME_TO_LAUNCH = 'TN3270';
+const APP_TO_TEST = 'User Tasks/Workflows';
 
-let appLaunched = false;
 
 describe(`test ${APP_TO_TEST}`, function() {
   before('verify environment variable and load login page', async function() {
@@ -65,51 +59,29 @@ describe(`test ${APP_TO_TEST}`, function() {
     const file = await saveScreenshot(driver, testName, 'app-loading');
     addContext(this, file);
 
-    // locate app iframe
-    const iframe = await waitUntilIframe(driver, 'rs-com-mvd-iframe-component > iframe', app);
-    expect(iframe).to.be.an('object');
-    debug('app iframe found');
+    // wait for caption is loaded
+    const caption = await waitUntilElement(driver, 'rs-com-mvd-window .heading .caption');
+    expect(caption).to.be.an('object');
+    debug('caption is ready');
+    const captionTest = await caption.getText();
+    expect(captionTest).to.be.equal(APP_TO_TEST);
+    debug('app caption checked ok');
+
+    // wait for caption is loaded
+    const viewport = await waitUntilElement(driver, 'rs-com-mvd-window .body com-rs-mvd-viewport');
+    expect(viewport).to.be.an('object');
+    debug('app viewport is ready');
 
     // wait for page is loaded
-    const appTitle = await waitUntilElement(driver, 'div.bottom-10 span.bigger-bold-text');
-    expect(appTitle).to.be.an('object');
-    debug('page is fully loaded');
+    const canvas = await waitUntilElement(driver, 'workflow-app', viewport);
+    expect(canvas).to.be.an('object');
+    debug('app is fully loaded');
 
     // save screenshot
-    await saveScreenshotWithIframeAppContext(this, driver, testName, 'app-loaded', APP_TO_TEST, MVD_IFRAME_APP_CONTEXT);
-
-    appLaunched = true;
+    const file2 = await saveScreenshot(driver, testName, 'app-loaded');
+    addContext(this, file2);
   });
 
-  it(`should be able to launch "${APP_NAME_TO_LAUNCH}" app`, async function() {
-    if (!appLaunched) {
-      this.skip();
-    }
-
-    // check app id
-    const appNameInput = await getElement(driver, 'div.div-input input[name=appId]');
-    expect(appNameInput).to.be.an('object');
-    const appNameInputValue = await appNameInput.getAttribute('value');
-    debug(`input appId value is: ${appNameInputValue}`);
-    expect(appNameInputValue).to.be.equal(APP_ID_TO_LAUNCH);
-
-    // click on "Send App Request" button
-    const appButton = await getElement(driver, 'div.bottom-10 button.iframe-button');
-    expect(appButton).to.be.an('object');
-    const appButtonText = await appButton.getText();
-    debug(`send request button text is: ${appButtonText}`);
-    expect(appButtonText).to.be.equal('Send App Request');
-    await appButton.click();
-    debug('"Send App Request" button clicked');
-
-    const app = await locateApp(driver, APP_NAME_TO_LAUNCH);
-    expect(app).to.be.an('object');
-    await driver.sleep(10000);
-    debug('app launched');
-
-    // save screenshot
-    await saveScreenshotWithIframeAppContext(this, driver, testName, 'test-app-launched', APP_TO_TEST, MVD_IFRAME_APP_CONTEXT);
-  });
 
   after('quit webdriver', async function() {
     // quit webdriver
