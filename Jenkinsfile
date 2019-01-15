@@ -114,13 +114,6 @@ customParameters.push(string(
   required: true
 ))
 customParameters.push(string(
-  name: 'ZOWE_ZLUX_HTTP_PORT',
-  description: 'httpPort for Zowe zLux service',
-  defaultValue: '8543',
-  trim: true,
-  required: true
-))
-customParameters.push(string(
   name: 'ZOWE_ZLUX_HTTPS_PORT',
   description: 'httpsPort for Zowe zLux service',
   defaultValue: '8544',
@@ -340,7 +333,7 @@ cd ${params.INSTALL_DIR} && \
   --proc-ds ${params.PROCLIB_DS} --proc-member ${params.PROCLIB_MEMBER}\
   --apim-catalog-port ${params.ZOWE_API_MEDIATION_CATALOG_HTTP_PORT} --apim-discovery-port ${params.ZOWE_API_MEDIATION_DISCOVERY_HTTP_PORT} --apim-gateway-port ${params.ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT}\
   --explorer-http-port ${params.ZOWE_EXPLORER_SERVER_HTTP_PORT} --explorer-https-port ${params.ZOWE_EXPLORER_SERVER_HTTPS_PORT}\
-  --zlux-http-port ${params.ZOWE_ZLUX_HTTP_PORT} --zlux-https-port ${params.ZOWE_ZLUX_HTTPS_PORT} --zlux-zss-port ${params.ZOWE_ZLUX_ZSS_PORT}\
+  --zlux-https-port ${params.ZOWE_ZLUX_HTTPS_PORT} --zlux-zss-port ${params.ZOWE_ZLUX_ZSS_PORT}\
   --term-ssh-port ${params.ZOWE_MVD_SSH_PORT} --term-telnet-port ${params.ZOWE_MVD_TELNET_PORT}\
   ${params.INSTALL_DIR}/zowe.pax || { echo "[install-zowe.sh] failed"; exit 1; }
 echo "[install-zowe.sh] succeeds" && exit 0

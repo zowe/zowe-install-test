@@ -31,7 +31,6 @@ DEFAULT_CI_APIM_EXT_CERT_AUTH=
 DEFAULT_CI_APIM_VERIFY_CERT=true
 DEFAULT_CI_EXPLORER_HTTP_PORT=7080
 DEFAULT_CI_EXPLORER_HTTPS_PORT=7443
-DEFAULT_CI_ZLUX_HTTP_PORT=8543
 DEFAULT_CI_ZLUX_HTTPS_PORT=8544
 DEFAULT_CI_ZLUX_ZSS_PORT=8542
 DEFAULT_CI_TERMINALS_SSH_PORT=22
@@ -55,7 +54,6 @@ CI_APIM_EXT_CERT_AUTH=$DEFAULT_CI_APIM_EXT_CERT_AUTH
 CI_APIM_VERIFY_CERT=$DEFAULT_CI_APIM_VERIFY_CERT
 CI_EXPLORER_HTTP_PORT=$DEFAULT_CI_EXPLORER_HTTP_PORT
 CI_EXPLORER_HTTPS_PORT=$DEFAULT_CI_EXPLORER_HTTPS_PORT
-CI_ZLUX_HTTP_PORT=$DEFAULT_CI_ZLUX_HTTP_PORT
 CI_ZLUX_HTTPS_PORT=$DEFAULT_CI_ZLUX_HTTPS_PORT
 CI_ZLUX_ZSS_PORT=$DEFAULT_CI_ZLUX_ZSS_PORT
 CI_TERMINALS_SSH_PORT=$DEFAULT_CI_TERMINALS_SSH_PORT
@@ -220,8 +218,6 @@ function usage {
   echo "                        Optional, default is $DEFAULT_CI_EXPLORER_HTTP_PORT."
   echo "  --explorer-https-port httpsPort for explorer-server."
   echo "                        Optional, default is $DEFAULT_CI_EXPLORER_HTTPS_PORT."
-  echo "  --zlux-http-port      httpPort for zlux-server."
-  echo "                        Optional, default is $DEFAULT_CI_ZLUX_HTTP_PORT."
   echo "  --zlux-https-port     httpsPort for zlux-server."
   echo "                        Optional, default is $DEFAULT_CI_ZLUX_HTTPS_PORT."
   echo "  --zlux-zss-port       zssPort for zlux-server."
@@ -317,11 +313,6 @@ while [ $# -gt 0 ]; do
       ;;
     --explorer-https-port)
       CI_EXPLORER_HTTPS_PORT="$2"
-      shift # past argument
-      shift # past value
-      ;;
-    --zlux-http-port)
-      CI_ZLUX_HTTP_PORT="$2"
       shift # past argument
       shift # past value
       ;;
@@ -422,7 +413,6 @@ echo "[${SCRIPT_NAME}]   - explorer-server     :"
 echo "[${SCRIPT_NAME}]     - httpPort          : $CI_EXPLORER_HTTP_PORT"
 echo "[${SCRIPT_NAME}]     - httpsPort         : $CI_EXPLORER_HTTPS_PORT"
 echo "[${SCRIPT_NAME}]   - zlux-server         :"
-echo "[${SCRIPT_NAME}]     - httpPort          : $CI_ZLUX_HTTP_PORT"
 echo "[${SCRIPT_NAME}]     - httpsPort         : $CI_ZLUX_HTTPS_PORT"
 echo "[${SCRIPT_NAME}]     - zssPort           : $CI_ZLUX_ZSS_PORT"
 echo "[${SCRIPT_NAME}]   - terminals           :"
@@ -486,7 +476,6 @@ cat "${CI_ZOWE_CONFIG_FILE}" | \
   sed -e "/^api-mediation:/,\$s#verifyCertificatesOfServices=.*\$#verifyCertificatesOfServices=${CI_APIM_VERIFY_CERT}#" | \
   sed -e "/^explorer-server:/,\$s#httpPort=.*\$#httpPort=${CI_EXPLORER_HTTP_PORT}#" | \
   sed -e "/^explorer-server:/,\$s#httpsPort=.*\$#httpsPort=${CI_EXPLORER_HTTPS_PORT}#" | \
-  sed -e "/^zlux-server:/,\$s#httpPort=.*\$#httpPort=${CI_ZLUX_HTTP_PORT}#" | \
   sed -e "/^zlux-server:/,\$s#httpsPort=.*\$#httpsPort=${CI_ZLUX_HTTPS_PORT}#" | \
   sed -e "/^zlux-server:/,\$s#zssPort=.*\$#zssPort=${CI_ZLUX_ZSS_PORT}#" | \
   sed -e "/^terminals:/,\$s#sshPort=.*\$#sshPort=${CI_TERMINALS_SSH_PORT}#" | \
