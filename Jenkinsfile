@@ -29,6 +29,11 @@ opts.push(disableConcurrentBuilds())
 def customParameters = []
 // >>>>>>>> parameters to control pipeline behavior
 customParameters.push(booleanParam(
+  name: 'STARTED_BY_AUTOMATION',
+  description: 'If this task is started with pipeline automation. Set to true if you want to skip the Continue prompt question.',
+  defaultValue: false
+))
+customParameters.push(booleanParam(
   name: 'SKIP_RESET_IMAGE',
   description: 'If skip the "reset_test_image" step.',
   defaultValue: false
@@ -258,26 +263,14 @@ node ('ibm-jenkins-slave-nvm') {
 
   try {
 
-    stage('chance-to-stop') {
-      // The purpose of this stage is when you scan the repository, it gives you extra time to stop
-      // the automated started build processes before it reaches the stage of "RESET IMAGE".
-      // NOTE: you have 2 minutes to cancell all started build processes.
-      // FIXME: the reverse way of the abort question is due to the limitation of timeout/input which
-      //        all falls to same org.jenkinsci.plugins.workflow.steps.FlowInterruptedException, and
-      //        err.getCauses() will prompt security warning
-      def manuallyAbort = false
-      try {
-        timeout(time: 2, unit: 'MINUTES') { 
-          input message: 'Do you want to stop the pipeline? (Choose "Abort" below to continue the following stages, or after 2 minutes, the pipeline will continue.)', ok: "Stop the Pipeline Manully"
-          manuallyAbort = true
-        }
-      } catch(err) {
-        // timeout reached or user choose Abort
-        echo "Timeout reached or user choosed Abort, pipeline will continue."
-      }
-
-      if (manuallyAbort) {
-        error "Pipeline aborted manually."
+    utils.conditionalStage('prepare', !params.STARTED_BY_AUTOMATION) {
+      // The purpose of this stage is when you scan the repository, all branches/PRs builds will be
+      // kicked off. This stage will pause the pipeline so you have time to cancel the build.
+      //
+      // NOTE: you have 5 minutes to cancel the build. After 5 minutes, the build will continue to
+      //       next stage.
+      timeout(time: 5, unit: 'MINUTES') { 
+        input message: 'Do you want to continue the pipeline?', ok: "Continue"
       }
     }
 
