@@ -54,7 +54,9 @@ ZOWE_ROOT_DIR=/path/to/zowe \
   SSH_USER=********* \
   SSH_PASSWD=********* \
   ZOSMF_PORT=10443 \
+  ZOWE_DS_MEMBER=ZOWESVR \
   ZOWE_ZLUX_HTTPS_PORT=8544 \
+  ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT=7554 \
   ZOWE_EXPLORER_SERVER_HTTPS_PORT=7443 \
   npm test
 ```
@@ -91,7 +93,9 @@ ZOWE_ROOT_DIR=/path/to/zowe \
   SSH_USER=********* \
   SSH_PASSWD=********* \
   ZOSMF_PORT=10443 \
+  ZOWE_DS_MEMBER=ZOWESVR \
   ZOWE_ZLUX_HTTPS_PORT=8544 \
+  ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT=7554 \
   ZOWE_EXPLORER_SERVER_HTTPS_PORT=7443 \
   DEBUG=test:* \
   npm test
@@ -401,7 +405,7 @@ When you start test on Windows, you may see this error: `'ZOWE_ROOT_DIR' is not 
 Run `npm install -g cross-env` and then run command
 
 ```
-cross-env ZOWE_ROOT_DIR=/path/to/zowe SSH_HOST=test-server SSH_PORT=12022 SSH_USER=********* SSH_PASSWD=********* ZOSMF_PORT=10443 ZOWE_ZLUX_HTTPS_PORT=8544 ZOWE_EXPLORER_SERVER_HTTPS_PORT=7443 npm test
+cross-env ZOWE_ROOT_DIR=/path/to/zowe SSH_HOST=test-server SSH_PORT=12022 SSH_USER=********* SSH_PASSWD=********* ZOSMF_PORT=10443 ZOWE_DS_MEMBER=ZOWESVR ZOWE_ZLUX_HTTPS_PORT=8544 ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT=7554 ZOWE_EXPLORER_SERVER_HTTPS_PORT=7443 npm test
 ```
 
 to start test.
