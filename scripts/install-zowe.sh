@@ -194,54 +194,54 @@ function usage {
   echo "Usage: $SCRIPT_NAME [OPTIONS] package"
   echo
   echo "Options:"
-  echo "  -h|--help                 Display this help message."
-  echo "  -s|--skip-fixes           If skip the temporary fixes before and after installation."
-  echo "                            Optional, default is no."
-  echo "  -u|--uninstall            If uninstall Zowe first."
-  echo "                            Optional, default is no."
-  echo "  -n|--hostname             The server public domain/IP."
-  echo "  --zosmf-port              z/OSMF port for testing."
-  echo "                            Optional, default is $DEFAULT_CI_ZOSMF_PORT."
-  echo "  -t|--target-dir           Installation target folder."
-  echo "                            Optional, default is $DEFAULT_CI_ZOWE_ROOT_DIR."
-  echo "  -i|--install-dir          Installation working folder."
-  echo "                            Optional, default is $DEFAULT_CI_INSTALL_DIR."
-  echo "  --apim-catalog-port       catalogPort for api-mediation."
-  echo "                            Optional, default is $DEFAULT_CI_APIM_CATALOG_PORT."
-  echo "  --apim-discovery-port     discoveryPort for api-mediation."
-  echo "                            Optional, default is $DEFAULT_CI_APIM_DISCOVERY_PORT."
-  echo "  --apim-gateway-port       gatewayPort for api-mediation."
-  echo "                            Optional, default is $DEFAULT_CI_APIM_GATEWAY_PORT."
-  echo "  --apim-cert               externalCertificate for api-mediation."
-  echo "                            Optional, default is $DEFAULT_CI_APIM_EXT_CERT."
-  echo "  --apim-cert-alias         externalCertificateAlias for api-mediation."
-  echo "                            Optional, default is $DEFAULT_CI_APIM_EXT_CERT_ALIAS."
-  echo "  --apim-ca                 externalCertificateAuthorities for api-mediation."
-  echo "                            Optional, default is $DEFAULT_CI_APIM_EXT_CERT_AUTH."
-  echo "  --apim-verify-cert        verifyCertificatesOfServices for api-mediation."
-  echo "                            Optional, default is $DEFAULT_CI_APIM_VERIFY_CERT."
-  echo "  --explorer-jobs-port      jobsPort for explorer-server."
-  echo "                            Optional, default is $DEFAULT_CI_EXPLORER_JOBS_PORT."
-  echo "  --explorer-datasets-port  dataSetsPort for explorer-server."
-  echo "                            Optional, default is $DEFAULT_CI_EXPLORER_DATASETS_PORT."
-  echo "  --explorer-ui-jes-port    explorerJESUI for explorer-ui."
-  echo "                            Optional, default is $DEFAULT_CI_EXPLORER_UI_JES_PORT."
-  echo "  --explorer-ui-mvs-port    explorerMVSUI for explorer-ui."
-  echo "                            Optional, default is $DEFAULT_CI_EXPLORER_UI_MVS_PORT."
-  echo "  --explorer-ui-uss-port    explorerUSSUI for explorer-ui."
-  echo "                            Optional, default is $DEFAULT_CI_EXPLORER_UI_USS_PORT."
-  echo "  --zlux-https-port         httpsPort for zlux-server."
-  echo "                            Optional, default is $DEFAULT_CI_ZLUX_HTTPS_PORT."
-  echo "  --zlux-zss-port           zssPort for zlux-server."
-  echo "                            Optional, default is $DEFAULT_CI_ZLUX_ZSS_PORT."
-  echo "  --term-ssh-port           sshPort for MVD terminals."
-  echo "                            Optional, default is $DEFAULT_CI_TERMINALS_SSH_PORT."
-  echo "  --term-telnet-port        telnetPort for MVD terminals."
-  echo "                            Optional, default is $DEFAULT_CI_TERMINALS_TELNET_PORT."
-  echo "  --proc-ds                 dsName for PROCLIB."
-  echo "                            Optional, default is $DEFAULT_CI_PROCLIB_DS_NAME."
-  echo "  --proc-member             memberName for PROCLIB."
-  echo "                            Optional, default is $DEFAULT_CI_PROCLIB_MEMBER_NAME."
+  echo "  -h|--help                       Display this help message."
+  echo "  -s|--skip-fixes                 If skip the temporary fixes before and after installation."
+  echo "                                  Optional, default is no."
+  echo "  -u|--uninstall                  If uninstall Zowe first."
+  echo "                                  Optional, default is no."
+  echo "  -n|--hostname                   The server public domain/IP."
+  echo "  --zfp|--zosmf-port              z/OSMF port for testing."
+  echo "                                  Optional, default is $DEFAULT_CI_ZOSMF_PORT."
+  echo "  -t|--target-dir                 Installation target folder."
+  echo "                                  Optional, default is $DEFAULT_CI_ZOWE_ROOT_DIR."
+  echo "  -i|--install-dir                Installation working folder."
+  echo "                                  Optional, default is $DEFAULT_CI_INSTALL_DIR."
+  echo "  --acp|--apim-catalog-port       catalogPort for api-mediation."
+  echo "                                  Optional, default is $DEFAULT_CI_APIM_CATALOG_PORT."
+  echo "  --adp|--apim-discovery-port     discoveryPort for api-mediation."
+  echo "                                  Optional, default is $DEFAULT_CI_APIM_DISCOVERY_PORT."
+  echo "  --agp|--apim-gateway-port       gatewayPort for api-mediation."
+  echo "                                  Optional, default is $DEFAULT_CI_APIM_GATEWAY_PORT."
+  echo "  --ac|--apim-cert               externalCertificate for api-mediation."
+  echo "                                  Optional, default is $DEFAULT_CI_APIM_EXT_CERT."
+  echo "  --acl|--apim-cert-alias         externalCertificateAlias for api-mediation."
+  echo "                                  Optional, default is $DEFAULT_CI_APIM_EXT_CERT_ALIAS."
+  echo "  --aca|--apim-ca                 externalCertificateAuthorities for api-mediation."
+  echo "                                  Optional, default is $DEFAULT_CI_APIM_EXT_CERT_AUTH."
+  echo "  --avc|--apim-verify-cert        verifyCertificatesOfServices for api-mediation."
+  echo "                                  Optional, default is $DEFAULT_CI_APIM_VERIFY_CERT."
+  echo "  --ejp|--explorer-jobs-port      jobsPort for explorer-server."
+  echo "                                  Optional, default is $DEFAULT_CI_EXPLORER_JOBS_PORT."
+  echo "  --edp|--explorer-datasets-port  dataSetsPort for explorer-server."
+  echo "                                  Optional, default is $DEFAULT_CI_EXPLORER_DATASETS_PORT."
+  echo "  --ujp|--explorer-ui-jes-port    explorerJESUI for explorer-ui."
+  echo "                                  Optional, default is $DEFAULT_CI_EXPLORER_UI_JES_PORT."
+  echo "  --ump|--explorer-ui-mvs-port    explorerMVSUI for explorer-ui."
+  echo "                                  Optional, default is $DEFAULT_CI_EXPLORER_UI_MVS_PORT."
+  echo "  --uup|--explorer-ui-uss-port    explorerUSSUI for explorer-ui."
+  echo "                                  Optional, default is $DEFAULT_CI_EXPLORER_UI_USS_PORT."
+  echo "  --zp|--zlux-https-port         httpsPort for zlux-server."
+  echo "                                  Optional, default is $DEFAULT_CI_ZLUX_HTTPS_PORT."
+  echo "  --zsp|--zlux-zss-port           zssPort for zlux-server."
+  echo "                                  Optional, default is $DEFAULT_CI_ZLUX_ZSS_PORT."
+  echo "  --tsp|--term-ssh-port           sshPort for MVD terminals."
+  echo "                                  Optional, default is $DEFAULT_CI_TERMINALS_SSH_PORT."
+  echo "  --ttp|--term-telnet-port        telnetPort for MVD terminals."
+  echo "                                  Optional, default is $DEFAULT_CI_TERMINALS_TELNET_PORT."
+  echo "  --ds|--proc-ds                 dsName for PROCLIB."
+  echo "                                  Optional, default is $DEFAULT_CI_PROCLIB_DS_NAME."
+  echo "  --dm|--proc-member             memberName for PROCLIB."
+  echo "                                  Optional, default is $DEFAULT_CI_PROCLIB_MEMBER_NAME."
   echo
 }
 
@@ -268,7 +268,7 @@ while [ $# -gt 0 ]; do
       shift # past argument
       shift # past value
       ;;
-    --zosmf-port)
+    --zfp|--zosmf-port)
       CI_ZOSMF_PORT="$2"
       shift # past argument
       shift # past value
@@ -283,92 +283,92 @@ while [ $# -gt 0 ]; do
       shift # past argument
       shift # past value
       ;;
-    --apim-catalog-port)
+    --acp|--apim-catalog-port)
       CI_APIM_CATALOG_PORT="$2"
       shift # past argument
       shift # past value
       ;;
-    --apim-discovery-port)
+    --adp|--apim-discovery-port)
       CI_APIM_DISCOVERY_PORT="$2"
       shift # past argument
       shift # past value
       ;;
-    --apim-gateway-port)
+    --agp|--apim-gateway-port)
       CI_APIM_GATEWAY_PORT="$2"
       shift # past argument
       shift # past value
       ;;
-    --apim-cert)
+    --ac|--apim-cert)
       CI_APIM_EXT_CERT="$2"
       shift # past argument
       shift # past value
       ;;
-    --apim-cert-alias)
+    --acl|--apim-cert-alias)
       CI_APIM_EXT_CERT_ALIAS="$2"
       shift # past argument
       shift # past value
       ;;
-    --apim-ca)
+    --aca|--apim-ca)
       CI_APIM_EXT_CERT_AUTH="$2"
       shift # past argument
       shift # past value
       ;;
-    --apim-verify-cert)
+    --avc|--apim-verify-cert)
       CI_APIM_VERIFY_CERT="$2"
       shift # past argument
       shift # past value
       ;;
-    --explorer-jobs-port)
+    --ejp|--explorer-jobs-port)
       CI_EXPLORER_JOBS_PORT="$2"
       shift # past argument
       shift # past value
       ;;
-    --explorer-datasets-port)
+    --edp|--explorer-datasets-port)
       CI_EXPLORER_DATASETS_PORT="$2"
       shift # past argument
       shift # past value
       ;;
-    --explorer-ui-jes-port)
+    --ujp|--explorer-ui-jes-port)
       CI_EXPLORER_UI_JES_PORT="$2"
       shift # past argument
       shift # past value
       ;;
-    --explorer-ui-mvs-port)
+    --ump|--explorer-ui-mvs-port)
       CI_EXPLORER_UI_MVS_PORT="$2"
       shift # past argument
       shift # past value
       ;;
-    --explorer-ui-uss-port)
+    --uup|--explorer-ui-uss-port)
       CI_EXPLORER_UI_USS_PORT="$2"
       shift # past argument
       shift # past value
       ;;
-    --zlux-https-port)
+    --zp|--zlux-https-port)
       CI_ZLUX_HTTPS_PORT="$2"
       shift # past argument
       shift # past value
       ;;
-    --zlux-zss-port)
+    --zsp|--zlux-zss-port)
       CI_ZLUX_ZSS_PORT="$2"
       shift # past argument
       shift # past value
       ;;
-    --term-ssh-port)
+    --tsp|--term-ssh-port)
       CI_TERMINALS_SSH_PORT="$2"
       shift # past argument
       shift # past value
       ;;
-    --term-telnet-port)
+    --ttp|--term-telnet-port)
       CI_TERMINALS_TELNET_PORT="$2"
       shift # past argument
       shift # past value
       ;;
-    --proc-ds)
+    --ds|--proc-ds)
       CI_PROCLIB_DS_NAME="$2"
       shift # past argument
       shift # past value
       ;;
-    --proc-member)
+    --dm|--proc-member)
       CI_PROCLIB_MEMBER_NAME="$2"
       shift # past argument
       shift # past value

@@ -380,13 +380,13 @@ EOF"""
             sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
 cd ${params.INSTALL_DIR} && \
   (iconv -f ISO8859-1 -t IBM-1047 install-zowe.sh > install-zowe.sh.new) && mv install-zowe.sh.new install-zowe.sh && chmod +x install-zowe.sh
-./install-zowe.sh -n ${params.TEST_IMAGE_GUEST_SSH_HOST} -t ${params.ZOWE_ROOT_DIR} -i ${params.INSTALL_DIR}${skipTempFixes}${uninstallZowe} --zosmf-port ${params.ZOSMF_PORT}\
-  --proc-ds ${params.PROCLIB_DS} --proc-member ${params.PROCLIB_MEMBER}\
-  --apim-catalog-port ${params.ZOWE_API_MEDIATION_CATALOG_HTTP_PORT} --apim-discovery-port ${params.ZOWE_API_MEDIATION_DISCOVERY_HTTP_PORT} --apim-gateway-port ${params.ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT}\
-  --explorer-jobs-port ${params.ZOWE_EXPLORER_JOBS_PORT} --explorer-datasets-port ${params.ZOWE_EXPLORER_DATASETS_PORT}\
-  --explorer-ui-jes-port ${params.ZOWE_EXPLORER_UI_JES_PORT} --explorer-ui-mvs-port ${params.ZOWE_EXPLORER_UI_MVS_PORT} --explorer-ui-uss-port ${params.ZOWE_EXPLORER_UI_USS_PORT}\
-  --zlux-https-port ${params.ZOWE_ZLUX_HTTPS_PORT} --zlux-zss-port ${params.ZOWE_ZLUX_ZSS_PORT}\
-  --term-ssh-port ${params.ZOWE_MVD_SSH_PORT} --term-telnet-port ${params.ZOWE_MVD_TELNET_PORT}\
+./install-zowe.sh -n ${params.TEST_IMAGE_GUEST_SSH_HOST} -t ${params.ZOWE_ROOT_DIR} -i ${params.INSTALL_DIR}${skipTempFixes}${uninstallZowe} --zfp ${params.ZOSMF_PORT}\
+  --ds ${params.PROCLIB_DS} --dm ${params.PROCLIB_MEMBER}\
+  --acp ${params.ZOWE_API_MEDIATION_CATALOG_HTTP_PORT} --adp ${params.ZOWE_API_MEDIATION_DISCOVERY_HTTP_PORT} --agp ${params.ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT}\
+  --ejp ${params.ZOWE_EXPLORER_JOBS_PORT} --edp ${params.ZOWE_EXPLORER_DATASETS_PORT}\
+  --ujp ${params.ZOWE_EXPLORER_UI_JES_PORT} --ump ${params.ZOWE_EXPLORER_UI_MVS_PORT} --uup ${params.ZOWE_EXPLORER_UI_USS_PORT}\
+  --zp ${params.ZOWE_ZLUX_HTTPS_PORT} --zsp ${params.ZOWE_ZLUX_ZSS_PORT}\
+  --tsp ${params.ZOWE_MVD_SSH_PORT} --ttp ${params.ZOWE_MVD_TELNET_PORT}\
   ${params.INSTALL_DIR}/zowe.pax || { echo "[install-zowe.sh] failed"; exit 1; }
 echo "[install-zowe.sh] succeeds" && exit 0
 EOF"""
