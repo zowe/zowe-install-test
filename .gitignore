@@ -78,3 +78,6 @@ test/cli/zowe-cli-command-wrapper.sh
 
 # Mac OS
 .DS_Store
+
+# SonarQube Scan
+.scannerwork

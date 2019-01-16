@@ -235,15 +235,13 @@ const loginMVD = async(driver, url, username, password) => {
       async() => {
         let result = false;
 
-        if (!result) {
-          let error = await getElementText(driver, 'p.login-error');
-          if (error !== false) {
-            error = error.trim();
-            if (error && error !== '&nbsp;') {
-              debug('login error message returned: %s', error);
-              // authentication failed, no need to wait anymore
-              result = true;
-            }
+        let error = await getElementText(driver, 'p.login-error');
+        if (error !== false) {
+          error = error.trim();
+          if (error && error !== '&nbsp;') {
+            debug('login error message returned: %s', error);
+            // authentication failed, no need to wait anymore
+            result = true;
           }
         }
 
@@ -507,7 +505,9 @@ const launchApp = async(driver, appName) => {
   expect(app).to.not.be.null;
 
   // start app
-  await app.click();
+  if (app) { // this check is not neccessary but SonarQube reports it as major bug
+    await app.click();
+  }
 };
 
 /**

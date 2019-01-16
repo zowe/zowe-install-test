@@ -120,14 +120,12 @@ describe('test MVD login page', function() {
         async() => {
           let result = false;
 
-          if (!result) {
-            let error = await getElementText(driver, 'p.login-error');
-            if (error !== false) {
-              error = error.trim();
-              if (error && error !== '&nbsp;') {
-                debug('login error message returned: %s', error);
-                result = true;
-              }
+          let error = await getElementText(driver, 'p.login-error');
+          if (error !== false) {
+            error = error.trim();
+            if (error && error !== '&nbsp;') {
+              debug('login error message returned: %s', error);
+              result = true;
             }
           }
 
@@ -196,15 +194,13 @@ describe('test MVD login page', function() {
         async() => {
           let result = false;
 
-          if (!result) {
-            let error = await getElementText(driver, 'p.login-error');
-            if (error !== false) {
-              error = error.trim();
-              if (error && error !== '&nbsp;') {
-                debug('login error message returned: %s', error);
-                // authentication failed, no need to wait anymore
-                result = true;
-              }
+          let error = await getElementText(driver, 'p.login-error');
+          if (error !== false) {
+            error = error.trim();
+            if (error && error !== '&nbsp;') {
+              debug('login error message returned: %s', error);
+              // authentication failed, no need to wait anymore
+              result = true;
             }
           }
 

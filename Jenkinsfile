@@ -292,6 +292,20 @@ node ('ibm-jenkins-slave-nvm') {
       }
     }
 
+    stage('install') {
+      ansiColor('xterm') {
+        sh "npm install"
+        sh "npm run lint"
+      }
+    }
+
+    stage('SonarQube analysis') {
+      def scannerHome = tool 'sonar-scanner-3.2.0';
+      withSonarQubeEnv('sonar-default-server') {
+        sh "${scannerHome}/bin/sonar-scanner"
+      }
+    }
+
     // lock testing server
     lock("testing-server-${params.TEST_IMAGE_HOST_SSH_HOST}") {
 
@@ -445,9 +459,6 @@ EOF"""
 
       stage('test') {
         ansiColor('xterm') {
-          sh "npm install"
-          sh "npm run lint"
-
           withCredentials([usernamePassword(credentialsId: params.TEST_IMAGE_GUEST_SSH_CREDENTIAL, passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
             // run tests
             try {
