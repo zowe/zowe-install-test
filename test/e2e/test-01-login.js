@@ -256,7 +256,7 @@ describe('test MVD login page', function() {
     const apps = await getElements(driver, 'rs-com-launchbar-icon');
     expect(apps).to.be.an('array').that.have.lengthOf(PRE_PINNED_APPS.length);
     for (let app of apps) {
-      const icon = await getElement(app, 'div.launchbar-icon');
+      const icon = await getElement(app, 'div.launchbar-icon-image');
       const title = await icon.getAttribute('title');
       expect(title).to.be.oneOf(PRE_PINNED_APPS);
     }

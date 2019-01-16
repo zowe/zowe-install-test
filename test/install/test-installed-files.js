@@ -64,8 +64,8 @@ describe('verify installed files', function() {
       });
   });
 
-  it('explorer-server/wlp/usr/servers/Atlas/server.xml should exist', function() {
-    return ssh.execCommand('test -f ' + process.env.ZOWE_ROOT_DIR + '/explorer-server/wlp/usr/servers/Atlas/server.xml')
+  it('explorer-jobs-api/jobs-api-server-*.jar should exist', function() {
+    return ssh.execCommand('test -f ' + process.env.ZOWE_ROOT_DIR + '/explorer-jobs-api/jobs-api-server-*.jar')
       .then(function(result) {
         expect(result.stderr).to.be.empty;
         expect(result.code).to.equal(0);

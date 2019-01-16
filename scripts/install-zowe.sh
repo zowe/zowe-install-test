@@ -29,9 +29,11 @@ DEFAULT_CI_APIM_EXT_CERT=
 DEFAULT_CI_APIM_EXT_CERT_ALIAS=
 DEFAULT_CI_APIM_EXT_CERT_AUTH=
 DEFAULT_CI_APIM_VERIFY_CERT=true
-DEFAULT_CI_EXPLORER_HTTP_PORT=7080
-DEFAULT_CI_EXPLORER_HTTPS_PORT=7443
-DEFAULT_CI_ZLUX_HTTP_PORT=8543
+DEFAULT_CI_EXPLORER_JOBS_PORT=8545
+DEFAULT_CI_EXPLORER_DATASETS_PORT=8547
+DEFAULT_CI_EXPLORER_UI_JES_PORT=8546
+DEFAULT_CI_EXPLORER_UI_MVS_PORT=8548
+DEFAULT_CI_EXPLORER_UI_USS_PORT=8550
 DEFAULT_CI_ZLUX_HTTPS_PORT=8544
 DEFAULT_CI_ZLUX_ZSS_PORT=8542
 DEFAULT_CI_TERMINALS_SSH_PORT=22
@@ -53,9 +55,11 @@ CI_APIM_EXT_CERT=$DEFAULT_CI_APIM_EXT_CERT
 CI_APIM_EXT_CERT_ALIAS=$DEFAULT_CI_APIM_EXT_CERT_ALIAS
 CI_APIM_EXT_CERT_AUTH=$DEFAULT_CI_APIM_EXT_CERT_AUTH
 CI_APIM_VERIFY_CERT=$DEFAULT_CI_APIM_VERIFY_CERT
-CI_EXPLORER_HTTP_PORT=$DEFAULT_CI_EXPLORER_HTTP_PORT
-CI_EXPLORER_HTTPS_PORT=$DEFAULT_CI_EXPLORER_HTTPS_PORT
-CI_ZLUX_HTTP_PORT=$DEFAULT_CI_ZLUX_HTTP_PORT
+CI_EXPLORER_JOBS_PORT=$DEFAULT_CI_EXPLORER_JOBS_PORT
+CI_EXPLORER_DATASETS_PORT=$DEFAULT_CI_EXPLORER_DATASETS_PORT
+CI_EXPLORER_UI_JES_PORT=$DEFAULT_CI_EXPLORER_UI_JES_PORT
+CI_EXPLORER_UI_MVS_PORT=$DEFAULT_CI_EXPLORER_UI_MVS_PORT
+CI_EXPLORER_UI_USS_PORT=$DEFAULT_CI_EXPLORER_UI_USS_PORT
 CI_ZLUX_HTTPS_PORT=$DEFAULT_CI_ZLUX_HTTPS_PORT
 CI_ZLUX_ZSS_PORT=$DEFAULT_CI_ZLUX_ZSS_PORT
 CI_TERMINALS_SSH_PORT=$DEFAULT_CI_TERMINALS_SSH_PORT
@@ -190,50 +194,54 @@ function usage {
   echo "Usage: $SCRIPT_NAME [OPTIONS] package"
   echo
   echo "Options:"
-  echo "  -h|--help             Display this help message."
-  echo "  -s|--skip-fixes       If skip the temporary fixes before and after installation."
-  echo "                        Optional, default is no."
-  echo "  -u|--uninstall        If uninstall Zowe first."
-  echo "                        Optional, default is no."
-  echo "  -n|--hostname         The server public domain/IP."
-  echo "  --zosmf-port          z/OSMF port for testing."
-  echo "                        Optional, default is $DEFAULT_CI_ZOSMF_PORT."
-  echo "  -t|--target-dir       Installation target folder."
-  echo "                        Optional, default is $DEFAULT_CI_ZOWE_ROOT_DIR."
-  echo "  -i|--install-dir      Installation working folder."
-  echo "                        Optional, default is $DEFAULT_CI_INSTALL_DIR."
-  echo "  --apim-catalog-port   catalogPort for api-mediation."
-  echo "                        Optional, default is $DEFAULT_CI_APIM_CATALOG_PORT."
-  echo "  --apim-discovery-port discoveryPort for api-mediation."
-  echo "                        Optional, default is $DEFAULT_CI_APIM_DISCOVERY_PORT."
-  echo "  --apim-gateway-port   gatewayPort for api-mediation."
-  echo "                        Optional, default is $DEFAULT_CI_APIM_GATEWAY_PORT."
-  echo "  --apim-cert           externalCertificate for api-mediation."
-  echo "                        Optional, default is $DEFAULT_CI_APIM_EXT_CERT."
-  echo "  --apim-cert-alias     externalCertificateAlias for api-mediation."
-  echo "                        Optional, default is $DEFAULT_CI_APIM_EXT_CERT_ALIAS."
-  echo "  --apim-ca             externalCertificateAuthorities for api-mediation."
-  echo "                        Optional, default is $DEFAULT_CI_APIM_EXT_CERT_AUTH."
-  echo "  --apim-verify-cert    verifyCertificatesOfServices for api-mediation."
-  echo "                        Optional, default is $DEFAULT_CI_APIM_VERIFY_CERT."
-  echo "  --explorer-http-port  httpPort for explorer-server."
-  echo "                        Optional, default is $DEFAULT_CI_EXPLORER_HTTP_PORT."
-  echo "  --explorer-https-port httpsPort for explorer-server."
-  echo "                        Optional, default is $DEFAULT_CI_EXPLORER_HTTPS_PORT."
-  echo "  --zlux-http-port      httpPort for zlux-server."
-  echo "                        Optional, default is $DEFAULT_CI_ZLUX_HTTP_PORT."
-  echo "  --zlux-https-port     httpsPort for zlux-server."
-  echo "                        Optional, default is $DEFAULT_CI_ZLUX_HTTPS_PORT."
-  echo "  --zlux-zss-port       zssPort for zlux-server."
-  echo "                        Optional, default is $DEFAULT_CI_ZLUX_ZSS_PORT."
-  echo "  --term-ssh-port       sshPort for MVD terminals."
-  echo "                        Optional, default is $DEFAULT_CI_TERMINALS_SSH_PORT."
-  echo "  --term-telnet-port    telnetPort for MVD terminals."
-  echo "                        Optional, default is $DEFAULT_CI_TERMINALS_TELNET_PORT."
-  echo "  --proc-ds             dsName for PROCLIB."
-  echo "                        Optional, default is $DEFAULT_CI_PROCLIB_DS_NAME."
-  echo "  --proc-member         memberName for PROCLIB."
-  echo "                        Optional, default is $DEFAULT_CI_PROCLIB_MEMBER_NAME."
+  echo "  -h|--help                 Display this help message."
+  echo "  -s|--skip-fixes           If skip the temporary fixes before and after installation."
+  echo "                            Optional, default is no."
+  echo "  -u|--uninstall            If uninstall Zowe first."
+  echo "                            Optional, default is no."
+  echo "  -n|--hostname             The server public domain/IP."
+  echo "  --zosmf-port              z/OSMF port for testing."
+  echo "                            Optional, default is $DEFAULT_CI_ZOSMF_PORT."
+  echo "  -t|--target-dir           Installation target folder."
+  echo "                            Optional, default is $DEFAULT_CI_ZOWE_ROOT_DIR."
+  echo "  -i|--install-dir          Installation working folder."
+  echo "                            Optional, default is $DEFAULT_CI_INSTALL_DIR."
+  echo "  --apim-catalog-port       catalogPort for api-mediation."
+  echo "                            Optional, default is $DEFAULT_CI_APIM_CATALOG_PORT."
+  echo "  --apim-discovery-port     discoveryPort for api-mediation."
+  echo "                            Optional, default is $DEFAULT_CI_APIM_DISCOVERY_PORT."
+  echo "  --apim-gateway-port       gatewayPort for api-mediation."
+  echo "                            Optional, default is $DEFAULT_CI_APIM_GATEWAY_PORT."
+  echo "  --apim-cert               externalCertificate for api-mediation."
+  echo "                            Optional, default is $DEFAULT_CI_APIM_EXT_CERT."
+  echo "  --apim-cert-alias         externalCertificateAlias for api-mediation."
+  echo "                            Optional, default is $DEFAULT_CI_APIM_EXT_CERT_ALIAS."
+  echo "  --apim-ca                 externalCertificateAuthorities for api-mediation."
+  echo "                            Optional, default is $DEFAULT_CI_APIM_EXT_CERT_AUTH."
+  echo "  --apim-verify-cert        verifyCertificatesOfServices for api-mediation."
+  echo "                            Optional, default is $DEFAULT_CI_APIM_VERIFY_CERT."
+  echo "  --explorer-jobs-port      jobsPort for explorer-server."
+  echo "                            Optional, default is $DEFAULT_CI_EXPLORER_JOBS_PORT."
+  echo "  --explorer-datasets-port  dataSetsPort for explorer-server."
+  echo "                            Optional, default is $DEFAULT_CI_EXPLORER_DATASETS_PORT."
+  echo "  --explorer-ui-jes-port    explorerJESUI for explorer-ui."
+  echo "                            Optional, default is $DEFAULT_CI_EXPLORER_UI_JES_PORT."
+  echo "  --explorer-ui-mvs-port    explorerMVSUI for explorer-ui."
+  echo "                            Optional, default is $DEFAULT_CI_EXPLORER_UI_MVS_PORT."
+  echo "  --explorer-ui-uss-port    explorerUSSUI for explorer-ui."
+  echo "                            Optional, default is $DEFAULT_CI_EXPLORER_UI_USS_PORT."
+  echo "  --zlux-https-port         httpsPort for zlux-server."
+  echo "                            Optional, default is $DEFAULT_CI_ZLUX_HTTPS_PORT."
+  echo "  --zlux-zss-port           zssPort for zlux-server."
+  echo "                            Optional, default is $DEFAULT_CI_ZLUX_ZSS_PORT."
+  echo "  --term-ssh-port           sshPort for MVD terminals."
+  echo "                            Optional, default is $DEFAULT_CI_TERMINALS_SSH_PORT."
+  echo "  --term-telnet-port        telnetPort for MVD terminals."
+  echo "                            Optional, default is $DEFAULT_CI_TERMINALS_TELNET_PORT."
+  echo "  --proc-ds                 dsName for PROCLIB."
+  echo "                            Optional, default is $DEFAULT_CI_PROCLIB_DS_NAME."
+  echo "  --proc-member             memberName for PROCLIB."
+  echo "                            Optional, default is $DEFAULT_CI_PROCLIB_MEMBER_NAME."
   echo
 }
 
@@ -310,18 +318,28 @@ while [ $# -gt 0 ]; do
       shift # past argument
       shift # past value
       ;;
-    --explorer-http-port)
-      CI_EXPLORER_HTTP_PORT="$2"
+    --explorer-jobs-port)
+      CI_EXPLORER_JOBS_PORT="$2"
       shift # past argument
       shift # past value
       ;;
-    --explorer-https-port)
-      CI_EXPLORER_HTTPS_PORT="$2"
+    --explorer-datasets-port)
+      CI_EXPLORER_DATASETS_PORT="$2"
       shift # past argument
       shift # past value
       ;;
-    --zlux-http-port)
-      CI_ZLUX_HTTP_PORT="$2"
+    --explorer-ui-jes-port)
+      CI_EXPLORER_UI_JES_PORT="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    --explorer-ui-mvs-port)
+      CI_EXPLORER_UI_MVS_PORT="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    --explorer-ui-uss-port)
+      CI_EXPLORER_UI_USS_PORT="$2"
       shift # past argument
       shift # past value
       ;;
@@ -405,7 +423,7 @@ echo "[${SCRIPT_NAME}]   - skip temp files     : $CI_SKIP_TEMP_FIXES"
 echo "[${SCRIPT_NAME}]   - uninstall previous  : $CI_UNINSTALL"
 echo "[${SCRIPT_NAME}]   - z/OSMF port         : $CI_ZOSMF_PORT"
 echo "[${SCRIPT_NAME}]   - temporary folder    : $CI_INSTALL_DIR"
-echo "[${SCRIPT_NAME}]   - install.            :"
+echo "[${SCRIPT_NAME}]   - install             :"
 echo "[${SCRIPT_NAME}]     - rootDir           : $CI_ZOWE_ROOT_DIR"
 echo "[${SCRIPT_NAME}]   - zowe-server-proclib :"
 echo "[${SCRIPT_NAME}]     - dsName            : $CI_PROCLIB_DS_NAME"
@@ -419,10 +437,13 @@ echo "[${SCRIPT_NAME}]     - externalCertificateAlias       : $CI_APIM_EXT_CERT_
 echo "[${SCRIPT_NAME}]     - externalCertificateAuthorities : $CI_APIM_EXT_CERT_AUTH"
 echo "[${SCRIPT_NAME}]     - verifyCertificatesOfServices   : $CI_APIM_VERIFY_CERT"
 echo "[${SCRIPT_NAME}]   - explorer-server     :"
-echo "[${SCRIPT_NAME}]     - httpPort          : $CI_EXPLORER_HTTP_PORT"
-echo "[${SCRIPT_NAME}]     - httpsPort         : $CI_EXPLORER_HTTPS_PORT"
+echo "[${SCRIPT_NAME}]     - jobsPort          : $CI_EXPLORER_JOBS_PORT"
+echo "[${SCRIPT_NAME}]     - dataSetsPort      : $CI_EXPLORER_DATASETS_PORT"
+echo "[${SCRIPT_NAME}]   - explorer-ui         :"
+echo "[${SCRIPT_NAME}]     - explorerJESUI     : $CI_EXPLORER_UI_JES_PORT"
+echo "[${SCRIPT_NAME}]     - explorerMVSUI     : $CI_EXPLORER_UI_MVS_PORT"
+echo "[${SCRIPT_NAME}]     - explorerUSSUI     : $CI_EXPLORER_UI_USS_PORT"
 echo "[${SCRIPT_NAME}]   - zlux-server         :"
-echo "[${SCRIPT_NAME}]     - httpPort          : $CI_ZLUX_HTTP_PORT"
 echo "[${SCRIPT_NAME}]     - httpsPort         : $CI_ZLUX_HTTPS_PORT"
 echo "[${SCRIPT_NAME}]     - zssPort           : $CI_ZLUX_ZSS_PORT"
 echo "[${SCRIPT_NAME}]   - terminals           :"
@@ -484,9 +505,11 @@ cat "${CI_ZOWE_CONFIG_FILE}" | \
   sed -e "/^api-mediation:/,\$s#externalCertificateAlias=.*\$#externalCertificateAlias=${CI_APIM_EXT_CERT_ALIAS}#" | \
   sed -e "/^api-mediation:/,\$s#externalCertificateAuthorities=.*\$#externalCertificateAuthorities=${CI_APIM_EXT_CERT_AUTH}#" | \
   sed -e "/^api-mediation:/,\$s#verifyCertificatesOfServices=.*\$#verifyCertificatesOfServices=${CI_APIM_VERIFY_CERT}#" | \
-  sed -e "/^explorer-server:/,\$s#httpPort=.*\$#httpPort=${CI_EXPLORER_HTTP_PORT}#" | \
-  sed -e "/^explorer-server:/,\$s#httpsPort=.*\$#httpsPort=${CI_EXPLORER_HTTPS_PORT}#" | \
-  sed -e "/^zlux-server:/,\$s#httpPort=.*\$#httpPort=${CI_ZLUX_HTTP_PORT}#" | \
+  sed -e "/^explorer-server:/,\$s#jobsPort=.*\$#jobsPort=${CI_EXPLORER_JOBS_PORT}#" | \
+  sed -e "/^explorer-server:/,\$s#dataSetsPort=.*\$#dataSetsPort=${CI_EXPLORER_DATASETS_PORT}#" | \
+  sed -e "/^explorer-ui:/,\$s#explorerJESUI=.*\$#explorerJESUI=${CI_EXPLORER_UI_JES_PORT}#" | \
+  sed -e "/^explorer-ui:/,\$s#explorerMVSUI=.*\$#explorerMVSUI=${CI_EXPLORER_UI_MVS_PORT}#" | \
+  sed -e "/^explorer-ui:/,\$s#explorerUSSUI=.*\$#explorerUSSUI=${CI_EXPLORER_UI_USS_PORT}#" | \
   sed -e "/^zlux-server:/,\$s#httpsPort=.*\$#httpsPort=${CI_ZLUX_HTTPS_PORT}#" | \
   sed -e "/^zlux-server:/,\$s#zssPort=.*\$#zssPort=${CI_ZLUX_ZSS_PORT}#" | \
   sed -e "/^terminals:/,\$s#sshPort=.*\$#sshPort=${CI_TERMINALS_SSH_PORT}#" | \

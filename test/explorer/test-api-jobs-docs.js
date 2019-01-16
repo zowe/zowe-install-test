@@ -10,43 +10,33 @@
 
 const _ = require('lodash');
 const expect = require('chai').expect;
-const debug = require('debug')('test:explorer:api-datasets');
+const debug = require('debug')('test:explorer:docs');
 const axios = require('axios');
 const addContext = require('mochawesome/addContext');
 
-let REQ, username, password;
-const DS_PATTERN_TO_TEST = 'TCPIP.T*';
-const DS_TO_TEST = 'TCPIP.TCPIP.DATA';
+let REQ;
 
 // allow self signed certs
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-describe('test explorer server datasets api', function() {
+describe('test explorer server docs', function() {
   before('verify environment variables', function() {
     expect(process.env.SSH_HOST, 'SSH_HOST is not defined').to.not.be.empty;
-    expect(process.env.SSH_USER, 'SSH_USER is not defined').to.not.be.empty;
-    expect(process.env.SSH_PASSWD, 'SSH_PASSWD is not defined').to.not.be.empty;
-    expect(process.env.ZOWE_EXPLORER_DATASETS_PORT, 'ZOWE_EXPLORER_DATASETS_PORT is not defined').to.not.be.empty;
+    expect(process.env.ZOWE_EXPLORER_JOBS_PORT, 'ZOWE_EXPLORER_JOBS_PORT is not defined').to.not.be.empty;
 
     REQ = axios.create({
-      baseURL: `https://${process.env.SSH_HOST}:${process.env.ZOWE_EXPLORER_DATASETS_PORT}`,
+      baseURL: `https://${process.env.SSH_HOST}:${process.env.ZOWE_EXPLORER_JOBS_PORT}`,
       timeout: 30000,
     });
-    username = process.env.SSH_USER;
-    password = process.env.SSH_PASSWD;
-    debug(`Explorer server URL: https://${process.env.SSH_HOST}:${process.env.ZOWE_EXPLORER_DATASETS_PORT}`);
+    debug(`Explorer server URL: https://${process.env.SSH_HOST}:${process.env.ZOWE_EXPLORER_JOBS_PORT}`);
   });
 
-  it(`should be able to list data sets of ${DS_PATTERN_TO_TEST}`, function() {
+  it('should be able to access Swagger UI (/swagger-ui.html)', function() {
     const _this = this;
 
     const req = {
       method: 'get',
-      url: '/api/v1/datasets/' + encodeURIComponent(DS_PATTERN_TO_TEST),
-      auth: {
-        username,
-        password,
-      }
+      url: '/swagger-ui.html',
     };
     debug('request', req);
 
@@ -60,21 +50,21 @@ describe('test explorer server datasets api', function() {
 
         expect(res).to.have.property('status');
         expect(res.status).to.equal(200);
-        expect(res.data).to.be.an('array');
-        expect(res.data.map(one => one.name)).to.include(DS_TO_TEST);
+        expect(res.data).to.include('<html ');
+        expect(res.data).to.include('<title>Swagger UI</title>');
       });
   });
 
-  it(`should be able to get content of data set ${DS_TO_TEST}`, function() {
+  it('should be able to access Swagger JSON file (/v2/api-docs)', function() {
     const _this = this;
 
     const req = {
       method: 'get',
-      url: '/api/v1/datasets/' + encodeURIComponent(DS_TO_TEST) + '/content',
-      auth: {
-        username,
-        password,
-      }
+      url: '/v2/api-docs',
+      params: {
+        compact: 'true',
+        displayPorts: 'true',
+      },
     };
     debug('request', req);
 
@@ -89,9 +79,13 @@ describe('test explorer server datasets api', function() {
         expect(res).to.have.property('status');
         expect(res.status).to.equal(200);
         expect(res.data).to.be.an('object');
-        expect(res.data).to.have.property('records');
-        expect(res.data.records).to.be.a('string');
-        expect(res.data.records).to.include('TCPIP.DATA');
+        expect(res.data).to.nested.include({
+          'swagger': '2.0',
+        });
+        expect(res.data).to.have.nested.property('paths./api/v1/jobs');
+        expect(res.data).to.have.nested.property('paths./api/v1/jobs/username');
+        expect(res.data).to.have.nested.property('paths./api/v1/jobs/{jobName}/{jobId}');
       });
   });
+
 });

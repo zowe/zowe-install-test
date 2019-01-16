@@ -75,3 +75,6 @@ test/cli/zowe-cli-command-wrapper.sh
 
 # IDE files
 .history
+
+# Mac OS
+.DS_Store
