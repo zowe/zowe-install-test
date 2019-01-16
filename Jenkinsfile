@@ -135,7 +135,6 @@ customParameters.push(string(
   required: true
 ))
 customParameters.push(string(
-  customPara_UI_JES_PORT
   name: 'ZOWE_EXPLORER_DATASETS_PORT',
   description: 'dataSetsPort for Zowe explorer server',
   defaultValue: '8547',
@@ -258,6 +257,29 @@ node ('ibm-jenkins-slave-nvm') {
   currentBuild.result = 'SUCCESS'
 
   try {
+
+    stage('chance-to-stop') {
+      // The purpose of this stage is when you scan the repository, it gives you extra time to stop
+      // the automated started build processes before it reaches the stage of "RESET IMAGE".
+      // NOTE: you have 2 minutes to cancell all started build processes.
+      // FIXME: the reverse way of the abort question is due to the limitation of timeout/input which
+      //        all falls to same org.jenkinsci.plugins.workflow.steps.FlowInterruptedException, and
+      //        err.getCauses() will prompt security warning
+      def manuallyAbort = false
+      try {
+        timeout(time: 2, unit: 'MINUTES') { 
+          input message: 'Do you want to stop the pipeline? (Choose "Abort" below to continue the following stages, or after 2 minutes, the pipeline will continue.)', ok: "Stop the Pipeline Manully"
+          manuallyAbort = true
+        }
+      } catch(err) {
+        // timeout reached or user choose Abort
+        echo "Timeout reached or user choosed Abort, pipeline will continue."
+      }
+
+      if (manuallyAbort) {
+        error "Pipeline aborted manually."
+      }
+    }
 
     stage('checkout') {
       // checkout source code
