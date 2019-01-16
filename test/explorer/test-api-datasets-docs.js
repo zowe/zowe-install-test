@@ -14,7 +14,7 @@ const debug = require('debug')('test:explorer:docs');
 const axios = require('axios');
 const addContext = require('mochawesome/addContext');
 
-let REQ, username, password;
+let REQ;
 
 // allow self signed certs
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
@@ -22,29 +22,21 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 describe('test explorer server docs', function() {
   before('verify environment variables', function() {
     expect(process.env.SSH_HOST, 'SSH_HOST is not defined').to.not.be.empty;
-    expect(process.env.SSH_USER, 'SSH_USER is not defined').to.not.be.empty;
-    expect(process.env.SSH_PASSWD, 'SSH_PASSWD is not defined').to.not.be.empty;
-    expect(process.env.ZOWE_EXPLORER_SERVER_HTTPS_PORT, 'ZOWE_EXPLORER_SERVER_HTTPS_PORT is not defined').to.not.be.empty;
+    expect(process.env.ZOWE_EXPLORER_DATASETS_PORT, 'ZOWE_EXPLORER_DATASETS_PORT is not defined').to.not.be.empty;
 
     REQ = axios.create({
-      baseURL: `https://${process.env.SSH_HOST}:${process.env.ZOWE_EXPLORER_SERVER_HTTPS_PORT}`,
+      baseURL: `https://${process.env.SSH_HOST}:${process.env.ZOWE_EXPLORER_DATASETS_PORT}`,
       timeout: 30000,
     });
-    username = process.env.SSH_USER;
-    password = process.env.SSH_PASSWD;
-    debug(`Explorer server URL: https://${process.env.SSH_HOST}:${process.env.ZOWE_EXPLORER_SERVER_HTTPS_PORT}`);
+    debug(`Explorer server URL: https://${process.env.SSH_HOST}:${process.env.ZOWE_EXPLORER_DATASETS_PORT}`);
   });
 
-  it('should be able to access Swagger UI (/ibm/api/explorer/)', function() {
+  it('should be able to access Swagger UI (/swagger-ui.html)', function() {
     const _this = this;
 
     const req = {
       method: 'get',
-      url: '/ibm/api/explorer/',
-      auth: {
-        username,
-        password,
-      },
+      url: '/swagger-ui.html',
     };
     debug('request', req);
 
@@ -58,24 +50,20 @@ describe('test explorer server docs', function() {
 
         expect(res).to.have.property('status');
         expect(res.status).to.equal(200);
-        expect(res.data).to.include('<html>');
-        expect(res.data).to.include('<title>REST API Documentation</title>');
+        expect(res.data).to.include('<html ');
+        expect(res.data).to.include('<title>Swagger UI</title>');
       });
   });
 
-  it('should be able to access Swagger JSON file (/ibm/api/docs)', function() {
+  it('should be able to access Swagger JSON file (/v2/api-docs)', function() {
     const _this = this;
 
     const req = {
       method: 'get',
-      url: '/ibm/api/docs',
+      url: '/v2/api-docs',
       params: {
         compact: 'true',
         displayPorts: 'true',
-      },
-      auth: {
-        username,
-        password,
       },
     };
     debug('request', req);
@@ -93,12 +81,10 @@ describe('test explorer server docs', function() {
         expect(res.data).to.be.an('object');
         expect(res.data).to.nested.include({
           'swagger': '2.0',
-          'x-ibm-services[0]': '/api/v1',
         });
-        expect(res.data).to.have.nested.property('paths./api/v1/system/version');
-        expect(res.data).to.have.nested.property('paths./api/v1/jobs');
+        expect(res.data).to.have.nested.property('paths./api/v1/datasets');
+        expect(res.data).to.have.nested.property('paths./api/v1/datasets/username');
         expect(res.data).to.have.nested.property('paths./api/v1/datasets/{filter}');
-        expect(res.data).to.have.nested.property('paths./api/v1/uss/files');
       });
   });
 

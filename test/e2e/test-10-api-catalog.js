@@ -86,13 +86,13 @@ describe(`test ${APP_TO_TEST}`, function() {
     // the form should have already been pre-filled
     const username = await getElement(driver, '#login-form input#username');
     expect(username).to.be.an('object');
-    const usernameVal = await username.getAttribute('value');
-    expect(usernameVal).to.equal('user'); // default user
+    await username.clear();
+    await username.sendKeys(process.env.SSH_USER);
 
     const password = await getElement(driver, '#login-form input#password');
     expect(password).to.be.an('object');
-    const passwordVal = await password.getAttribute('value');
-    expect(passwordVal).to.equal('user'); // default password
+    await password.clear();
+    await password.sendKeys(process.env.SSH_PASSWD);
 
     const loginButton = await getElement(driver, '#login-form button[type=submit]');
     expect(loginButton).to.be.an('object');

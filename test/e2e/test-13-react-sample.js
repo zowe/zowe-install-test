@@ -5,7 +5,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  *
- * Copyright IBM Corporation 2018, 2019
+ * Copyright IBM Corporation 2018
  */
 
 const path = require('path');
@@ -14,20 +14,17 @@ const debug = require('debug')('test:e2e:login');
 const addContext = require('mochawesome/addContext');
 const testName = path.basename(__filename, path.extname(__filename));
 const {
-  MVD_IFRAME_APP_CONTEXT,
   saveScreenshot,
   getDefaultDriver,
   getElement,
   waitUntilElement,
-  waitUntilIframe,
   loginMVD,
   launchApp,
   locateApp,
-  saveScreenshotWithIframeAppContext,
 } = require('./utils');
 let driver;
 
-const APP_TO_TEST = 'IFrame Sample';
+const APP_TO_TEST = 'React Sample';
 const APP_ID_TO_LAUNCH = 'org.zowe.terminal.tn3270';
 const APP_NAME_TO_LAUNCH = 'TN3270';
 
@@ -65,18 +62,27 @@ describe(`test ${APP_TO_TEST}`, function() {
     const file = await saveScreenshot(driver, testName, 'app-loading');
     addContext(this, file);
 
-    // locate app iframe
-    const iframe = await waitUntilIframe(driver, 'rs-com-mvd-iframe-component > iframe', app);
-    expect(iframe).to.be.an('object');
-    debug('app iframe found');
+    // wait for caption is loaded
+    const caption = await waitUntilElement(driver, 'rs-com-mvd-window .heading .caption');
+    expect(caption).to.be.an('object');
+    debug('caption is ready');
+    const captionTest = await caption.getText();
+    expect(captionTest).to.be.equal(APP_TO_TEST);
+    debug('app caption checked ok');
+
+    // wait for caption is loaded
+    const viewport = await waitUntilElement(driver, 'rs-com-mvd-window .body com-rs-mvd-viewport');
+    expect(viewport).to.be.an('object');
+    debug('app viewport is ready');
 
     // wait for page is loaded
-    const appTitle = await waitUntilElement(driver, 'div.bottom-10 span.bigger-bold-text');
-    expect(appTitle).to.be.an('object');
-    debug('page is fully loaded');
+    const canvas = await waitUntilElement(driver, 'ng-component', viewport);
+    expect(canvas).to.be.an('object');
+    debug('app is fully loaded');
 
     // save screenshot
-    await saveScreenshotWithIframeAppContext(this, driver, testName, 'app-loaded', APP_TO_TEST, MVD_IFRAME_APP_CONTEXT);
+    const file2 = await saveScreenshot(driver, testName, 'app-loaded');
+    addContext(this, file2);
 
     appLaunched = true;
   });
@@ -87,14 +93,14 @@ describe(`test ${APP_TO_TEST}`, function() {
     }
 
     // check app id
-    const appNameInput = await getElement(driver, 'div.div-input input[name=appId]');
+    const appNameInput = await getElement(driver, 'input');
     expect(appNameInput).to.be.an('object');
     const appNameInputValue = await appNameInput.getAttribute('value');
     debug(`input appId value is: ${appNameInputValue}`);
     expect(appNameInputValue).to.be.equal(APP_ID_TO_LAUNCH);
 
     // click on "Send App Request" button
-    const appButton = await getElement(driver, 'div.bottom-10 button.iframe-button');
+    const appButton = await getElement(driver, 'button');
     expect(appButton).to.be.an('object');
     const appButtonText = await appButton.getText();
     debug(`send request button text is: ${appButtonText}`);
@@ -108,7 +114,8 @@ describe(`test ${APP_TO_TEST}`, function() {
     debug('app launched');
 
     // save screenshot
-    await saveScreenshotWithIframeAppContext(this, driver, testName, 'test-app-launched', APP_TO_TEST, MVD_IFRAME_APP_CONTEXT);
+    const file3 = await saveScreenshot(driver, testName, 'test-app-launched');
+    addContext(this, file3);
   });
 
   after('quit webdriver', async function() {
