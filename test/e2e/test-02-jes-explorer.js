@@ -10,7 +10,7 @@
 
 const path = require('path');
 const expect = require('chai').expect;
-const debug = require('debug')('test:e2e:login');
+const debug = require('debug')('test:e2e:jes-explorer');
 const addContext = require('mochawesome/addContext');
 const testName = path.basename(__filename, path.extname(__filename));
 
@@ -117,6 +117,37 @@ describe(`test ${APP_TO_TEST}`, function() {
     expect(filter).to.be.an('object');
     await filter.click();
     debug('filter form expanded');
+
+    const ownerInput = await getElement(treeContent, 'input#filter-owner-field');
+    // wait until username is pre-filled into filter-owner-field input
+    try {
+      await driver.wait(
+        async() => {
+          const ownerInputValue = await ownerInput.getAttribute('value');
+          if (ownerInputValue.toLowerCase().indexOf('loading') === -1) {
+            debug(`owner is loaded: ${ownerInputValue}`);
+            return true;
+          }
+
+          await driver.sleep(DEFAULT_ELEMENT_CHECK_INTERVAL); // not too fast
+          return false;
+        },
+        DEFAULT_PAGE_LOADING_TIMEOUT
+      );
+    } catch (e) {
+      // try to save screenshot for debug purpose
+      await driver.switchTo().defaultContent();
+      const failureSS = await saveScreenshot(driver, testName, 'load-owner-failed');
+      addContext(this, failureSS);
+
+      const errName = e && e.name;
+      if (errName === 'TimeoutError') {
+        expect(errName).to.not.equal('TimeoutError');
+      } else {
+        debug(`error loading owner: ${e}`);
+        expect(e).to.be.null;
+      }
+    }
 
     // fill in filters
     const filterInputs = await getElements(treeContent, 'input');

@@ -25,6 +25,7 @@ DEFAULT_CONNECTION_TIMEOUT=10
 TEST_RETRIES=$DEFAULT_TEST_RETRIES
 TEST_INTERVAL=$DEFAULT_TEST_INTERVAL
 CONNECTION_TIMEOUT=$DEFAULT_CONNECTION_TIMEOUT
+POST_DATA=
 
 # allow to exit by ctrl+c
 function finish {
@@ -62,9 +63,10 @@ function usage {
   echo "  -r  Test max retries. Optional, default is $DEFAULT_TEST_RETRIES."
   echo "  -t  Test interval. Optional, default is $DEFAULT_TEST_INTERVAL."
   echo "  -c  Connection timeout. Optional, default is $DEFAULT_CONNECTION_TIMEOUT."
+  echo "  -d  Send HTTP POST with data instead of GET. Optional."
   echo
 }
-while getopts ":hr:t:c:" opt; do
+while getopts ":hr:t:c:d:" opt; do
   case $opt in
     h)
       usage
@@ -100,6 +102,9 @@ while getopts ":hr:t:c:" opt; do
         exit 1
       fi
       ;;
+    d)
+      POST_DATA=$OPTARG
+      ;;
     \?)
       echo "[${SCRIPT_NAME}][error] invalid option: -$OPTARG" >&2
       exit 1
@@ -129,10 +134,19 @@ echo "[${SCRIPT_NAME}] testing $TEST_URL ..."
 echo "[${SCRIPT_NAME}]   - max retry          : $TEST_RETRIES"
 echo "[${SCRIPT_NAME}]   - interval           : $TEST_INTERVAL"
 echo "[${SCRIPT_NAME}]   - connection timeout : $CONNECTION_TIMEOUT"
+echo "[${SCRIPT_NAME}]   - post data          : $POST_DATA"
 echo
 TEST_COUNTER=0
-# 
-until $(curl --output /dev/null --silent --show-error --insecure --head --fail --connect-timeout $CONNECTION_TIMEOUT $TEST_URL); do
+CURL_METHOD=GET
+CURL_HEADERS=
+CURL_DATA=
+if [ ! -z "$POST_DATA" ]; then
+  CURL_METHOD=POST
+  CURL_HEADERS="Content-Type: application/json"
+  CURL_DATA=$POST_DATA
+  CURL_POST="--request POST --header \"Content-Type: application/json\" -d \"${POST_DATA}\""
+fi
+until $(curl --output /dev/null --silent --show-error --insecure --request $CURL_METHOD --header "${CURL_HEADERS}" -d "${CURL_DATA}" --fail --connect-timeout $CONNECTION_TIMEOUT "$TEST_URL"); do
     if [ $TEST_COUNTER -eq $TEST_RETRIES ];then
       echo "${SCRIPT_NAME}][error] max retry reached"
       exit 1
