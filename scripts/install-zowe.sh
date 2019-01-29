@@ -41,6 +41,7 @@ DEFAULT_CI_TERMINALS_TELNET_PORT=23
 DEFAULT_CI_PROCLIB_DS_NAME=auto
 DEFAULT_CI_PROCLIB_MEMBER_NAME=ZOWESVR
 CI_ZOWE_CONFIG_FILE=zowe-install.yaml
+CI_ZSS_CONFIG_FILE=zowe-install-apf-server.yaml
 CI_ZOWE_PAX=
 CI_SKIP_TEMP_FIXES=no
 CI_UNINSTALL=no
@@ -66,6 +67,15 @@ CI_TERMINALS_SSH_PORT=$DEFAULT_CI_TERMINALS_SSH_PORT
 CI_TERMINALS_TELNET_PORT=$DEFAULT_CI_TERMINALS_TELNET_PORT
 CI_PROCLIB_DS_NAME=$DEFAULT_CI_PROCLIB_DS_NAME
 CI_PROCLIB_MEMBER_NAME=$DEFAULT_CI_PROCLIB_MEMBER_NAME
+
+# FIXME: these values should be configurable, now it's hardcoded for zD&T
+CI_ZSS_PROCLIB_DS_NAME=USER.Z23B.PROCLIB
+CI_ZSS_PARMLIB_DS_NAME=USER.Z23B.PARMLIB
+CI_ZSS_LOADLIB_DS_NAME=USER.Z23B.LOADLIB
+CI_ZSS_ZOWE_USER=IZUSVR
+CI_ZSS_STC_USER_ID=990010
+CI_ZSS_STC_GROUP=IZUADMIN
+CI_ZSS_STC_USER=IZUSVR
 
 # allow to exit by ctrl+c
 function finish {
@@ -515,9 +525,19 @@ cat "${CI_ZOWE_CONFIG_FILE}" | \
   sed -e "/^terminals:/,\$s#sshPort=.*\$#sshPort=${CI_TERMINALS_SSH_PORT}#" | \
   sed -e "/^terminals:/,\$s#telnetPort=.*\$#telnetPort=${CI_TERMINALS_TELNET_PORT}#" > "${CI_ZOWE_CONFIG_FILE}.tmp"
 mv "${CI_ZOWE_CONFIG_FILE}.tmp" "${CI_ZOWE_CONFIG_FILE}"
-echo "[${SCRIPT_NAME}] current configuration is:"
+echo "[${SCRIPT_NAME}] current Zowe configuration is:"
 cat "${CI_ZOWE_CONFIG_FILE}"
-echo
+cat "${CI_ZSS_CONFIG_FILE}" | \
+  sed -e "/^install:/,\$s#proclib=.*\$#proclib=${CI_ZSS_PROCLIB_DS_NAME}#" | \
+  sed -e "/^install:/,\$s#parmlib=.*\$#parmlib=${CI_ZSS_PARMLIB_DS_NAME}#" | \
+  sed -e "/^install:/,\$s#loadlib=.*\$#loadlib=${CI_ZSS_LOADLIB_DS_NAME}#" | \
+  sed -e "/^users:/,\$s#zoweUser=.*\$#zoweUser=${CI_ZSS_ZOWE_USER}#" | \
+  sed -e "/^users:/,\$s#stcUserUid=.*\$#stcUserUid=${CI_ZSS_STC_USER_ID}#" | \
+  sed -e "/^users:/,\$s#stcGroup=.*\$#stcGroup=${CI_ZSS_STC_GROUP}#" | \
+  sed -e "/^users:/,\$s#stcUser=.*\$#stcUser=${CI_ZSS_STC_USER}#" > "${CI_ZSS_CONFIG_FILE}.tmp"
+mv "${CI_ZSS_CONFIG_FILE}.tmp" "${CI_ZSS_CONFIG_FILE}"
+echo "[${SCRIPT_NAME}] current ZSS configuration is:"
+cat "${CI_ZSS_CONFIG_FILE}"
 
 # run temp fixes
 if [ "$CI_SKIP_TEMP_FIXES" != "yes" ]; then
@@ -546,8 +566,31 @@ if [ -f "$RUN_SCRIPT" ]; then
 fi
 echo
 
-# start installation
-echo "[${SCRIPT_NAME}] start installation ..."
+# start Zowe installation
+echo "[${SCRIPT_NAME}] start ZSS installation ..."
+cd $FULL_EXTRACTED_ZOWE_FOLDER/install
+# FIXME: zowe-install.sh should exit by itself, not depends on timeout
+RUN_SCRIPT=zowe-install-apf-server.sh
+run_script_with_timeout $RUN_SCRIPT 1800
+EXIT_CODE=$?
+if [[ "$EXIT_CODE" != "0" ]]; then
+  echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
+  echo "[${SCRIPT_NAME}][error] here is log file >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+  cat $FULL_EXTRACTED_ZOWE_FOLDER/log/* || true
+  echo "[${SCRIPT_NAME}][error] log end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+  echo
+  exit 1
+else
+  echo "[${SCRIPT_NAME}] ${RUN_SCRIPT} succeeds."
+  echo "[${SCRIPT_NAME}] here is log file >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+  cat $FULL_EXTRACTED_ZOWE_FOLDER/log/* || true
+  echo "[${SCRIPT_NAME}] log end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+  echo
+fi
+echo
+
+# start Zowe installation
+echo "[${SCRIPT_NAME}] start Zowe installation ..."
 cd $FULL_EXTRACTED_ZOWE_FOLDER/install
 # FIXME: zowe-install.sh should exit by itself, not depends on timeout
 RUN_SCRIPT=zowe-install.sh
