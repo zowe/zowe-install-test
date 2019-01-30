@@ -114,8 +114,10 @@ function ensure_script_encoding {
   REQUIRE_THIS_CONVERT=$(cat "${SCRIPT_TO_CHECK}.new" | grep "${SAMPLE_TEXT}")
   if [ -n "$REQUIRE_THIS_CONVERT" ]; then
     mv "${SCRIPT_TO_CHECK}.new" "${SCRIPT_TO_CHECK}" && chmod +x "${SCRIPT_TO_CHECK}"
+    echo "[${SCRIPT_NAME}] - ${SCRIPT_TO_CHECK} encoding is adjusted."
   else
     rm "${SCRIPT_TO_CHECK}.new"
+    echo "[${SCRIPT_NAME}] - ${SCRIPT_TO_CHECK} encoding is NOT changed, failed to find pattern '${SAMPLE_TEXT}'."
   fi
 }
 
@@ -430,7 +432,7 @@ if [ -f "uninstall-zowe.sh" ]; then
   ensure_script_encoding uninstall-zowe.sh
 fi
 if [ -f "opercmd" ]; then
-  ensure_script_encoding opercmd "/* REXX */"
+  ensure_script_encoding opercmd "parse var command opercmd"
 fi
 
 ################################################################################
@@ -635,7 +637,7 @@ fi
 
 # start apf server
 echo "[${SCRIPT_NAME}] start ZWESIS01 ..."
-(exec "$CI_ZOWE_ROOT_DIR/scripts/internal/opercmd 'S ZWESIS01'")
+(exec "$CI_ZOWE_ROOT_DIR/scripts/internal/opercmd" "S ZWESIS01")
 
 # start zowe
 echo "[${SCRIPT_NAME}] start Zowe ..."

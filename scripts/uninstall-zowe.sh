@@ -166,13 +166,14 @@ done
 
 ################################################################################
 echo "[${SCRIPT_NAME}] uninstall script started ..."
-echo "[${SCRIPT_NAME}]   - Zowe folder : $CI_ZOWE_ROOT_DIR"
+echo "[${SCRIPT_NAME}]   - Installation folder : $CI_INSTALL_DIR"
+echo "[${SCRIPT_NAME}]   - Zowe folder         : $CI_ZOWE_ROOT_DIR"
 echo
 
 # stop ZWESIS01
-echo "[${SCRIPT_NAME}] uninstall script started ..."
+echo "[${SCRIPT_NAME}] stopping ZWESIS01 ..."
 if [ -f "${CI_INSTALL_DIR}/opercmd" ]; then
-  (exec "${CI_INSTALL_DIR}/opercmd 'C ${CI_XMEM_PROCLIB_MEMBER}'")
+  (exec "${CI_INSTALL_DIR}/opercmd" "C ${CI_XMEM_PROCLIB_MEMBER}")
 else
   echo "[${SCRIPT_NAME}][WARN] - cannot find opercmd, please make sure ${CI_XMEM_PROCLIB_MEMBER} is stopped."
 fi
@@ -183,7 +184,7 @@ echo "[${SCRIPT_NAME}] stopping Zowe ..."
 if [ ! -f "${CI_ZOWE_ROOT_DIR}/scripts/zowe-stop.sh" ]; then
   (exec "${CI_ZOWE_ROOT_DIR}/scripts/zowe-stop.sh")
 elif [ -f "${CI_INSTALL_DIR}/opercmd" ]; then
-  (exec "${CI_INSTALL_DIR}/opercmd 'C ${CI_ZOWE_DS_MEMBER}'")
+  (exec "${CI_INSTALL_DIR}/opercmd" "C ${CI_ZOWE_DS_MEMBER}")
 else
   echo "[${SCRIPT_NAME}][WARN] - cannot find opercmd, please make sure ${CI_ZOWE_DS_MEMBER} is stopped."
 fi
