@@ -425,6 +425,9 @@ fi
 if [ -f "uninstall-zowe.sh" ]; then
   ensure_script_encoding uninstall-zowe.sh
 fi
+if [ -f "opercmd" ]; then
+  ensure_script_encoding opercmd
+fi
 
 ################################################################################
 echo "[${SCRIPT_NAME}] installation script started ..."
@@ -465,7 +468,7 @@ if [[ "$CI_UNINSTALL" = "yes" ]]; then
   cd $CI_INSTALL_DIR
   RUN_SCRIPT=uninstall-zowe.sh
   if [ -f "$RUN_SCRIPT" ]; then
-    run_script_with_timeout "${RUN_SCRIPT} -t ${CI_ZOWE_ROOT_DIR} -m ${CI_PROCLIB_MEMBER_NAME}" 300
+    run_script_with_timeout "${RUN_SCRIPT} -i ${CI_INSTALL_DIR} -t ${CI_ZOWE_ROOT_DIR} -m ${CI_PROCLIB_MEMBER_NAME}" 300
     EXIT_CODE=$?
     if [[ "$EXIT_CODE" != "0" ]]; then
       echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."

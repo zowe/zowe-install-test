@@ -364,6 +364,7 @@ put scripts/temp-fixes-after-install.sh
 put scripts/temp-fixes-after-started.sh
 put scripts/install-zowe.sh
 put scripts/uninstall-zowe.sh
+put scripts/opercmd
 put .tmp/zowe.pax
 EOF"""
 

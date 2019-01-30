@@ -20,8 +20,10 @@
 # constants
 SCRIPT_NAME=$(basename "$0")
 DEFAULT_CI_ZOWE_ROOT_DIR=/zaas1/zowe
+DEFAULT_CI_INSTALL_DIR=/zaas1/zowe-install
 DEFAULT_CI_ZOWE_DS_MEMBER=ZOWESVR
 CI_ZOWE_ROOT_DIR=$DEFAULT_CI_ZOWE_ROOT_DIR
+CI_INSTALL_DIR=$DEFAULT_CI_INSTALL_DIR
 PROFILE=~/.profile
 CI_ZOWE_DS_MEMBER=$DEFAULT_CI_ZOWE_DS_MEMBER
 # FIXME: these are hardcoded
@@ -128,15 +130,19 @@ function usage {
   echo
   echo "Options:"
   echo "  -h  Display this help message."
-  echo "  -t  Zowe installation folder. Optional, default is $DEFAULT_CI_ZOWE_ROOT_DIR."
+  echo "  -i  Zowe install working folder. Optional, default is $DEFAULT_CI_INSTALL_DIR."
+  echo "  -t  Zowe target folder. Optional, default is $DEFAULT_CI_ZOWE_ROOT_DIR."
   echo "  -m  Zowe PROCLIB data set member name. Optional, default is $DEFAULT_CI_ZOWE_DS_MEMBER."
   echo
 }
-while getopts ":ht:m:" opt; do
+while getopts ":hi:t:m:" opt; do
   case ${opt} in
     h)
       usage
       exit 0
+      ;;
+    i)
+      CI_INSTALL_DIR=$OPTARG
       ;;
     t)
       CI_ZOWE_ROOT_DIR=$OPTARG
@@ -165,8 +171,8 @@ echo
 
 # stop ZWESIS01
 echo "[${SCRIPT_NAME}] uninstall script started ..."
-if [ -f "${CI_ZOWE_ROOT_DIR}/scripts/internal/opercmd" ]; then
-  (exec "${CI_ZOWE_ROOT_DIR}/scripts/internal/opercmd 'C ${CI_XMEM_PROCLIB_MEMBER}'")
+if [ -f "${CI_INSTALL_DIR}/opercmd" ]; then
+  (exec "${CI_INSTALL_DIR}/opercmd 'C ${CI_XMEM_PROCLIB_MEMBER}'")
 else
   echo "[${SCRIPT_NAME}][WARN] - cannot find opercmd, please make sure ${CI_XMEM_PROCLIB_MEMBER} is stopped."
 fi
@@ -176,8 +182,8 @@ echo
 echo "[${SCRIPT_NAME}] stopping Zowe ..."
 if [ ! -f "${CI_ZOWE_ROOT_DIR}/scripts/zowe-stop.sh" ]; then
   (exec "${CI_ZOWE_ROOT_DIR}/scripts/zowe-stop.sh")
-elif [ -f "${CI_ZOWE_ROOT_DIR}/scripts/internal/opercmd" ]; then
-  (exec "${CI_ZOWE_ROOT_DIR}/scripts/internal/opercmd 'C ${CI_ZOWE_DS_MEMBER}'")
+elif [ -f "${CI_INSTALL_DIR}/opercmd" ]; then
+  (exec "${CI_INSTALL_DIR}/opercmd 'C ${CI_ZOWE_DS_MEMBER}'")
 else
   echo "[${SCRIPT_NAME}][WARN] - cannot find opercmd, please make sure ${CI_ZOWE_DS_MEMBER} is stopped."
 fi
@@ -205,7 +211,7 @@ echo
 
 # removing ZOWESVR
 echo "[${SCRIPT_NAME}] deleting ${CI_ZOWE_DS_MEMBER} PROC ..."
-if [ ! -f "${CI_ZOWE_ROOT_DIR}/scripts/internal/opercmd" ]; then
+if [ ! -f "${CI_INSTALL_DIR}/opercmd" ]; then
   echo "[${SCRIPT_NAME}][error] opercmd doesn't exist."
   exit 1;
 fi
@@ -214,7 +220,7 @@ export TSOPROFILE="noprefix"
 tsocmd profile noprefix
 # listing all proclibs and members
 FOUND_ZOWESVR_AT=
-procs=$("${CI_ZOWE_ROOT_DIR}/scripts/internal/opercmd" '$d proclib' | grep 'DSNAME=.*\.PROCLIB' | sed 's/.*DSNAME=\(.*\)\.PROCLIB.*/\1.PROCLIB/')
+procs=$("${CI_INSTALL_DIR}/opercmd" '$d proclib' | grep 'DSNAME=.*\.PROCLIB' | sed 's/.*DSNAME=\(.*\)\.PROCLIB.*/\1.PROCLIB/')
 for proclib in $procs
 do
   echo "[${SCRIPT_NAME}] - finding in $proclib ..."
@@ -239,7 +245,7 @@ echo
 
 # removing xmem LOADLIB(ZWESIS01)
 echo "[${SCRIPT_NAME}] deleting ${CI_XMEM_LOADLIB}(${CI_XMEM_LOADLIB_MEMBER}) ..."
-if [ ! -f "${CI_ZOWE_ROOT_DIR}/scripts/internal/opercmd" ]; then
+if [ ! -f "${CI_INSTALL_DIR}/opercmd" ]; then
   echo "[${SCRIPT_NAME}][error] opercmd doesn't exist."
   exit 1;
 fi
@@ -271,7 +277,7 @@ echo
 CI_XMEM_DS_NAME=IZUSVR.PARMLIB
 CI_XMEM_DS_MEMBER=ZWESIP00
 echo "[${SCRIPT_NAME}] deleting ${CI_XMEM_PARMLIB}(${CI_XMEM_PARMLIB_MEMBER}) ..."
-if [ ! -f "${CI_ZOWE_ROOT_DIR}/scripts/internal/opercmd" ]; then
+if [ ! -f "${CI_INSTALL_DIR}/opercmd" ]; then
   echo "[${SCRIPT_NAME}][error] opercmd doesn't exist."
   exit 1;
 fi
@@ -301,7 +307,7 @@ echo
 
 # removing ZWESIS01
 echo "[${SCRIPT_NAME}] deleting ${CI_XMEM_PROCLIB_MEMBER} PROC ..."
-if [ ! -f "${CI_ZOWE_ROOT_DIR}/scripts/internal/opercmd" ]; then
+if [ ! -f "${CI_INSTALL_DIR}/opercmd" ]; then
   echo "[${SCRIPT_NAME}][error] opercmd doesn't exist."
   exit 1;
 fi
@@ -310,7 +316,7 @@ export TSOPROFILE="noprefix"
 tsocmd profile noprefix
 # listing all proclibs and members
 FOUND_ZWESIS01_AT=
-procs=$("${CI_ZOWE_ROOT_DIR}/scripts/internal/opercmd" '$d proclib' | grep 'DSNAME=.*\.PROCLIB' | sed 's/.*DSNAME=\(.*\)\.PROCLIB.*/\1.PROCLIB/')
+procs=$("${CI_INSTALL_DIR}/opercmd" '$d proclib' | grep 'DSNAME=.*\.PROCLIB' | sed 's/.*DSNAME=\(.*\)\.PROCLIB.*/\1.PROCLIB/')
 for proclib in $procs
 do
   echo "[${SCRIPT_NAME}] - finding in $proclib ..."
