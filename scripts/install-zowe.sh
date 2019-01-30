@@ -626,6 +626,10 @@ if [ "$CI_SKIP_TEMP_FIXES" != "yes" ]; then
   fi
 fi
 
+# start apf server
+echo "[${SCRIPT_NAME}] start ZWESIS01 ..."
+(exec "$CI_ZOWE_ROOT_DIR/scripts/internal/opercmd 'S ZWESIS01'")
+
 # start zowe
 echo "[${SCRIPT_NAME}] start Zowe ..."
 cd $CI_ZOWE_ROOT_DIR/scripts

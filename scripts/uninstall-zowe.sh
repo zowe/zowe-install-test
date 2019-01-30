@@ -151,19 +151,23 @@ done
 
 ################################################################################
 # essential validations
-if [ ! -f "${CI_ZOWE_ROOT_DIR}/scripts/zowe-stop.sh" ]; then
-  echo "[${SCRIPT_NAME}][error] ${CI_ZOWE_ROOT_DIR} doesn't appear to have Zowe installed."
-  exit 0
-fi
 
 ################################################################################
 echo "[${SCRIPT_NAME}] uninstall script started ..."
 echo "[${SCRIPT_NAME}]   - Zowe folder : $CI_ZOWE_ROOT_DIR"
 echo
 
+# stop ZWESIS01
+echo "[${SCRIPT_NAME}] stopping ZWESIS01 ..."
+(exec "$CI_ZOWE_ROOT_DIR/scripts/internal/opercmd 'C ZWESIS01'")
+
 # stop Zowe
 echo "[${SCRIPT_NAME}] stopping Zowe ..."
-(exec "${CI_ZOWE_ROOT_DIR}/scripts/zowe-stop.sh")
+if [ ! -f "${CI_ZOWE_ROOT_DIR}/scripts/zowe-stop.sh" ]; then
+  (exec "${CI_ZOWE_ROOT_DIR}/scripts/zowe-stop.sh")
+else
+  (exec "$CI_ZOWE_ROOT_DIR/scripts/internal/opercmd 'C ${CI_ZOWE_DS_MEMBER}'")
+fi
 echo
 
 # removing environment viarables from .profile
