@@ -270,13 +270,12 @@ if [ -z "$FOUND_DS_MEMBER_AT" ]; then
   echo "[${SCRIPT_NAME}][warn] cannot find ${CI_XMEM_LOADLIB_MEMBER} in ${CI_XMEM_LOADLIB}, skipped."
 else
   echo "[${SCRIPT_NAME}] found ${CI_XMEM_LOADLIB_MEMBER} in ${FOUND_DS_MEMBER_AT}, deleting ..."
-  run_script_with_timeout "tsocmd DELETE '${FOUND_DS_MEMBER_AT}(${CI_XMEM_LOADLIB_MEMBER})'" 10
+  # run_script_with_timeout "tsocmd DELETE '${FOUND_DS_MEMBER_AT}(${CI_XMEM_LOADLIB_MEMBER})'" 10
+  run_script_with_timeout "tsocmd DELETE '${FOUND_DS_MEMBER_AT}'" 10
 fi
 echo
 
 # removing xmem PARMLIB(ZWESIP00)
-CI_XMEM_DS_NAME=IZUSVR.PARMLIB
-CI_XMEM_DS_MEMBER=ZWESIP00
 echo "[${SCRIPT_NAME}] deleting ${CI_XMEM_PARMLIB}(${CI_XMEM_PARMLIB_MEMBER}) ..."
 if [ ! -f "${CI_INSTALL_DIR}/opercmd" ]; then
   echo "[${SCRIPT_NAME}][error] opercmd doesn't exist."
@@ -302,7 +301,8 @@ if [ -z "$FOUND_DS_MEMBER_AT" ]; then
   echo "[${SCRIPT_NAME}][warn] cannot find ${CI_XMEM_PARMLIB_MEMBER} in ${CI_XMEM_PARMLIB}, skipped."
 else
   echo "[${SCRIPT_NAME}] found ${CI_XMEM_PARMLIB_MEMBER} in ${FOUND_DS_MEMBER_AT}, deleting ..."
-  run_script_with_timeout "tsocmd DELETE '${FOUND_DS_MEMBER_AT}(${CI_XMEM_PARMLIB_MEMBER})'" 10
+  # run_script_with_timeout "tsocmd DELETE '${FOUND_DS_MEMBER_AT}(${CI_XMEM_PARMLIB_MEMBER})'" 10
+  run_script_with_timeout "tsocmd DELETE '${FOUND_DS_MEMBER_AT}'" 10
 fi
 echo
 
