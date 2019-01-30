@@ -96,9 +96,13 @@ trap finish SIGINT
 ################################################################################
 function ensure_script_encoding {
   SCRIPT_TO_CHECK=$1
-  FROM_ENCODING=$2
-  TO_ENCODING=$3
+  SAMPLE_TEXT=$2
+  FROM_ENCODING=$3
+  TO_ENCODING=$4
 
+  if [ -z "$SAMPLE_TEXT" ]; then
+    SAMPLE_TEXT="#!/"
+  fi
   if [ -z "$FROM_ENCODING"]; then
     FROM_ENCODING=ISO8859-1
   fi
@@ -107,7 +111,7 @@ function ensure_script_encoding {
   fi
 
   iconv -f $FROM_ENCODING -t $TO_ENCODING "${SCRIPT_TO_CHECK}" > "${SCRIPT_TO_CHECK}.new"
-  REQUIRE_THIS_CONVERT=$(cat "${SCRIPT_TO_CHECK}.new" | grep '#!/')
+  REQUIRE_THIS_CONVERT=$(cat "${SCRIPT_TO_CHECK}.new" | grep "${SAMPLE_TEXT}")
   if [ -n "$REQUIRE_THIS_CONVERT" ]; then
     mv "${SCRIPT_TO_CHECK}.new" "${SCRIPT_TO_CHECK}" && chmod +x "${SCRIPT_TO_CHECK}"
   else
@@ -426,7 +430,7 @@ if [ -f "uninstall-zowe.sh" ]; then
   ensure_script_encoding uninstall-zowe.sh
 fi
 if [ -f "opercmd" ]; then
-  ensure_script_encoding opercmd
+  ensure_script_encoding opercmd "/* REXX */"
 fi
 
 ################################################################################
