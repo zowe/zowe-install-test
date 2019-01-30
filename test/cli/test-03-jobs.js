@@ -41,7 +41,7 @@ describe('cli list jobs of IZU*', function() {
   });
 
   it(`should have an active job ${ZOWE_JOB_NAME}`, async function() {
-    const result = await execZoweCli(`zowe zos-jobs list jobs --owner IZU* --response-format-json --zosmf-profile ${defaultZOSMFProfileName}`);
+    const result = await execZoweCli(`zowe zos-jobs list jobs --owner 'IZU*' --prefix '${ZOWE_JOB_NAME}*' --response-format-json --zosmf-profile ${defaultZOSMFProfileName}`);
 
     debug('result:', result);
     addContext(this, {
