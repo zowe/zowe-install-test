@@ -181,7 +181,7 @@ echo
 
 # stop Zowe
 echo "[${SCRIPT_NAME}] stopping Zowe ..."
-if [ ! -f "${CI_ZOWE_ROOT_DIR}/scripts/zowe-stop.sh" ]; then
+if [ -f "${CI_ZOWE_ROOT_DIR}/scripts/zowe-stop.sh" ]; then
   (exec "${CI_ZOWE_ROOT_DIR}/scripts/zowe-stop.sh")
 elif [ -f "${CI_INSTALL_DIR}/opercmd" ]; then
   (exec "${CI_INSTALL_DIR}/opercmd" "C ${CI_ZOWE_DS_MEMBER}")
