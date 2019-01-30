@@ -33,7 +33,7 @@ const PRE_INSTALLED_APPS = [
   'VT Terminal',
   'User Tasks/Workflows',
   // 'IFrame',
-  'ZOS Subsystems',
+  // 'ZOS Subsystems',
   'API Catalog',
   'Editor',
   'IFrame Sample',
