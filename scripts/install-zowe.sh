@@ -566,7 +566,7 @@ if [ -f "$RUN_SCRIPT" ]; then
 fi
 echo
 
-# start Zowe installation
+# start ZSS installation
 echo "[${SCRIPT_NAME}] start ZSS installation ..."
 cd $FULL_EXTRACTED_ZOWE_FOLDER/install
 # FIXME: zowe-install.sh should exit by itself, not depends on timeout

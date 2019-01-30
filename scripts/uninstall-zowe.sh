@@ -220,6 +220,105 @@ else
 fi
 echo
 
+# removing xmem LOADLIB(ZWESIS01)
+CI_XMEM_DS_NAME=IZUSVR.LOADLIB
+CI_XMEM_DS_MEMBER=ZWESIS01
+echo "[${SCRIPT_NAME}] deleting ${CI_XMEM_DS_NAME}(${CI_XMEM_DS_MEMBER}) ..."
+if [ ! -f "${CI_ZOWE_ROOT_DIR}/scripts/internal/opercmd" ]; then
+  echo "[${SCRIPT_NAME}][error] opercmd doesn't exist."
+  exit 1;
+fi
+# make sure profile noprefix
+export TSOPROFILE="noprefix"
+tsocmd profile noprefix
+# listing all proclibs and members
+FOUND_DS_MEMBER_AT=
+echo "[${SCRIPT_NAME}] - finding in ${CI_XMEM_DS_NAME} ..."
+members=$(tsocmd listds "${CI_XMEM_DS_NAME}" members | sed -e '1,/--MEMBERS--/d')
+for member in $members
+do
+  echo "[${SCRIPT_NAME}]   - ${member}"
+  if [ "${member}" = "${CI_XMEM_DS_MEMBER}" ]; then
+    FOUND_DS_MEMBER_AT=$CI_XMEM_DS_NAME
+    break 2
+  fi
+done
+# do we find CI_XMEM_DS_MEMBER?
+if [ -z "$FOUND_DS_MEMBER_AT" ]; then
+  echo "[${SCRIPT_NAME}][warn] cannot find ${CI_XMEM_DS_MEMBER} in ${CI_XMEM_DS_NAME}, skipped."
+else
+  echo "[${SCRIPT_NAME}] found ${CI_XMEM_DS_MEMBER} in ${FOUND_DS_MEMBER_AT}, deleting ..."
+  run_script_with_timeout "tsocmd DELETE '${FOUND_DS_MEMBER_AT}(${CI_XMEM_DS_MEMBER})'" 10
+fi
+echo
+
+# removing xmem PARMLIB(ZWESIP00)
+CI_XMEM_DS_NAME=IZUSVR.PARMLIB
+CI_XMEM_DS_MEMBER=ZWESIP00
+echo "[${SCRIPT_NAME}] deleting ${CI_XMEM_DS_NAME}(${CI_XMEM_DS_MEMBER}) ..."
+if [ ! -f "${CI_ZOWE_ROOT_DIR}/scripts/internal/opercmd" ]; then
+  echo "[${SCRIPT_NAME}][error] opercmd doesn't exist."
+  exit 1;
+fi
+# make sure profile noprefix
+export TSOPROFILE="noprefix"
+tsocmd profile noprefix
+# listing all proclibs and members
+FOUND_DS_MEMBER_AT=
+echo "[${SCRIPT_NAME}] - finding in ${CI_XMEM_DS_NAME} ..."
+members=$(tsocmd listds "${CI_XMEM_DS_NAME}" members | sed -e '1,/--MEMBERS--/d')
+for member in $members
+do
+  echo "[${SCRIPT_NAME}]   - ${member}"
+  if [ "${member}" = "${CI_XMEM_DS_MEMBER}" ]; then
+    FOUND_DS_MEMBER_AT=$CI_XMEM_DS_NAME
+    break 2
+  fi
+done
+# do we find CI_XMEM_DS_MEMBER?
+if [ -z "$FOUND_DS_MEMBER_AT" ]; then
+  echo "[${SCRIPT_NAME}][warn] cannot find ${CI_XMEM_DS_MEMBER} in ${CI_XMEM_DS_NAME}, skipped."
+else
+  echo "[${SCRIPT_NAME}] found ${CI_XMEM_DS_MEMBER} in ${FOUND_DS_MEMBER_AT}, deleting ..."
+  run_script_with_timeout "tsocmd DELETE '${FOUND_DS_MEMBER_AT}(${CI_XMEM_DS_MEMBER})'" 10
+fi
+echo
+
+# removing ZWESIS01
+CI_XMEM_DS_MEMBER=ZWESIS01
+echo "[${SCRIPT_NAME}] deleting ${CI_XMEM_DS_MEMBER} PROC ..."
+if [ ! -f "${CI_ZOWE_ROOT_DIR}/scripts/internal/opercmd" ]; then
+  echo "[${SCRIPT_NAME}][error] opercmd doesn't exist."
+  exit 1;
+fi
+# make sure profile noprefix
+export TSOPROFILE="noprefix"
+tsocmd profile noprefix
+# listing all proclibs and members
+FOUND_ZWESIS01_AT=
+procs=$("${CI_ZOWE_ROOT_DIR}/scripts/internal/opercmd" '$d proclib' | grep 'DSNAME=.*\.PROCLIB' | sed 's/.*DSNAME=\(.*\)\.PROCLIB.*/\1.PROCLIB/')
+for proclib in $procs
+do
+  echo "[${SCRIPT_NAME}] - finding in $proclib ..."
+  members=$(tsocmd listds "${proclib}" members | sed -e '1,/--MEMBERS--/d')
+  for member in $members
+  do
+    echo "[${SCRIPT_NAME}]   - ${member}"
+    if [ "${member}" = "${CI_XMEM_DS_MEMBER}" ]; then
+      FOUND_ZWESIS01_AT=$proclib
+      break 2
+    fi
+  done
+done
+# do we find ZWESIS01?
+if [ -z "$FOUND_ZWESIS01_AT" ]; then
+  echo "[${SCRIPT_NAME}][warn] cannot find ${CI_XMEM_DS_MEMBER} in PROCLIBs, skipped."
+else
+  echo "[${SCRIPT_NAME}] found ${CI_XMEM_DS_MEMBER} in ${FOUND_ZWESIS01_AT}, deleting ..."
+  run_script_with_timeout "tsocmd DELETE '${FOUND_ZWESIS01_AT}(${CI_XMEM_DS_MEMBER})'" 10
+fi
+echo
+
 # removing folder
 echo "[${SCRIPT_NAME}] removing installation folder ..."
 rm -fr $CI_ZOWE_ROOT_DIR || true
