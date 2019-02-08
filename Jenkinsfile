@@ -450,7 +450,7 @@ EOF"""
               server.download(downloadSpec)
             }
             sh 'unzip .tmp/zowe-cli-package.zip'
-            sh 'npm install -g zowe-cli-*.tgz'
+            sh 'npm install -g zowe-cli*.tgz'
           }
         }
       }
