@@ -67,6 +67,21 @@ for one in $FILES_TO_UPDATE; do
   else
     echo "[${SCRIPT_NAME}]     - doesn't exist."
   fi
+
+  ZDNT_FILE=$CI_ZOWE_ROOT_DIR/${one}/server/configs/config.json
+  echo "[${SCRIPT_NAME}]   - checking $ZDNT_FILE ..."
+  if [ -f "$ZDNT_FILE" ]; then
+    HAS_WRONG_HOSTNAME=$(grep $ZDNT_HOSTNAME $ZDNT_FILE)
+    if [ -n "$HAS_WRONG_HOSTNAME" ]; then
+      sed "s#//${ZDNT_HOSTNAME}:#//${CI_HOSTNAME}:#" $ZDNT_FILE > config.json.tmp
+      mv config.json.tmp $ZDNT_FILE
+      echo "[${SCRIPT_NAME}]     - updated."
+    else
+      echo "[${SCRIPT_NAME}]     - no need to update."
+    fi
+  else
+    echo "[${SCRIPT_NAME}]     - doesn't exist."
+  fi
 done
 echo
 ZDNT_HOSTNAME=10.1.1.2
@@ -80,6 +95,21 @@ for one in $FILES_TO_UPDATE; do
     if [ -n "$HAS_WRONG_HOSTNAME" ]; then
       sed "s#//${ZDNT_HOSTNAME}:\([0-9]\+\)/#//${CI_HOSTNAME}:\1/#" $ZDNT_FILE > index.html.tmp
       mv index.html.tmp $ZDNT_FILE
+      echo "[${SCRIPT_NAME}]     - updated."
+    else
+      echo "[${SCRIPT_NAME}]     - no need to update."
+    fi
+  else
+    echo "[${SCRIPT_NAME}]     - doesn't exist."
+  fi
+
+  ZDNT_FILE=$CI_ZOWE_ROOT_DIR/${one}/server/configs/config.json
+  echo "[${SCRIPT_NAME}]   - checking $ZDNT_FILE ..."
+  if [ -f "$ZDNT_FILE" ]; then
+    HAS_WRONG_HOSTNAME=$(grep $ZDNT_HOSTNAME $ZDNT_FILE)
+    if [ -n "$HAS_WRONG_HOSTNAME" ]; then
+      sed "s#//${ZDNT_HOSTNAME}:#//${CI_HOSTNAME}:#" $ZDNT_FILE > config.json.tmp
+      mv config.json.tmp $ZDNT_FILE
       echo "[${SCRIPT_NAME}]     - updated."
     else
       echo "[${SCRIPT_NAME}]     - no need to update."
