@@ -60,8 +60,8 @@ describe('test explorer server datasets api', function() {
 
         expect(res).to.have.property('status');
         expect(res.status).to.equal(200);
-        expect(res.data).to.be.an('array');
-        expect(res.data.map(one => one.name)).to.include(DS_TO_TEST);
+        expect(res.data.items).to.be.an('array');
+        expect(res.data.items.map(one => one.name)).to.include(DS_TO_TEST);
       });
   });
 
