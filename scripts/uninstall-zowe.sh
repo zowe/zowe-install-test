@@ -173,7 +173,7 @@ echo
 # stop ZWESIS01
 echo "[${SCRIPT_NAME}] stopping ZWESIS01 ..."
 if [ -f "${CI_INSTALL_DIR}/opercmd" ]; then
-  (exec "${CI_INSTALL_DIR}/opercmd" "C ${CI_XMEM_PROCLIB_MEMBER}")
+  (exec "${CI_INSTALL_DIR}/opercmd" "P ${CI_XMEM_PROCLIB_MEMBER}")
 else
   echo "[${SCRIPT_NAME}][WARN] - cannot find opercmd, please make sure ${CI_XMEM_PROCLIB_MEMBER} is stopped."
 fi
