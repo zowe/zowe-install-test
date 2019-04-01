@@ -306,7 +306,7 @@ describe('test MVD login page', function() {
     expect(widget).to.be.an('object');
     const clock = await getElement(widget, '.launchbar-clock');
     expect(clock).to.be.an('object');
-    const userIcon = await getElement(widget, '.launchbar-user');
+    const userIcon = await getElement(widget, '.launchbar-tray-icon.user');
     expect(userIcon).to.be.an('object');
 
     // popup user info
