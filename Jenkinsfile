@@ -293,10 +293,11 @@ node ('ibm-jenkins-slave-dind') {
     }
 
     stage('SonarQube analysis') {
-      def scannerHome = tool 'sonar-scanner-3.2.0';
-      withSonarQubeEnv('sonar-default-server') {
-        sh "${scannerHome}/bin/sonar-scanner"
-      }
+      echo "Skipped due to SonarQube server is down."
+      // def scannerHome = tool 'sonar-scanner-3.2.0';
+      // withSonarQubeEnv('sonar-default-server') {
+      //   sh "${scannerHome}/bin/sonar-scanner"
+      // }
     }
 
     // lock testing server
