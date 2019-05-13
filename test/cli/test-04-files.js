@@ -14,14 +14,16 @@ const expect = require('chai').expect;
 const debug = require('debug')('test:cli:jobs');
 const fs = require('fs');
 const util = require('util');
-const fsReadfile = util.promisify(fs.readFile);
+const fsAccess = util.promisify(fs.access);
 const addContext = require('mochawesome/addContext');
 
 const { execZoweCli, defaultZOSMFProfileName, createDefaultZOSMFProfile } = require('./utils');
 
-const TCPIP_DATA_DSNAME = 'TCPIP.TCPIP.DATA';
+const TEST_DATASET_PATTERN = 'SYS1.LINKLIB*';
+const TEST_DATASET_NAME = 'SYS1.LINKLIB';
+const TEST_DATASET_MEMBER_NAME = 'ACCOUNT';
 
-describe('cli list data sets of tcpip.*', function() {
+describe(`cli list data sets of ${TEST_DATASET_PATTERN}`, function() {
   before('verify environment variables', async function() {
     expect(process.env.ZOSMF_PORT, 'ZOSMF_PORT is not defined').to.not.be.empty;
     expect(process.env.SSH_HOST, 'SSH_HOST is not defined').to.not.be.empty;
@@ -44,8 +46,8 @@ describe('cli list data sets of tcpip.*', function() {
     expect(result.stdout).to.have.string('Profile created successfully');
   });
 
-  it(`should have an data set of ${TCPIP_DATA_DSNAME}`, async function() {
-    const result = await execZoweCli(`zowe zos-files list data-set "tcpip.*" --response-format-json --zosmf-profile ${defaultZOSMFProfileName}`);
+  it(`should have an data set of ${TEST_DATASET_NAME}`, async function() {
+    const result = await execZoweCli(`zowe zos-files list data-set "${TEST_DATASET_PATTERN}" --response-format-json --zosmf-profile ${defaultZOSMFProfileName}`);
 
     debug('result:', result);
     addContext(this, {
@@ -64,14 +66,14 @@ describe('cli list data sets of tcpip.*', function() {
     expect(res.data.success).to.be.true;
     expect(res.data.apiResponse).to.be.an('object');
     expect(res.data.apiResponse.items).to.be.an('array');
-    const dsIndex = res.data.apiResponse.items.findIndex(item => item.dsname === TCPIP_DATA_DSNAME);
-    debug(`found ${TCPIP_DATA_DSNAME} at ${dsIndex}`);
+    const dsIndex = res.data.apiResponse.items.findIndex(item => item.dsname === TEST_DATASET_NAME);
+    debug(`found ${TEST_DATASET_NAME} at ${dsIndex}`);
     expect(dsIndex).to.be.above(-1);
   });
 
-  it('should be able to download file', async function() {
-    const targetFile = '.tmp/' + TCPIP_DATA_DSNAME.replace(/\./g, '-') + '.txt';
-    const result = await execZoweCli(`zowe zos-files download data-set ${TCPIP_DATA_DSNAME} --file "${targetFile}" --response-format-json --zosmf-profile ${defaultZOSMFProfileName}`);
+  it(`should be able to download file ${TEST_DATASET_NAME}(${TEST_DATASET_MEMBER_NAME})`, async function() {
+    const targetFile = '.tmp/' + TEST_DATASET_NAME.replace(/\./g, '-') + '-' + TEST_DATASET_MEMBER_NAME;
+    const result = await execZoweCli(`zowe zos-files download data-set '${TEST_DATASET_NAME}(${TEST_DATASET_MEMBER_NAME})' --file "${targetFile}" --response-format-json --zosmf-profile ${defaultZOSMFProfileName}`);
 
     debug('result:', result);
     addContext(this, {
@@ -94,8 +96,7 @@ describe('cli list data sets of tcpip.*', function() {
     expect(res.data.apiResponse.type).to.be.a('string');
     expect(res.data.apiResponse.type).to.include('Buffer');
 
-    // file should be downloaded
-    const file = await fsReadfile(targetFile);
-    expect(file.toString()).to.include('Name of Data Set:');
+    // file should exist
+    await fsAccess(targetFile, fs.constants.R_OK);
   });
 });
