@@ -36,7 +36,7 @@ customParameters.push(booleanParam(
 customParameters.push(booleanParam(
   name: 'SKIP_RESET_IMAGE',
   description: 'If skip the "reset_test_image" step.',
-  defaultValue: false
+  defaultValue: true
 ))
 customParameters.push(booleanParam(
   name: 'SKIP_INSTALLATION',

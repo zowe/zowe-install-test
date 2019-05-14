@@ -36,12 +36,15 @@ const {
 let driver;
 
 const APP_TO_TEST = 'MVS Explorer';
-const DS_TO_TEST = 'TCPIP.TCPIP.DATA';
+const TEST_DATASET_PATTERN = 'SYS1.LINKLIB*';
+const TEST_DATASET_NAME = 'SYS1.LINKLIB';
+const TEST_DATASET_MEMBER_NAME = 'ACCOUNT';
 
 const MVD_EXPLORER_TREE_SECTION = 'div.tree-card > div > div';
 
 let appLaunched = false;
 let testDsIndex = -1;
+let testDsMemberIndex = -1;
 
 describe(`test ${APP_TO_TEST}`, function() {
   before('verify environment variable and load login page', async function() {
@@ -107,7 +110,7 @@ describe(`test ${APP_TO_TEST}`, function() {
     appLaunched = true;
   });
 
-  it('should be able to list TCPIP.T* data sets', async function() {
+  it(`should be able to list ${TEST_DATASET_PATTERN} data sets`, async function() {
     if (!appLaunched) {
       this.skip();
     }
@@ -118,7 +121,7 @@ describe(`test ${APP_TO_TEST}`, function() {
     const qualifier = await getElement(treeContent, 'input#path');
     expect(qualifier).to.be.an('object');
     await qualifier.clear();
-    await qualifier.sendKeys('TCPIP.T*' + Key.ENTER);
+    await qualifier.sendKeys(TEST_DATASET_PATTERN + Key.ENTER);
     debug('qualifier updated');
 
     // wait for results
@@ -137,33 +140,94 @@ describe(`test ${APP_TO_TEST}`, function() {
       const label = await getElement(items[i], 'div.react-contextmenu-wrapper span.node-label');
       if (label) {
         const text = await label.getText();
-        if (text === DS_TO_TEST) {
+        if (text === TEST_DATASET_NAME) {
           testDsIndex = parseInt(i, 10);
           break;
         }
       }
     }
     expect(testDsIndex).to.be.above(-1);
-    debug(`found ${DS_TO_TEST} at ${testDsIndex}`);
+    debug(`found ${TEST_DATASET_NAME} at ${testDsIndex}`);
+    const testDsFound = items[testDsIndex];
+
+    // find the dataset icon and click load members
+    const dsLabelLink = await getElement(testDsFound, 'div.react-contextmenu-wrapper span.node-label');
+    expect(dsLabelLink).to.be.an('object');
+    await dsLabelLink.click();
+    debug(`${TEST_DATASET_NAME} is clicked`);
+
+    // wait for members loaded
+    await driver.sleep(1000);
+    try {
+      await driver.wait(
+        async() => {
+          const firstItem = await getElement(testDsFound, 'div.node ul li:nth-child(1)');
+          if (firstItem) {
+            return true;
+          }
+
+          await driver.sleep(DEFAULT_ELEMENT_CHECK_INTERVAL); // not too fast
+          return false;
+        },
+        DEFAULT_PAGE_LOADING_TIMEOUT
+      );
+    } catch (e) {
+      // try to save screenshot for debug purpose
+      await driver.switchTo().defaultContent();
+      const failureSS = await saveScreenshot(driver, testName, 'load-ds-member-failed');
+      addContext(this, failureSS);
+
+      const errName = e && e.name;
+      if (errName === 'TimeoutError') {
+        expect(errName).to.not.equal('TimeoutError');
+      } else {
+        expect(e).to.be.null;
+      }
+    }
+    debug(`${TEST_DATASET_NAME} members list is updated`);
+
+
+    const members = await getElements(testDsFound, 'div.node ul li');
+    expect(members).to.be.an('array').that.have.lengthOf.above(0);
+    debug(`found ${members.length} members of ${TEST_DATASET_NAME}`);
+    for (let i in members) {
+      const label = await getElement(members[i], 'span.node-label');
+      if (label) {
+        const text = await label.getText();
+        if (text === TEST_DATASET_MEMBER_NAME) {
+          testDsMemberIndex = parseInt(i, 10);
+          break;
+        }
+      }
+    }
+    expect(testDsMemberIndex).to.be.above(-1);
+    debug(`found ${TEST_DATASET_NAME}(${TEST_DATASET_MEMBER_NAME}) at ${testDsMemberIndex}`);
+
+    // save screenshot
+    await saveScreenshotWithIframeAppContext(this, driver, testName, 'ds-members-loaded', APP_TO_TEST, MVD_IFRAME_APP_CONTENT);
   });
 
-  it(`should be able to load content of ${DS_TO_TEST} data set`, async function() {
-    if (!appLaunched || testDsIndex < 0) {
+  it(`should be able to load content of ${TEST_DATASET_NAME}(${TEST_DATASET_MEMBER_NAME}) data set member`, async function() {
+    if (!appLaunched || testDsIndex < 0 || testDsMemberIndex < 0) {
       this.skip();
     }
 
-    // prepare app context and find the li of DS_TO_TEST
+    // prepare app context and find the li of TEST_DATASET_NAME
     await switchToIframeAppContext(driver, APP_TO_TEST, MVD_IFRAME_APP_CONTENT);
     const treeContent = await getElement(driver, MVD_EXPLORER_TREE_SECTION);
     expect(treeContent).to.be.an('object');
-    const items = await getElements(treeContent, 'div.node ul li');
+    const items = await getElements(treeContent, 'div.node > ul > div > li');
     const testDsFound = items[testDsIndex];
 
-    // find the file icon and click load content
-    const contentLink = await getElement(testDsFound, 'div.react-contextmenu-wrapper span.content-link');
+    // find the member we are testing
+    const members = await getElements(testDsFound, 'div.node > ul li');
+    const testDsMemberFound = members[testDsMemberIndex];
+
+    // find the member icon and click load content
+    const contentLink = await getElement(testDsMemberFound, 'span.content-link');
     expect(contentLink).to.be.an('object');
     await contentLink.click();
-    debug(`${DS_TO_TEST} is clicked`);
+    debug(`${TEST_DATASET_NAME} is clicked`);
 
     // find right panel header
     const fileContentPanelHeader = await getElement(driver, 'div.component-no-vertical-pad div.component-no-vertical-pad > div:nth-child(1)');
@@ -173,7 +237,7 @@ describe(`test ${APP_TO_TEST}`, function() {
         async() => {
           const text = await fileContentPanelHeader.getText();
 
-          if (text.indexOf(DS_TO_TEST) > -1) {
+          if (text.indexOf(TEST_DATASET_NAME) > -1) {
             return true;
           }
 
