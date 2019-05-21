@@ -25,6 +25,7 @@ DEFAULT_CI_ZOWE_DS_MEMBER=ZOWESVR
 CI_ZOWE_ROOT_DIR=$DEFAULT_CI_ZOWE_ROOT_DIR
 CI_INSTALL_DIR=$DEFAULT_CI_INSTALL_DIR
 PROFILE=~/.profile
+ZOWE_PROFILE=~/.zowe_profile
 CI_ZOWE_DS_MEMBER=$DEFAULT_CI_ZOWE_DS_MEMBER
 # FIXME: these are hardcoded
 CI_XMEM_PROCLIB_MEMBER=ZWESIS01
@@ -208,6 +209,11 @@ ENV_VARS=$(env | grep ZOWE_ | awk -F= '{print $1}')
 for one in $ENV_VARS; do
   echo "[${SCRIPT_NAME}]   - $one"
 done
+echo
+
+# delete .zowe_profile
+echo "[${SCRIPT_NAME}] deleting $ZOWE_PROFILE ..."
+rm -fr "${ZOWE_PROFILE}"
 echo
 
 # removing ZOWESVR
