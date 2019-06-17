@@ -12,6 +12,9 @@
 
 
 node('ibm-jenkins-slave-dind') {
+  // upgrade npm
+  sh 'npm install -g npm'
+
   def lib = library("jenkins-library").org.zowe.jenkins_shared_library
 
   def pipeline = lib.pipelines.nodejs.NodeJSPipeline.new(this)
@@ -248,8 +251,7 @@ node('ibm-jenkins-slave-dind') {
     artifactory: [
       url                        : lib.Constants.DEFAULT_ARTIFACTORY_URL,
       usernamePasswordCredential : lib.Constants.DEFAULT_ARTIFACTORY_ROBOT_CREDENTIAL,
-    ],
-    alwaysUseNpmInstall: true
+    ]
   )
 
   pipeline.build(
