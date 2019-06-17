@@ -248,7 +248,8 @@ node('ibm-jenkins-slave-dind') {
     artifactory: [
       url                        : lib.Constants.DEFAULT_ARTIFACTORY_URL,
       usernamePasswordCredential : lib.Constants.DEFAULT_ARTIFACTORY_ROBOT_CREDENTIAL,
-    ]
+    ],
+    alwaysUseNpmInstall: true
   )
 
   pipeline.build(
