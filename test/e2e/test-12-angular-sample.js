@@ -24,7 +24,7 @@ const {
 } = require('./utils');
 let driver;
 
-const APP_TO_TEST = 'Angular Sample';
+const APP_TO_TEST = 'Sample Angular App';
 const APP_ID_TO_LAUNCH = 'org.zowe.terminal.tn3270';
 const APP_NAME_TO_LAUNCH = 'TN3270';
 
