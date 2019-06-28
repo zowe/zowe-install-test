@@ -280,12 +280,19 @@ node('ibm-jenkins-slave-dind') {
   pipeline.createStage(
     name          : "Download Zowe",
     isSkippable   : true,
-    shouldExecute : {
-      return !params.SKIP_INSTALLATION
-    },
     stage         : {
       pipeline.artifactory.download(
-        specContent : """
+        specContent : params.SKIP_INSTALLATION ? """
+{
+  "files": [{
+    "pattern": "${params.ZOWE_CLI_ARTIFACTORY_PATTERN}",
+    "target": ".tmp/",
+    "flat": "true",
+    "build": "${params.ZOWE_CLI_ARTIFACTORY_BUILD}",
+    "explode": "true"
+  }]
+}
+""" : """
 {
   "files": [{
     "pattern": "${params.ZOWE_ARTIFACTORY_PATTERN}",
