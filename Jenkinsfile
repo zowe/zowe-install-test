@@ -57,6 +57,11 @@ node('ibm-jenkins-slave-dind') {
       defaultValue: 'zowe-install-packaging :: master',
       trim: true
     ),
+    booleanParam(
+      name: 'IS_SMPE_PACKAGE',
+      description: 'If ZOWE_ARTIFACTORY_PATTERN is referring to a SMPE package.',
+      defaultValue: false
+    ),
     string(
       name: 'ZOWE_CLI_ARTIFACTORY_PATTERN',
       description: 'Zowe artifactory download pattern',
@@ -366,6 +371,7 @@ node('ibm-jenkins-slave-dind') {
         sh "SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} 'mkdir -p ${params.INSTALL_DIR}'"
 
         // send file to test image host
+        // FIXME: transfer more files to the target system
         sh """SSHPASS=${PASSWORD} sshpass -e sftp -o BatchMode=no -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -b - -P ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
 cd ${params.INSTALL_DIR}
 put scripts/temp-fixes-before-install.sh
@@ -373,6 +379,7 @@ put scripts/temp-fixes-after-install.sh
 put scripts/temp-fixes-after-started.sh
 put scripts/install-zowe.sh
 put scripts/uninstall-zowe.sh
+put scripts/install-SMPE-PAX.sh
 put scripts/opercmd
 put .tmp/zowe.pax
 EOF"""
@@ -380,17 +387,43 @@ EOF"""
         // run install-zowe.sh
         timeout(60) {
           def skipTempFixes = ""
-          def uninstallZowe = ""
+          Boolean uninstallZowe = false
           if (params.SKIP_TEMP_FIXES) {
             skipTempFixes = " -s"
           }
           if (params.SKIP_RESET_IMAGE) {
-            uninstallZowe = " -u"
+            // if we are not resetting image, we need to uninstall Zowe first
+            uninstallZowe = true
           }
-          sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
+          // FIXME: since we are not resetting image, we always need to run uninstall
+          uninstallZowe = true
+          if (uninstallZowe) {
+            // FIXME: modify uninstall-zowe.sh to uninstall Zowe installed with SMP/e package
+            // FIXME: since we don't know what's the last installation is with regular PAX or SMP/e package,
+            //        we need to test and uninstall both of them.
+            sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
+cd ${params.INSTALL_DIR} && \
+  (iconv -f ISO8859-1 -t IBM-1047 uninstall-zowe.sh > uninstall-zowe.sh.new) && mv uninstall-zowe.sh.new uninstall-zowe.sh && chmod +x uninstall-zowe.sh
+./uninstall-zowe.sh -i ${params.INSTALL_DIR} -t ${params.ZOWE_ROOT_DIR} -m ${params.PROCLIB_MEMBER} || { echo "[uninstall-zowe.sh] failed"; exit 0; }
+echo "[uninstall-zowe.sh] succeeds" && exit 0
+EOF"""
+          }
+
+          if (params.IS_SMPE_PACKAGE) {
+            // FIXME: add parameters to ./install-SMPE-PAX.sh sript
+            // FIXME: may need to "mv zowe.pax zowe.pax.Z" if SMP/e package is compressed.
+            sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
+cd ${params.INSTALL_DIR} && \
+  (iconv -f ISO8859-1 -t IBM-1047 install-SMPE-PAX.sh > install-SMPE-PAX.sh.new) && mv install-SMPE-PAX.sh.new install-SMPE-PAX.sh && chmod +x install-SMPE-PAX.sh
+./install-SMPE-PAX.sh ${params.INSTALL_DIR}/zowe.pax || { echo "[install-SMPE-PAX.sh] failed"; exit 1; }
+echo "[install-SMPE-PAX.sh] succeeds" && exit 0
+EOF"""
+            //
+          } else {
+            sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
 cd ${params.INSTALL_DIR} && \
   (iconv -f ISO8859-1 -t IBM-1047 install-zowe.sh > install-zowe.sh.new) && mv install-zowe.sh.new install-zowe.sh && chmod +x install-zowe.sh
-./install-zowe.sh -n ${params.TEST_IMAGE_GUEST_SSH_HOST} -t ${params.ZOWE_ROOT_DIR} -i ${params.INSTALL_DIR}${skipTempFixes}${uninstallZowe} --zfp ${params.ZOSMF_PORT}\
+./install-zowe.sh -n ${params.TEST_IMAGE_GUEST_SSH_HOST} -t ${params.ZOWE_ROOT_DIR} -i ${params.INSTALL_DIR}${skipTempFixes} --zfp ${params.ZOSMF_PORT}\
   --ds ${params.PROCLIB_DS} --dm ${params.PROCLIB_MEMBER}\
   --acp ${params.ZOWE_API_MEDIATION_CATALOG_HTTP_PORT} --adp ${params.ZOWE_API_MEDIATION_DISCOVERY_HTTP_PORT} --agp ${params.ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT}\
   --ejp ${params.ZOWE_EXPLORER_JOBS_PORT} --edp ${params.ZOWE_EXPLORER_DATASETS_PORT}\
@@ -400,6 +433,7 @@ cd ${params.INSTALL_DIR} && \
   ${params.INSTALL_DIR}/zowe.pax || { echo "[install-zowe.sh] failed"; exit 1; }
 echo "[install-zowe.sh] succeeds" && exit 0
 EOF"""
+          }
         }
 
         // wait a while before testing zLux
