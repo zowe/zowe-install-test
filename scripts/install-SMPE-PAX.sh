@@ -87,32 +87,10 @@ tsocmd "delete ('${hlq}.SMPE.AZWESAMP')"
 tsocmd "delete ('${hlq}.SMPE.AZWEZFS')"
 tsocmd "delete ('${hlq}.SMPE.SZWEAUTH')"
 tsocmd "delete ('${hlq}.SMPE.SZWESAMP')"
+tsocmd "delete ('${hlq}.install.jcl')"
+tsocmd "delete (TEST.jcl.*)"
 rm -fR ${pathprefix}usr/lpp/zowe
 
-# make the directory to hold the runtimes
-mkdir -p ${pathprefix}usr/lpp/zowe/SMPE     
-
-# un-pax the main FMID file
-# cd $zfs_path
-cd /tmp/zowe/smpe           # my local work directory
-echo; echo $SCRIPT un-PAX SMP/E file
-pax -rvf $download_path/$FMID.pax.Z
-
-# README -- README -- README
-
-# convert the README to EBCDIC if required
-iconv -f ISO8859-1 -t IBM-1047 $download_path/$FMID.$README > AZWE001.readme.EBCDIC.txt
-chmod a+r AZWE001.readme.EBCDIC.txt
-
-# extract the GIMUNZIP job
-sed -n '/\/\/GIMUNZIP /,$p' AZWE001.readme.EBCDIC.txt > gimunzip.jcl0
-
-# prepend the JOB statement
-sed '1 i\
-\/\/GIMUNZIP JOB' gimunzip.jcl0 > gimunzip.jcl1
-
-# tailor the job
-sed -f gimunzip.sed gimunzip.jcl1 > gimunzip.jcl
 
 function runJob {
 
@@ -124,6 +102,7 @@ function runJob {
 
    
     # create a temporary dataset under my userid to hold the job JCL to be submitted
+    tsocmd "delete (TEST.jcl.$jclname)" 1> /dev/null # delete the temporary dataset
     tsocmd "alloc dataset(TEST.jcl.$jclname) \
                 new space(1) tracks \
                 blksize(3120) \
@@ -144,7 +123,7 @@ function runJob {
     jobid=`cat /tmp/$$.submit.job.out | sed "s/JOB $jobname(JOB\([0-9]*\)) SUBMITTED/\1/"`
     echo; echo $SCRIPT JOBID=$jobid
     
-    tsocmd "delete (TEST.jcl.$jclname)" # delete the temporary dataset
+    
 
     # wait for job to finish
     jobdone=0
@@ -192,25 +171,66 @@ function runJob {
     echo; echo $SCRIPT function runJob ended
 }
 
+# README -- README -- README
+
+# convert the README to EBCDIC if required
+# iconv -f ISO8859-1 -t IBM-1047 $download_path/$FMID.$README > iebupdte.jcl0  # old
+iconv -f ISO8859-1 -t IBM-1047 $download_path/$FMID.README.jcl > iebupdte.jcl0  # old
+# chmod a+r AZWE001.readme.EBCDIC.txt
+
+# tailor the README
+# tailor the job
+sed -f gimunzip.sed iebupdte.jcl0 > iebupdte.jcl
+
+# Run the iebupdte job
+runJob iebupdte 
+
+# loads 3 jobs:
+#
+# //FILESYS     JOB - create and mount FILESYS
+#
+# //UNPAX       JOB - unpax the SMP/E PAX file
+#
+# //GIMUNZIP    JOB - runs GIMUNZIP to create SMP/E datasets and files
+
+
+# make the directory to hold the runtimes
+mkdir -p ${pathprefix}usr/lpp/zowe/SMPE     
+
+# un-pax the main FMID file
+# cd $zfs_path
+cd /tmp/zowe/smpe           # my local work directory
+echo; echo $SCRIPT un-PAX SMP/E file
+pax -rvf $download_path/$FMID.pax.Z
+
+
+# # extract the GIMUNZIP job
+# sed -n '/\/\/GIMUNZIP /,$p' AZWE001.readme.EBCDIC.txt > gimunzip.jcl0
+
+# # prepend the JOB statement
+# sed '1 i\
+# \/\/GIMUNZIP JOB' gimunzip.jcl0 > gimunzip.jcl1
+
+# # tailor the job
+# sed -f gimunzip.sed gimunzip.jcl1 > gimunzip.jcl
+
+# fetch the GIMUNZIP job from the PDS that IEBUPDTE created
+tsocmd oput "  '${hlq}.install.jcl(gimunzip)' 'gimunzip.jcl' " 
+
 # Run the GIMUNZIP job
 runJob gimunzip 
 
 
 # SMP/E -- SMP/E -- SMP/E -- SMP/E
 
-# jobs are to be run in this order
-# .ZWE1SMPE. 
-# .ZWE2RCVE. 
-# .ZWE3ALOC. 
-# .ZWE6DDEF. 
-# .ZWE7APLY.
-
+# run these SMP/E jobs
 for smpejob in \
  ZWE1SMPE \
  ZWE2RCVE \
  ZWE3ALOC \
  ZWE6DDEF \
- ZWE7APLY
+ ZWE7APLY \
+ ZWE8ACPT
 do 
     # tailor the SMP/E jobs (unedited ones are in .BAK)
     tsocmd oput "  '${hlq}.${FMID}.F1($smpejob)' '$smpejob.jcl0' " 
