@@ -10,11 +10,11 @@ SCRIPT_DIR="$(dirname $0)"
 SCRIPT="$(basename $0)"  
 echo script $SCRIPT started from $SCRIPT_DIR
 
-if [[ $# -ne 8 ]]
+if [[ $# -ne 9 ]]
 then
 echo; echo $SCRIPT Usage:
 cat <<EndOfUsage
-$SCRIPT Hlq Csihlq Thlq Dhlq Pathprefix download_path zfs_path FMID
+$SCRIPT Hlq Csihlq Thlq Dhlq Pathprefix download_path zfs_path FMID PREFIX
 
    Parameter subsitutions:
  a.  for SMP/E jobs:
@@ -31,13 +31,13 @@ $SCRIPT Hlq Csihlq Thlq Dhlq Pathprefix download_path zfs_path FMID
  6  download_path   /tmp            where PAX and README are located
  7  zfs_path 	    /tmp/zowe/smpe	SMPDIR where GIMUNZIP unzips the PAX file 
  8  FMID	        AZWE001	        The FMID for this release (omitted in archid of SMPMCS)
- -  PREFIX	        ZOE	            Same as DSN HLQ above
+ 9  PREFIX	        ZOE.ZOWE        RELFILE prefix?
 
 EndOfUsage
 exit
 fi
 
-hlq=$1
+hlq=${1}
 csihlq=$2
 thlq=$3
 dhlq=$4
@@ -45,7 +45,7 @@ pathprefix=$5
 download_path=$6
 zfs_path=$7
 FMID=$8
-PREFIX=$1
+PREFIX=$9
 
 echo $SCRIPT    hlq=$1
 echo $SCRIPT    csihlq=$2
@@ -55,7 +55,7 @@ echo $SCRIPT    pathprefix=$5
 echo $SCRIPT    download_path=$6
 echo $SCRIPT    zfs_path=$7
 echo $SCRIPT    FMID=$8
-echo $SCRIPT    PREFIX=$1
+echo $SCRIPT    PREFIX=$9
 
 # download_path=/tmp               # change this to where PAX and README are located
 # FMID=AZWE001
@@ -74,6 +74,11 @@ tsocmd "delete ('${hlq}.${FMID}.F2')"
 tsocmd "delete ('${hlq}.${FMID}.F3')"
 tsocmd "delete ('${hlq}.${FMID}.F4')"
 tsocmd "delete ('${hlq}.${FMID}.smpmcs')"
+tsocmd "delete ('${hlq}.ZOWE.${FMID}.F1')"
+tsocmd "delete ('${hlq}.ZOWE.${FMID}.F2')"
+tsocmd "delete ('${hlq}.ZOWE.${FMID}.F3')"
+tsocmd "delete ('${hlq}.ZOWE.${FMID}.F4')"
+tsocmd "delete ('${hlq}.ZOWE.${FMID}.smpmcs')"
 tsocmd "delete ('${hlq}.SMPE.CSI')"
 tsocmd "delete ('${hlq}.SMPE.SMPLOG')"
 tsocmd "delete ('${hlq}.SMPE.SMPLOGA')"
@@ -180,7 +185,27 @@ iconv -f ISO8859-1 -t IBM-1047 $download_path/$FMID.README.jcl > iebupdte.jcl0  
 
 # tailor the README
 # tailor the job
-sed -f gimunzip.sed iebupdte.jcl0 > iebupdte.jcl
+# ... manually for now .... :sed -f gimunzip.sed iebupdte.jcl0 > iebupdte.jcl
+
+# sed "\
+#     s+@zfs_path@+${zfs_path}+; \
+#     s+"&FMID..SMPMCS+"SMPMCS+; \
+#     s+@PREFIX@.&FMID..SMPMCS+${hlq}.${FMID}.SMPMCS+; \
+#     s+"&FMID..F1+"${FMID}.F1+; \
+#     s+@PREFIX@.&FMID..F1+${hlq}.${FMID}.F1+; \
+#     s+"&FMID..F2+"${FMID}.F2+; \
+#     s+@PREFIX@.&FMID..F2+${hlq}.${FMID}.F2+; \
+#     s+"&FMID..F3+"${FMID}.F3+; \
+#     s+@PREFIX@.&FMID..F3+${hlq}.${FMID}.F3+; \
+#     s+"&FMID..F4+"${FMID}.F4+; \
+#     s+@PREFIX@.&FMID..F4+${hlq}.${FMID}.F4+; " \
+#     iebupdte.jcl0 > iebupdte.jcl
+
+sed "\
+    s+@zfs_path@+${zfs_path}+; \
+    s+&FMID\.+${FMID}+; \
+    s+@PREFIX@+${hlq}+" \
+    iebupdte.jcl0 > iebupdte.jcl
 
 # Run the iebupdte job
 runJob iebupdte 
@@ -233,10 +258,29 @@ for smpejob in \
  ZWE8ACPT
 do 
     # tailor the SMP/E jobs (unedited ones are in .BAK)
-    tsocmd oput "  '${hlq}.${FMID}.F1($smpejob)' '$smpejob.jcl0' " 
+    # tsocmd oput "  '${hlq}.${FMID}.F1($smpejob)' '$smpejob.jcl0' " 
+    tsocmd oput "  '${PREFIX}.${FMID}.F1($smpejob)' '$smpejob.jcl0' " 
     # ${hlq}.${FMID}.F1 ... ZOE.AZWE001.F1.BAK($smpejob)
 
-    sed -f smpejob.sed $smpejob.jcl0 > $smpejob.jcl
+	# sed "s/#hlq/$PREFIX/" $smpejob.jcl0 > $smpejob.jcl1
+    # sed -f smpejob.sed $smpejob.jcl1 > $smpejob.jcl
+
+    sed "\
+        s/#csihlq/${csihlq}/; \
+        s/#csivol/DUMMY/; \
+        s/#tzone/TZONE/; \
+        s/#dzone/DZONE/; \
+        s/#hlq/${PREFIX}/; \
+        s/#thlq/${thlq}/; \
+        s/#dhlq/${dhlq}/; \
+        s/#tvol//; \
+        s/#dvol//; \
+        s/<job parameters>//; \
+        s+-PathPrefix-+${pathprefix}+; \
+        s/ CHECK //" \
+        $smpejob.jcl0 > $smpejob.jcl
+
+
 
     # this test won't be required once the error is fixed
     if [[ $smpejob = ZWE7APLY ]]
