@@ -3,11 +3,14 @@
 # Function: install the Zowe SMP/E PAX file
 # POC - no error checking
 # Requires opercmd to check job RC
-# Requires SED files to tailor JCL
+
+# Inputs
+# $download_path/$FMID.$README      # EBCDIC text of IEBUPDTE job JCL
+# $download_path/$FMID.pax.Z        # binary SMP/E PAX file of Zowe product
 
 # identify this script
-SCRIPT_DIR="$(dirname $0)"  
-SCRIPT="$(basename $0)"  
+SCRIPT_DIR="$(dirname $0)"
+SCRIPT="$(basename $0)"
 echo script $SCRIPT started from $SCRIPT_DIR
 
 if [[ $# -ne 9 ]]
@@ -24,13 +27,13 @@ $SCRIPT Hlq Csihlq Thlq Dhlq Pathprefix download_path zfs_path FMID PREFIX
  2  csihlq	        ZOE.SMPE	    HLQ for our CSI
  3  thlq	        ZOE.SMPE	    TZONE HLQ
  4  dhlq	        ZOE.SMPE	    DZONE HLQ
- 5  pathprefix	    /tmp/   	    Path Prefix of usr/lpp/zowe, 
+ 5  pathprefix	    /tmp/   	    Path Prefix of usr/lpp/zowe,
                                     where SMP/E will install zowe runtimes
 
  b.  For GIMUNZIP job:
  6  download_path   /tmp            where PAX and README are located
- 7  zfs_path 	    /tmp/zowe/smpe	SMPDIR where GIMUNZIP unzips the PAX file 
- 8  FMID	        AZWE001	        The FMID for this release (omitted in archid of SMPMCS)
+ 7  zfs_path 	    /tmp/zowe/smpe	SMPDIR where GIMUNZIP unzips the PAX file
+ 8  FMID	        AZWE001	        The FMID for this release (omitted in archid of SMPMCS?)
  9  PREFIX	        ZOE.ZOWE        RELFILE prefix?
 
 EndOfUsage
@@ -59,11 +62,7 @@ echo $SCRIPT    PREFIX=$9
 
 # download_path=/tmp               # change this to where PAX and README are located
 # FMID=AZWE001
-README=readme.txt
-
-# Inputs
-# $download_path/$FMID.$README     # text
-# $download_path/$FMID.pax.Z     # binary
+README=README.jcl
 
 # # prepare to run this script
 
@@ -105,7 +104,7 @@ function runJob {
 
     echo; echo $SCRIPT jclname=$jclname jobname=$jobname
 
-   
+
     # create a temporary dataset under my userid to hold the job JCL to be submitted
     tsocmd "delete (TEST.jcl.$jclname)" 1> /dev/null # delete the temporary dataset
     tsocmd "alloc dataset(TEST.jcl.$jclname) \
@@ -118,29 +117,32 @@ function runJob {
     tsocmd oget " '$jclname.jcl'  TEST.jcl.$jclname "   # copy USS jcl file to MVS
 
     # submit the job
-    tsocmd submit "TEST.jcl.$jclname" > /tmp/$$.submit.job.out 
+    tsocmd submit "TEST.jcl.$jclname" > /tmp/$$.submit.job.out
     if [[ $? -ne 0 ]]
     then
-        echo; echo $SCRIPT submit job $jclname failed 
-        exit 1 
-    fi 
-    
-    jobid=`cat /tmp/$$.submit.job.out | sed "s/JOB $jobname(JOB\([0-9]*\)) SUBMITTED/\1/"`
+        echo; echo $SCRIPT submit job $jclname failed
+        exit 1
+    fi
+
+    # capture JOBID of submitted job
+    jobid=`cat /tmp/$$.submit.job.out \
+        | sed "s/.*JOB $jobname(JOB\([0-9]*\)) SUBMITTED/\1/"`
+
     echo; echo $SCRIPT JOBID=$jobid
-    
-    
+
+
 
     # wait for job to finish
     jobdone=0
     for secs in 1 5 10 30 100
-    do 
+    do
         sleep $secs
         tsocmd status "$jobname(job$jobid)" | grep "JOB $jobname(JOB$jobid) ON OUTPUT QUEUE"
         if [[ $? -eq 0 ]]
         then
             jobdone=1
             break
-        fi 
+        fi
     done
     if [[ $jobdone -eq 0 ]]
     then
@@ -148,14 +150,13 @@ function runJob {
         exit 2
     else
         echo; echo $SCRIPT job "$jobname(JOB$jobid)" completed
-    fi 
+    fi
 
     # get job return code from JES
     # GET /zosmf/restjobs/jobs/<jobname>/<jobid>?[step-data=Y|N]
-    operdir=/u/stonecc/zowe/1.0.1/scripts/internal
-    # operdir=$SCRIPT_DIR       # this is where opercmd should be available
+    operdir=$SCRIPT_DIR       # this is where opercmd should be available
 
-    # RESPONSE=MV3B      $HASP890 JOB(JOB1)      CC=(COMPLETED,RC=0) 
+    # RESPONSE=MV3B      $HASP890 JOB(JOB1)      CC=(COMPLETED,RC=0)
 
     $operdir/opercmd "\$DJ${jobid},CC" > /tmp/$$.dj.cc
     grep RC= /tmp/$$.dj.cc
@@ -172,7 +173,7 @@ function runJob {
     then
         echo; echo $SCRIPT job "$jobname(JOB$jobid)" failed
         exit 4
-    fi 
+    fi
     echo; echo $SCRIPT function runJob ended
 }
 
@@ -180,7 +181,8 @@ function runJob {
 
 # convert the README to EBCDIC if required
 # iconv -f ISO8859-1 -t IBM-1047 $download_path/$FMID.$README > iebupdte.jcl0  # old
-iconv -f ISO8859-1 -t IBM-1047 $download_path/$FMID.README.jcl > iebupdte.jcl0  # old
+# iconv -f ISO8859-1 -t IBM-1047 $download_path/$FMID.README.jcl > iebupdte.jcl0  # old
+cp $download_path/$FMID.$README iebupdte.jcl0
 # chmod a+r AZWE001.readme.EBCDIC.txt
 
 # tailor the README
@@ -208,7 +210,7 @@ sed "\
     iebupdte.jcl0 > iebupdte.jcl
 
 # Run the iebupdte job
-runJob iebupdte 
+runJob iebupdte
 
 # loads 3 jobs:
 #
@@ -220,7 +222,7 @@ runJob iebupdte
 
 
 # make the directory to hold the runtimes
-mkdir -p ${pathprefix}usr/lpp/zowe/SMPE     
+mkdir -p ${pathprefix}usr/lpp/zowe/SMPE
 
 # un-pax the main FMID file
 # cd $zfs_path
@@ -240,10 +242,10 @@ pax -rvf $download_path/$FMID.pax.Z
 # sed -f gimunzip.sed gimunzip.jcl1 > gimunzip.jcl
 
 # fetch the GIMUNZIP job from the PDS that IEBUPDTE created
-tsocmd oput "  '${hlq}.install.jcl(gimunzip)' 'gimunzip.jcl' " 
+tsocmd oput "  '${hlq}.install.jcl(gimunzip)' 'gimunzip.jcl' "
 
 # Run the GIMUNZIP job
-runJob gimunzip 
+runJob gimunzip
 
 
 # SMP/E -- SMP/E -- SMP/E -- SMP/E
@@ -256,10 +258,10 @@ for smpejob in \
  ZWE6DDEF \
  ZWE7APLY \
  ZWE8ACPT
-do 
+do
     # tailor the SMP/E jobs (unedited ones are in .BAK)
-    # tsocmd oput "  '${hlq}.${FMID}.F1($smpejob)' '$smpejob.jcl0' " 
-    tsocmd oput "  '${PREFIX}.${FMID}.F1($smpejob)' '$smpejob.jcl0' " 
+    tsocmd oput "  '${hlq}.${FMID}.F1($smpejob)' '$smpejob.jcl0' "
+    #tsocmd oput "  '${PREFIX}.${FMID}.F1($smpejob)' '$smpejob.jcl0' "
     # ${hlq}.${FMID}.F1 ... ZOE.AZWE001.F1.BAK($smpejob)
 
 	# sed "s/#hlq/$PREFIX/" $smpejob.jcl0 > $smpejob.jcl1
@@ -270,7 +272,7 @@ do
         s/#csivol/DUMMY/; \
         s/#tzone/TZONE/; \
         s/#dzone/DZONE/; \
-        s/#hlq/${PREFIX}/; \
+        s/#hlq/${hlq}/; \
         s/#thlq/${thlq}/; \
         s/#dhlq/${dhlq}/; \
         s/#tvol//; \
@@ -280,7 +282,8 @@ do
         s/ CHECK //" \
         $smpejob.jcl0 > $smpejob.jcl
 
-
+    #   hlq was PREFIX in later PAXes, so that line was as below to cater for that
+            # s/#hlq/${PREFIX}/; \
 
     # this test won't be required once the error is fixed
     if [[ $smpejob = ZWE7APLY ]]
@@ -291,9 +294,9 @@ do
         grep " -pe " ZWESHPAX.jcl0
         sed 's/ -pe / -pp /' ZWESHPAX.jcl0 > ZWESHPAX.jcl
         tsocmd oget " 'ZWESHPAX.jcl'  '${csihlq}.${FMID}.F4(ZWESHPAX)' "
-    fi 
+    fi
 
-    runJob $smpejob 
+    runJob $smpejob
 
 done
 
