@@ -206,10 +206,11 @@ cp $download_path/$FMID.$README iebupdte.jcl0
 sed "\
     s+@zfs_path@+${zfs_path}+; \
     s+&FMID\.+${FMID}+; \
-    s+@PREFIX@+${hlq}+" \
+    s+@PREFIX@+${PREFIX}+" \
     iebupdte.jcl0 > iebupdte.jcl
 
 # Run the iebupdte job
+    #  s+@PREFIX@+${hlq}+" \
 runJob iebupdte
 
 # loads 3 jobs:
@@ -260,8 +261,8 @@ for smpejob in \
  ZWE8ACPT
 do
     # tailor the SMP/E jobs (unedited ones are in .BAK)
-    tsocmd oput "  '${hlq}.${FMID}.F1($smpejob)' '$smpejob.jcl0' "
-    #tsocmd oput "  '${PREFIX}.${FMID}.F1($smpejob)' '$smpejob.jcl0' "
+    # tsocmd oput "  '${hlq}.${FMID}.F1($smpejob)' '$smpejob.jcl0' "
+    tsocmd oput "  '${PREFIX}.ZOWE.${FMID}.F1($smpejob)' '$smpejob.jcl0' "
     # ${hlq}.${FMID}.F1 ... ZOE.AZWE001.F1.BAK($smpejob)
 
 	# sed "s/#hlq/$PREFIX/" $smpejob.jcl0 > $smpejob.jcl1
@@ -272,7 +273,8 @@ do
         s/#csivol/DUMMY/; \
         s/#tzone/TZONE/; \
         s/#dzone/DZONE/; \
-        s/#hlq/${hlq}/; \
+        s/#hlq/${PREFIX}/; \
+        s/\[RFDSNPFX\]/ZOWE/; \
         s/#thlq/${thlq}/; \
         s/#dhlq/${dhlq}/; \
         s/#tvol//; \
@@ -284,6 +286,8 @@ do
 
     #   hlq was PREFIX in later PAXes, so that line was as below to cater for that
             # s/#hlq/${PREFIX}/; \
+        # s/ RFPREFIX(.*)//" \
+        # hlq was just $hlq before ... s/#hlq/${hlq}/; \
 
     # this test won't be required once the error is fixed
     if [[ $smpejob = ZWE7APLY ]]
