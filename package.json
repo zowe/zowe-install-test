@@ -20,7 +20,7 @@
     "debug": "^3.1.0",
     "eslint": "^5.2.0",
     "geckodriver": "^1.16.2",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.14",
     "mocha": "^5.2.0",
     "mocha-jenkins-reporter": "^0.4.0",
     "mocha-multi-reporters": "^1.1.7",
