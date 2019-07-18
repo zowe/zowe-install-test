@@ -74,21 +74,21 @@ node('ibm-jenkins-slave-dind') {
     string(
       name: 'ZOWE_ROOT_DIR',
       description: 'Zowe installation root directory',
-      defaultValue: '/zaas1/zowe',
+      defaultValue: '/ZOWE/staging/zowe',
       trim: true,
       required: true
     ),
     string(
       name: 'INSTALL_DIR',
       description: 'Installation working directory',
-      defaultValue: '/zaas1/zowe-install',
+      defaultValue: '/ZOWE/zowe-installs',
       trim: true,
       required: true
     ),
     string(
       name: 'PROCLIB_DS',
       description: 'PROCLIB data set name',
-      defaultValue: 'auto',
+      defaultValue: 'VENDOR.PROCLIB',
       trim: true,
       required: true
     ),
@@ -190,40 +190,18 @@ node('ibm-jenkins-slave-dind') {
       trim: true,
       required: true
     ),
-    // >>>>>>>> SSH access of testing server Ubuntu layer
-    string(
-      name: 'TEST_IMAGE_HOST_SSH_HOST',
-      description: 'Test image host IP',
-      defaultValue: 'river.zowe.org',
-      trim: true,
-      required: true
-    ),
-    string(
-      name: 'TEST_IMAGE_HOST_SSH_PORT',
-      description: 'Test image host SSH port',
-      defaultValue: '22',
-      trim: true,
-      required: true
-    ),
-    credentials(
-      name: 'TEST_IMAGE_HOST_SSH_CREDENTIAL',
-      description: 'The SSH credential used to connect to zD&T test image host (Ubuntu layer)',
-      credentialType: 'com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl',
-      defaultValue: 'ssh-zdt-test-image-host',
-      required: true
-    ),
     // >>>>>>>> SSH access of testing server zOSaaS layer
     string(
       name: 'TEST_IMAGE_GUEST_SSH_HOST',
       description: 'Test image guest IP',
-      defaultValue: 'river.zowe.org',
+      defaultValue: 'zzow01.zowe.marist.cloud',
       trim: true,
       required: true
     ),
     string(
       name: 'TEST_IMAGE_GUEST_SSH_PORT',
       description: 'Test image guest SSH port',
-      defaultValue: '2022',
+      defaultValue: '22',
       trim: true,
       required: true
     ),
@@ -231,7 +209,7 @@ node('ibm-jenkins-slave-dind') {
       name: 'TEST_IMAGE_GUEST_SSH_CREDENTIAL',
       description: 'The SSH credential used to connect to zD&T test image guest (zOSaaS layer)',
       credentialType: 'com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl',
-      defaultValue: 'ssh-zdt-test-image-guest',
+      defaultValue: 'ssh-marist-server-zzow01',
       required: true
     ),
     // >>>>>>>> parametters for test cases
@@ -313,47 +291,6 @@ node('ibm-jenkins-slave-dind') {
     },
     timeout: [time: 20, unit: 'MINUTES']
   )
-
-//   pipeline.createStage(
-//     name          : "Reset zOSaaS Image",
-//     isSkippable   : true,
-//     shouldExecute : {
-//       return !params.SKIP_RESET_IMAGE
-//     },
-//     stage         : {
-//       withCredentials([
-//         usernamePassword(
-//           credentialsId: params.TEST_IMAGE_HOST_SSH_CREDENTIAL,
-//           passwordVariable: 'PASSWORD',
-//           usernameVariable: 'USERNAME'
-//         )
-//       ]) {
-//         // send script to test image host
-//         sh """SSHPASS=${PASSWORD} sshpass -e sftp -o BatchMode=no -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -b - -P ${params.TEST_IMAGE_HOST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_HOST_SSH_HOST} << EOF
-// put scripts/refresh-zosaas.sh /home/ibmsys1
-// put scripts/temp-fixes-prereqs-image.sh /home/ibmsys1
-// chmod 755 /home/ibmsys1/refresh-zosaas.sh
-// chmod 755 /home/ibmsys1/temp-fixes-prereqs-image.sh
-// EOF"""
-
-//         // run refresh-zosaas.sh
-//         timeout(90) {
-//           sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_HOST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_HOST_SSH_HOST} << EOF
-// ~/refresh-zosaas.sh
-// exit 0
-// EOF"""
-//         }
-
-//         // wait a while before testing z/OSMF
-//         sleep time: 10, unit: 'MINUTES'
-//         // check if zD&T & z/OSMF are started
-//         timeout(120) {
-//           sh "./scripts/is-website-ready.sh -r 720 -t 10 -c 20 https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOSMF_PORT}/zosmf/info"
-//         }
-//       }
-//     },
-//     timeout: [time: 120, unit: 'MINUTES']
-//   )
 
   pipeline.createStage(
     name          : "Install Zowe",
