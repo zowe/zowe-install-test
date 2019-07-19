@@ -18,6 +18,10 @@
 
 SCRIPT_NAME=$(basename "$0")
 CI_ZOWE_ROOT_DIR=$1
+CI_USERNAME=$2
+CI_PASSWORD=$3
+CI_TEST_IMAGE_GUEST_SSH_HOST=$4
+CI_ZOWE_ZLUX_HTTPS_PORT=$5
 echo "[${SCRIPT_NAME}] started ..."
 echo "[${SCRIPT_NAME}]    CI_ZOWE_ROOT_DIR           : $CI_ZOWE_ROOT_DIR"
 
@@ -117,6 +121,15 @@ if [ -f "$RUN_SCRIPT" ]; then
   fi
 fi
 echo
+
+
+################################################################################
+# FIXME: zLux login may hang there which blocks UI test cases
+# try a login to the zlux auth api
+curl -d "{\"username\":\"${CI_USERNAME}\",\"password\":\"${CI_PASSWORD}\"}" \
+     -H 'Content-Type: application/json' \
+     -X POST -k -i \
+     https://${CI_TEST_IMAGE_GUEST_SSH_HOST}:${CI_ZOWE_ZLUX_HTTPS_PORT}/auth
 
 ################################################################################
 echo

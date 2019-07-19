@@ -346,48 +346,29 @@ echo "[install-zowe.sh] succeeds" && exit 0
 EOF"""
         }
 
-        // wait a while before testing zLux
-        sleep time: 2, unit: 'MINUTES'
-        // check if zLux is started
+        // wait for Zowe is fully started
         timeout(60) {
+          // check if zLux is started
           sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOWE_ZLUX_HTTPS_PORT}/"
-        }
-        // check if explorer server is started
-        timeout(60) {
+          // check if explorer server is started
           sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 'https://${USERNAME}:${PASSWORD}@${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOWE_EXPLORER_JOBS_PORT}/api/v1/jobs?prefix=ZOWE*&status=ACTIVE'"
-        }
-        // check if apiml gateway is started
-        timeout(60) {
+          // check if apiml gateway is started
           sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 https://${USERNAME}:${PASSWORD}@${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT}/"
-        }
-        // check if apiml catalog is started
-        timeout(60) {
+          // check if apiml catalog is started
           sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 -d '{\"username\":\"${USERNAME}\",\"password\":\"${PASSWORD}\"}' 'https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT}/api/v1/apicatalog/auth/login'"
         }
-        // check if zD&T & z/OSMF are started again in case z/OSMF is restarted
-        timeout(60) {
-          sh "./scripts/is-website-ready.sh -r 720 -t 10 -c 20 https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOSMF_PORT}/zosmf/info"
-        }
+
         // post install verify script
         timeout(30) {
           // always exit 0 to ignore failures in zowe-verify.sh
           sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
 cd ${params.INSTALL_DIR} && \
-  temp-fixes-after-started.sh "${params.ZOWE_ROOT_DIR}" || { echo "[temp-fixes-after-started.sh] failed"; exit 0; }
+  temp-fixes-after-started.sh "${params.ZOWE_ROOT_DIR}" \
+    "${USERNAME}" "${PASSWORD}" \
+    "${TEST_IMAGE_GUEST_SSH_HOST}" "${ZOWE_ZLUX_HTTPS_PORT}" || { echo "[temp-fixes-after-started.sh] failed"; exit 0; }
 echo "[temp-fixes-after-started.sh] succeeds" && exit 0
 EOF"""
         }
-
-        // wait a while before starting test
-        sleep time: 10, unit: 'MINUTES'
-        // FIXME: zLux login may hang there which blocks UI test cases
-        // try a login to the zlux auth api
-        def zluxAuth = sh(
-          script: "curl -d '{\\\"username\\\":\\\"${USERNAME}\\\",\\\"password\\\":\\\"${PASSWORD}\\\"}' -H 'Content-Type: application/json' -X POST -k https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOWE_ZLUX_HTTPS_PORT}/auth",
-          returnStdout: true
-        ).trim()
-        echo "zLux login result:"
-        echo zluxAuth
       }
     },
     timeout: [time: 120, unit: 'MINUTES']
