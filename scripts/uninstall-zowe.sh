@@ -171,26 +171,28 @@ echo "[${SCRIPT_NAME}]   - Installation folder : $CI_INSTALL_DIR"
 echo "[${SCRIPT_NAME}]   - Zowe folder         : $CI_ZOWE_ROOT_DIR"
 echo
 
+if [ ! -f "${CI_INSTALL_DIR}/opercmd" ]; then
+  echo "[${SCRIPT_NAME}][error] opercmd doesn't exist."
+  exit 1;
+fi
+
+################################################################################
 # stop ZWESIS01
 echo "[${SCRIPT_NAME}] stopping ZWESIS01 ..."
-if [ -f "${CI_INSTALL_DIR}/opercmd" ]; then
-  (exec "${CI_INSTALL_DIR}/opercmd" "P ${CI_XMEM_PROCLIB_MEMBER}")
-else
-  echo "[${SCRIPT_NAME}][WARN] - cannot find opercmd, please make sure ${CI_XMEM_PROCLIB_MEMBER} is stopped."
-fi
+(exec "${CI_INSTALL_DIR}/opercmd" "P ${CI_XMEM_PROCLIB_MEMBER}")
 echo
 
+################################################################################
 # stop Zowe
 echo "[${SCRIPT_NAME}] stopping Zowe ..."
 if [ -f "${CI_ZOWE_ROOT_DIR}/scripts/zowe-stop.sh" ]; then
   (exec "${CI_ZOWE_ROOT_DIR}/scripts/zowe-stop.sh")
-elif [ -f "${CI_INSTALL_DIR}/opercmd" ]; then
-  (exec "${CI_INSTALL_DIR}/opercmd" "C ${CI_ZOWE_DS_MEMBER}")
 else
-  echo "[${SCRIPT_NAME}][WARN] - cannot find opercmd, please make sure ${CI_ZOWE_DS_MEMBER} is stopped."
+  (exec "${CI_INSTALL_DIR}/opercmd" "C ${CI_ZOWE_DS_MEMBER}")
 fi
 echo
 
+################################################################################
 # removing environment viarables from .profile
 echo "[${SCRIPT_NAME}] cleaning $PROFILE ..."
 echo "[${SCRIPT_NAME}]   - before cleaning:"
@@ -203,6 +205,7 @@ cat "${PROFILE}"
 echo "[${SCRIPT_NAME}]   -----------------"
 echo
 
+################################################################################
 # listing ZOWE_ environment variables
 echo "[${SCRIPT_NAME}] active ZOWE_* variables ..."
 ENV_VARS=$(env | grep ZOWE_ | awk -F= '{print $1}')
@@ -211,17 +214,15 @@ for one in $ENV_VARS; do
 done
 echo
 
+################################################################################
 # delete .zowe_profile
 echo "[${SCRIPT_NAME}] deleting $ZOWE_PROFILE ..."
 rm -fr "${ZOWE_PROFILE}"
 echo
 
+################################################################################
 # removing ZOWESVR
 echo "[${SCRIPT_NAME}] deleting ${CI_ZOWE_DS_MEMBER} PROC ..."
-if [ ! -f "${CI_INSTALL_DIR}/opercmd" ]; then
-  echo "[${SCRIPT_NAME}][error] opercmd doesn't exist."
-  exit 1;
-fi
 # make sure profile noprefix
 export TSOPROFILE="noprefix"
 tsocmd profile noprefix
@@ -250,12 +251,9 @@ else
 fi
 echo
 
+################################################################################
 # removing xmem LOADLIB(ZWESIS01)
 echo "[${SCRIPT_NAME}] deleting ${CI_XMEM_LOADLIB}(${CI_XMEM_LOADLIB_MEMBER}) ..."
-if [ ! -f "${CI_INSTALL_DIR}/opercmd" ]; then
-  echo "[${SCRIPT_NAME}][error] opercmd doesn't exist."
-  exit 1;
-fi
 # make sure profile noprefix
 export TSOPROFILE="noprefix"
 tsocmd profile noprefix
@@ -276,17 +274,13 @@ if [ -z "$FOUND_DS_MEMBER_AT" ]; then
   echo "[${SCRIPT_NAME}][warn] cannot find ${CI_XMEM_LOADLIB_MEMBER} in ${CI_XMEM_LOADLIB}, skipped."
 else
   echo "[${SCRIPT_NAME}] found ${CI_XMEM_LOADLIB_MEMBER} in ${FOUND_DS_MEMBER_AT}, deleting ..."
-  # run_script_with_timeout "tsocmd DELETE '${FOUND_DS_MEMBER_AT}(${CI_XMEM_LOADLIB_MEMBER})'" 10
-  run_script_with_timeout "tsocmd DELETE '${FOUND_DS_MEMBER_AT}'" 10
+  run_script_with_timeout "tsocmd DELETE '${FOUND_DS_MEMBER_AT}(${CI_XMEM_LOADLIB_MEMBER})'" 10
 fi
 echo
 
+################################################################################
 # removing xmem PARMLIB(ZWESIP00)
 echo "[${SCRIPT_NAME}] deleting ${CI_XMEM_PARMLIB}(${CI_XMEM_PARMLIB_MEMBER}) ..."
-if [ ! -f "${CI_INSTALL_DIR}/opercmd" ]; then
-  echo "[${SCRIPT_NAME}][error] opercmd doesn't exist."
-  exit 1;
-fi
 # make sure profile noprefix
 export TSOPROFILE="noprefix"
 tsocmd profile noprefix
@@ -307,17 +301,13 @@ if [ -z "$FOUND_DS_MEMBER_AT" ]; then
   echo "[${SCRIPT_NAME}][warn] cannot find ${CI_XMEM_PARMLIB_MEMBER} in ${CI_XMEM_PARMLIB}, skipped."
 else
   echo "[${SCRIPT_NAME}] found ${CI_XMEM_PARMLIB_MEMBER} in ${FOUND_DS_MEMBER_AT}, deleting ..."
-  # run_script_with_timeout "tsocmd DELETE '${FOUND_DS_MEMBER_AT}(${CI_XMEM_PARMLIB_MEMBER})'" 10
-  run_script_with_timeout "tsocmd DELETE '${FOUND_DS_MEMBER_AT}'" 10
+  run_script_with_timeout "tsocmd DELETE '${FOUND_DS_MEMBER_AT}(${CI_XMEM_PARMLIB_MEMBER})'" 10
 fi
 echo
 
+################################################################################
 # removing ZWESIS01
 echo "[${SCRIPT_NAME}] deleting ${CI_XMEM_PROCLIB_MEMBER} PROC ..."
-if [ ! -f "${CI_INSTALL_DIR}/opercmd" ]; then
-  echo "[${SCRIPT_NAME}][error] opercmd doesn't exist."
-  exit 1;
-fi
 # make sure profile noprefix
 export TSOPROFILE="noprefix"
 tsocmd profile noprefix
@@ -346,6 +336,7 @@ else
 fi
 echo
 
+################################################################################
 # removing folder
 echo "[${SCRIPT_NAME}] removing installation folder ..."
 rm -fr $CI_ZOWE_ROOT_DIR || true
