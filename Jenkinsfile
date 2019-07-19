@@ -47,14 +47,14 @@ node('ibm-jenkins-slave-dind') {
     string(
       name: 'ZOWE_ARTIFACTORY_PATTERN',
       description: 'Zowe artifactory download pattern',
-      defaultValue: 'libs-snapshot-local/com/project/zowe/*.pax',
+      defaultValue: 'libs-snapshot-local/org/zowe/*.pax',
       trim: true,
       required: true
     ),
     string(
       name: 'ZOWE_ARTIFACTORY_BUILD',
       description: 'Zowe artifactory download build',
-      defaultValue: 'zowe-install-packaging :: master',
+      defaultValue: 'zowe-install-packaging :: staging',
       trim: true
     ),
     string(
