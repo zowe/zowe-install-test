@@ -194,12 +194,13 @@ echo
 
 ################################################################################
 # removing environment viarables from .profile
+touch "${PROFILE}"
 echo "[${SCRIPT_NAME}] cleaning $PROFILE ..."
 echo "[${SCRIPT_NAME}]   - before cleaning:"
 cat "${PROFILE}"
 echo "[${SCRIPT_NAME}]   -----------------"
 echo
-sed -E '/export +ZOWE_[^=]+=/d' "${PROFILE}" > "${PROFILE}.tmp" && mv "${PROFILE}.tmp" "${PROFILE}"
+sed -E '/export +ZOWE_[^=]+=/d' "${PROFILE}" > "${PROFILE}.tmp" && mv -f "${PROFILE}.tmp" "${PROFILE}"
 echo "[${SCRIPT_NAME}]   - after cleaning:"
 cat "${PROFILE}"
 echo "[${SCRIPT_NAME}]   -----------------"
