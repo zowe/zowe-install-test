@@ -226,8 +226,7 @@ runJob iebupdte
 mkdir -p ${pathprefix}usr/lpp/zowe/SMPE
 
 # un-pax the main FMID file
-# cd $zfs_path
-cd /tmp/zowe/smpe           # my local work directory
+cd $zfs_path
 echo; echo $SCRIPT un-PAX SMP/E file
 pax -rvf $download_path/$FMID.pax.Z
 
