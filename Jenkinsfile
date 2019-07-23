@@ -499,6 +499,7 @@ npm test"""
     htmlReports   : [
       [dir: "reports", files: "index.html", name: "Report: Test Result"],
     ],
+    timeout: [time: 30, unit: 'MINUTES'],
   )
 
   pipeline.end()
