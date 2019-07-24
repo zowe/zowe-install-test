@@ -200,6 +200,7 @@ run_script_with_timeout "tsocmd 'RDELETE STARTED (ZOWESVR.*)'" 10
 run_script_with_timeout "tsocmd 'SETR RACLIST(STARTED) REFRESH'" 10
 echo
 
+################################################################################
 # removing environment viarables from .profile
 touch "${PROFILE}"
 echo "[${SCRIPT_NAME}] cleaning $PROFILE ..."
