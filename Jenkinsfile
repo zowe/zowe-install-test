@@ -350,9 +350,6 @@ node('ibm-jenkins-slave-dind') {
         ).trim()
         // rename and prepare for upload
         sh "mv .tmp/${smpeFmid}*.pax.Z .tmp/${smpeFmid}.pax.Z && mv .tmp/${smpeFmid}*.txt .tmp/${smpeFmid}.readme.txt"
-        // FIXME: temporarily use John's readme instead of pulled from Artifactory
-        // FIXME: do we need to convert encoding?
-        sh "mv AZWE001.README.jcl.ASCII .tmp/${smpeFmid}.readme.txt"
         artifactsForUploadAndInstallation.add(".tmp/${smpeFmid}.pax.Z")
         artifactsForUploadAndInstallation.add(".tmp/${smpeFmid}.readme.txt")
       } else {
