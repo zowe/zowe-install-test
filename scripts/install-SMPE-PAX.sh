@@ -5,7 +5,7 @@
 # Requires opercmd to check job RC
 
 # Inputs
-# $download_path/$FMID.$README      # EBCDIC text of IEBUPDTE job JCL
+# $download_path/$FMID.$README      # EBCDIC text of README job JCL text file
 # $download_path/$FMID.pax.Z        # binary SMP/E PAX file of Zowe product
 
 # identify this script
@@ -62,7 +62,7 @@ echo $SCRIPT    PREFIX=$9
 
 # download_path=/tmp               # change this to where PAX and README are located
 # FMID=AZWE001
-README=README.jcl
+README=readme.txt                   # the filename of the FMID.readme-v.m.r-smpe-test-nn-yyyymmddhhmmss.txt file
 
 # # prepare to run this script
 
@@ -93,7 +93,8 @@ tsocmd "delete ('${hlq}.SMPE.SZWEAUTH')"
 tsocmd "delete ('${hlq}.SMPE.SZWESAMP')"
 tsocmd "delete ('${hlq}.install.jcl')"
 tsocmd "delete (TEST.jcl.*)"
-rm -fR ${pathprefix}usr/lpp/zowe
+chmod -R 777 ${pathprefix}usr
+rm -fR ${pathprefix}usr # because target is ${pathprefix}usr/lpp/zowe
 
 
 function runJob {
@@ -182,7 +183,9 @@ function runJob {
 # convert the README to EBCDIC if required
 # iconv -f ISO8859-1 -t IBM-1047 $download_path/$FMID.$README > iebupdte.jcl0  # old
 # iconv -f ISO8859-1 -t IBM-1047 $download_path/$FMID.README.jcl > iebupdte.jcl0  # old
-cp $download_path/$FMID.$README iebupdte.jcl0
+# cp $download_path/$FMID.$README iebupdte.jcl0
+# Extract the GIMUNZIP job step
+sed -n '/\/\/GIMUNZIP /,$p' $download_path/$FMID.$README > gimunzip.jcl0
 # chmod a+r AZWE001.readme.EBCDIC.txt
 
 # tailor the README
@@ -203,15 +206,16 @@ cp $download_path/$FMID.$README iebupdte.jcl0
 #     s+@PREFIX@.&FMID..F4+${hlq}.${FMID}.F4+; " \
 #     iebupdte.jcl0 > iebupdte.jcl
 
+# Tailor the STEP JCL
 sed "\
     s+@zfs_path@+${zfs_path}+; \
     s+&FMID\.+${FMID}+; \
     s+@PREFIX@+${PREFIX}+" \
-    iebupdte.jcl0 > iebupdte.jcl
+    gimunzip.jcl0 > gimunzip.jcl1
 
 # Run the iebupdte job
     #  s+@PREFIX@+${hlq}+" \
-runJob iebupdte
+# runJob iebupdte
 
 # loads 3 jobs:
 #
@@ -226,8 +230,7 @@ runJob iebupdte
 mkdir -p ${pathprefix}usr/lpp/zowe/SMPE
 
 # un-pax the main FMID file
-# cd $zfs_path
-cd /tmp/zowe/smpe           # my local work directory
+cd $zfs_path
 echo; echo $SCRIPT un-PAX SMP/E file
 pax -rvf $download_path/$FMID.pax.Z
 
@@ -235,15 +238,15 @@ pax -rvf $download_path/$FMID.pax.Z
 # # extract the GIMUNZIP job
 # sed -n '/\/\/GIMUNZIP /,$p' AZWE001.readme.EBCDIC.txt > gimunzip.jcl0
 
-# # prepend the JOB statement
-# sed '1 i\
-# \/\/GIMUNZIP JOB' gimunzip.jcl0 > gimunzip.jcl1
+# prepend the JOB statement
+sed '1 i\
+\/\/GIMUNZIP JOB' gimunzip.jcl1 > gimunzip.jcl
 
 # # tailor the job
 # sed -f gimunzip.sed gimunzip.jcl1 > gimunzip.jcl
 
 # fetch the GIMUNZIP job from the PDS that IEBUPDTE created
-tsocmd oput "  '${hlq}.install.jcl(gimunzip)' 'gimunzip.jcl' "
+# tsocmd oput "  '${hlq}.install.jcl(gimunzip)' 'gimunzip.jcl' "
 
 # Run the GIMUNZIP job
 runJob gimunzip
@@ -304,6 +307,7 @@ do
 
 done
 
+# TBD:  do this even if we quit early
 rm /tmp/$$.submit.job.out
 rm /tmp/$$.dj.cc
 

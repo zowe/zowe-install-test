@@ -195,11 +195,11 @@ echo
 ################################################################################
 # delete started tasks
 echo "[${SCRIPT_NAME}] deleting started tasks ..."
-(exec "${CI_INSTALL_DIR}/opercmd" "RDELETE STARTED (ZWESIS*.*)")
-(exec "${CI_INSTALL_DIR}/opercmd" "RDELETE STARTED (ZOWESVR.*)")
-(exec "${CI_INSTALL_DIR}/opercmd" "SETR RACLIST(STARTED) REFRESH")
+run_script_with_timeout "tsocmd 'RDELETE STARTED (ZWESIS*.*)'" 10
+run_script_with_timeout "tsocmd 'RDELETE STARTED (ZOWESVR.*)'" 10
+run_script_with_timeout "tsocmd 'SETR RACLIST(STARTED) REFRESH'" 10
+echo
 
-################################################################################
 # removing environment viarables from .profile
 touch "${PROFILE}"
 echo "[${SCRIPT_NAME}] cleaning $PROFILE ..."
