@@ -88,7 +88,7 @@ node('ibm-jenkins-slave-dind') {
     string(
       name: 'PROCLIB_DS',
       description: 'PROCLIB data set name',
-      defaultValue: 'VENDOR.PROCLIB',
+      defaultValue: 'ZOWEAD3.PROCLIB',
       trim: true,
       required: true
     ),
