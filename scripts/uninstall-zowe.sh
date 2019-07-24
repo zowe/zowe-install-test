@@ -193,6 +193,13 @@ fi
 echo
 
 ################################################################################
+# delete started tasks
+echo "[${SCRIPT_NAME}] deleting started tasks ..."
+(exec "${CI_INSTALL_DIR}/opercmd" "RDELETE STARTED (ZWESIS*.*)")
+(exec "${CI_INSTALL_DIR}/opercmd" "RDELETE STARTED (ZOWESVR.*)")
+(exec "${CI_INSTALL_DIR}/opercmd" "SETR RACLIST(STARTED) REFRESH")
+
+################################################################################
 # removing environment viarables from .profile
 touch "${PROFILE}"
 echo "[${SCRIPT_NAME}] cleaning $PROFILE ..."
@@ -261,9 +268,9 @@ if [ -z "$XMEM_LOADLIB_VOLUME" ]; then
 else
   echo "[${SCRIPT_NAME}] found volume of ${CI_XMEM_LOADLIB} is ${XMEM_LOADLIB_VOLUME}, deleting APF settings ..."
   if [ "$XMEM_LOADLIB_VOLUME" = "SMS" ]; then
-    ${CI_INSTALL_DIR}/opercmd "SETPROG APF,DELETE,DSNAME=${CI_XMEM_LOADLIB},${XMEM_LOADLIB_VOLUME}"
+    (exec "${CI_INSTALL_DIR}/opercmd" "SETPROG APF,DELETE,DSNAME=${CI_XMEM_LOADLIB},${XMEM_LOADLIB_VOLUME}")
   else
-    ${CI_INSTALL_DIR}/opercmd "SETPROG APF,DELETE,DSNAME=${CI_XMEM_LOADLIB},VOLUME=${XMEM_LOADLIB_VOLUME}"
+    (exec "${CI_INSTALL_DIR}/opercmd" "SETPROG APF,DELETE,DSNAME=${CI_XMEM_LOADLIB},VOLUME=${XMEM_LOADLIB_VOLUME}")
   fi
 fi
 echo
