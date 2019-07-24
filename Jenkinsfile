@@ -19,6 +19,26 @@ node('ibm-jenkins-slave-dind') {
 
   def pipeline = lib.pipelines.nodejs.NodeJSPipeline.new(this)
 
+  def smpeReadmePattern = ''
+  // some SMP/e build constants/variables
+  def smpeHlq           = 'ZOE'
+  def smpeHlqCsi        = 'ZOE.SMPE'
+  def smpeHlqTzone      = 'ZOE.SMPE'
+  def smpeHlqDzone      = 'ZOE.SMPE'
+  def smpePathPrefix    = '/tmp/'
+  def smpePathZfs       = ''
+  def smpeFmid          = ''
+  def smpeRelfilePrefix = 'ZOE'
+  def artifactsForUploadAndInstallation = [
+    "scripts/temp-fixes-before-install.sh",
+    "scripts/temp-fixes-after-install.sh",
+    "scripts/temp-fixes-after-started.sh",
+    "scripts/install-zowe.sh",
+    "scripts/uninstall-zowe.sh",
+    "scripts/install-SMPE-PAX.sh",
+    "scripts/opercmd",
+  ]
+
   pipeline.admins.add("jackjia")
 
   // we have extra parameters for integration test
@@ -289,8 +309,52 @@ node('ibm-jenkins-slave-dind') {
       return !params.SKIP_INSTALLATION
     },
     stage         : {
-      pipeline.artifactory.download(
-        specContent : """
+      if (params.IS_SMPE_PACKAGE) {
+        if (a =~ /\/[^\/-]+-[0-9]+\.[0-9]+\.[0-9]+-[^\/]+\.pax\.Z$/) {
+          // the pattern is a static path pointing to one pax.Z file
+          smpeReadmePattern = a.replaceAll(/\/([^\/-]+)-([0-9]+\.[0-9]+\.[0-9]+-[^\/]+)\.pax\.Z$/, "/\$1.readme-\$2.txt")
+        } else if (a =~ /\/[^\/]+\.pax\.Z$/) {
+          // the pattern is not a static path but including *
+          smpeReadmePattern = a.replaceAll(/\/([^\/]+)\.pax\.Z$/, "/\$1.txt")
+        } else {
+          error "The Zowe SMP/e package pattern (ZOWE_ARTIFACTORY_PATTERN) should end with .pax.Z"
+        }
+        pipeline.artifactory.download(
+          specContent : """
+{
+  "files": [{
+    "pattern": "${params.ZOWE_ARTIFACTORY_PATTERN}",
+    "target": ".tmp/",
+    "flat": "true",
+    "build": "${params.ZOWE_ARTIFACTORY_BUILD}"
+  }, {
+    "pattern": "${smpeReadmePattern}",
+    "target": ".tmp/",
+    "flat": "true",
+    "build": "${params.ZOWE_ARTIFACTORY_BUILD}"
+  }, {
+    "pattern": "${params.ZOWE_CLI_ARTIFACTORY_PATTERN}",
+    "target": ".tmp/",
+    "flat": "true",
+    "build": "${params.ZOWE_CLI_ARTIFACTORY_BUILD}",
+    "explode": "true"
+  }]
+}
+""",
+          expected    : 3
+        )
+        // extract FMID from downloaded artifact
+        smpeFmid = sh(
+          script: "ls -1 .tmp/AZWE*.pax.Z | head -n 1 | awk -F- '{print \$1}'",
+          returnStdout: true
+        ).trim()
+        // rename and prepare for upload
+        sh "mv .tmp/${smpeFmid}*.pax.Z .tmp/${smpeFmid}.pax.Z && mv .tmp/${smpeFmid}*.txt .tmp/${smpeFmid}.readme.txt"
+        artifactsForUploadAndInstallation.add(".tmp/${smpeFmid}.pax.Z")
+        artifactsForUploadAndInstallation.add(".tmp/${smpeFmid}.readme.txt")
+      } else {
+        pipeline.artifactory.download(
+          specContent : """
 {
   "files": [{
     "pattern": "${params.ZOWE_ARTIFACTORY_PATTERN}",
@@ -306,8 +370,10 @@ node('ibm-jenkins-slave-dind') {
   }]
 }
 """,
-        expected    : 2
-      )
+          expected    : 2
+        )
+        artifactsForUploadAndInstallation.add(".tmp/zowe.pax")
+      }
     },
     timeout: [time: 20, unit: 'MINUTES']
   )
@@ -371,17 +437,12 @@ node('ibm-jenkins-slave-dind') {
         sh "SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} 'mkdir -p ${params.INSTALL_DIR}'"
 
         // send file to test image host
-        // FIXME: transfer more files to the target system
+        def allPuts = artifactsForUploadAndInstallation.collect {
+          "put ${it}"
+        }.join("\n")
         sh """SSHPASS=${PASSWORD} sshpass -e sftp -o BatchMode=no -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -b - -P ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
 cd ${params.INSTALL_DIR}
-put scripts/temp-fixes-before-install.sh
-put scripts/temp-fixes-after-install.sh
-put scripts/temp-fixes-after-started.sh
-put scripts/install-zowe.sh
-put scripts/uninstall-zowe.sh
-put scripts/install-SMPE-PAX.sh
-put scripts/opercmd
-put .tmp/zowe.pax
+${allPuts}
 EOF"""
 
         // run install-zowe.sh
@@ -410,15 +471,26 @@ EOF"""
           }
 
           if (params.IS_SMPE_PACKAGE) {
-            // FIXME: add parameters to ./install-SMPE-PAX.sh sript
-            // FIXME: may need to "mv zowe.pax zowe.pax.Z" if SMP/e package is compressed.
+            smpePathZfs = "${params.INSTALL_DIR}/zowe/smpe"
             sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
 cd ${params.INSTALL_DIR} && \
   (iconv -f ISO8859-1 -t IBM-1047 install-SMPE-PAX.sh > install-SMPE-PAX.sh.new) && mv install-SMPE-PAX.sh.new install-SMPE-PAX.sh && chmod +x install-SMPE-PAX.sh
-./install-SMPE-PAX.sh ${params.INSTALL_DIR}/zowe.pax || { echo "[install-SMPE-PAX.sh] failed"; exit 1; }
-echo "[install-SMPE-PAX.sh] succeeds" && exit 0
+./install-SMPE-PAX.sh \
+  ${smpeHlq} \
+  ${smpeHlqCsi} \
+  ${smpeHlqTzone} \
+  ${smpeHlqDzone} \
+  ${smpePathPrefix} \
+  ${params.INSTALL_DIR} \
+  ${smpePathZfs} \
+  ${smpeFmid} \
+  ${smpeRelfilePrefix} || { echo "[install-SMPE-PAX.sh] failed"; exit 1; }
+echo "[install-SMPE-PAX.sh] done, start configuring ..."
+. ${smpePathPrefix}/scripts/configure/zowe-configure.sh
+echo "[zowe-configure.sh] done, starting Zowe ..."
+. ${smpePathPrefix}/scripts/zowe-start.sh
+exit 0
 EOF"""
-            //
           } else {
             sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
 cd ${params.INSTALL_DIR} && \
