@@ -40,6 +40,7 @@ DEFAULT_CI_TERMINALS_SSH_PORT=22
 DEFAULT_CI_TERMINALS_TELNET_PORT=23
 DEFAULT_CI_PROCLIB_DS_NAME=auto
 DEFAULT_CI_PROCLIB_MEMBER_NAME=ZOWESVR
+DEFAULT_CI_JOB_PREFIX=ZOWE
 CI_ZOWE_CONFIG_FILE=zowe-install.yaml
 CI_ZSS_CONFIG_FILE=zowe-install-apf-server.yaml
 CI_ZOWE_PAX=
@@ -67,6 +68,7 @@ CI_TERMINALS_SSH_PORT=$DEFAULT_CI_TERMINALS_SSH_PORT
 CI_TERMINALS_TELNET_PORT=$DEFAULT_CI_TERMINALS_TELNET_PORT
 CI_PROCLIB_DS_NAME=$DEFAULT_CI_PROCLIB_DS_NAME
 CI_PROCLIB_MEMBER_NAME=$DEFAULT_CI_PROCLIB_MEMBER_NAME
+CI_JOB_PREFIX=$DEFAULT_CI_JOB_PREFIX
 
 # FIXME: these values should be configurable, now it's hardcoded for zD&T
 CI_ZSS_PROCLIB_DS_NAME=USER.Z23B.PROCLIB
@@ -258,6 +260,8 @@ function usage {
   echo "                                  Optional, default is $DEFAULT_CI_PROCLIB_DS_NAME."
   echo "  --dm|--proc-member             memberName for PROCLIB."
   echo "                                  Optional, default is $DEFAULT_CI_PROCLIB_MEMBER_NAME."
+  echo "  --jp|--job-prefix              job name prefix."
+  echo "                                  Optional, default is $DEFAULT_CI_JOB_PREFIX."
   echo
 }
 
@@ -389,6 +393,11 @@ while [ $# -gt 0 ]; do
       shift # past argument
       shift # past value
       ;;
+    --jp|--job-prefix)
+      CI_JOB_PREFIX="$2"
+      shift # past argument
+      shift # past value
+      ;;
     *)    # unknown option
       if [ ! "$1" = "${1#-}" ]; then
         echo "[${SCRIPT_NAME}][error] invalid option: $1" >&2
@@ -444,6 +453,7 @@ echo "[${SCRIPT_NAME}]   - z/OSMF port         : $CI_ZOSMF_PORT"
 echo "[${SCRIPT_NAME}]   - temporary folder    : $CI_INSTALL_DIR"
 echo "[${SCRIPT_NAME}]   - install             :"
 echo "[${SCRIPT_NAME}]     - rootDir           : $CI_ZOWE_ROOT_DIR"
+echo "[${SCRIPT_NAME}]     - prefix            : $CI_JOB_PREFIX"
 echo "[${SCRIPT_NAME}]   - zowe-server-proclib :"
 echo "[${SCRIPT_NAME}]     - dsName            : $CI_PROCLIB_DS_NAME"
 echo "[${SCRIPT_NAME}]     - memberName        : $CI_PROCLIB_MEMBER_NAME"
@@ -515,6 +525,7 @@ echo "[${SCRIPT_NAME}] configure installation yaml ..."
 cd $FULL_EXTRACTED_ZOWE_FOLDER/install
 cat "${CI_ZOWE_CONFIG_FILE}" | \
   sed -e "/^install:/,\$s#rootDir=.*\$#rootDir=${CI_ZOWE_ROOT_DIR}#" | \
+  sed -e "/^install:/,\$s#prefix=.*\$#prefix=${CI_JOB_PREFIX}#" | \
   sed -e "/^zowe-server-proclib:/,\$s#dsName=.*\$#dsName=${CI_PROCLIB_DS_NAME}#" | \
   sed -e "/^zowe-server-proclib:/,\$s#memberName=.*\$#memberName=${CI_PROCLIB_MEMBER_NAME}#" | \
   sed -e "/^api-mediation:/,\$s#catalogPort=.*\$#catalogPort=${CI_APIM_CATALOG_PORT}#" | \
