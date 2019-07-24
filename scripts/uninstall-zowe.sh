@@ -250,6 +250,21 @@ else
 fi
 echo
 
+# delet APF settings for LOADLIB
+echo "[${SCRIPT_NAME}] deleting APF settings of ${CI_XMEM_LOADLIB}(${CI_XMEM_LOADLIB_MEMBER}) ..."
+XMEM_LOADLIB_VOLUME=$(${CI_INSTALL_DIR}/opercmd "D PROG,APF,DSNAME=${CI_XMEM_LOADLIB}" | grep -e "[0-9]\\+ \\+[a-z0-9A-Z]\\+ \\+${CI_XMEM_LOADLIB}" | awk "{print \$2}")
+if [ -z "$XMEM_LOADLIB_VOLUME" ]; then
+  echo "[${SCRIPT_NAME}][warn] cannot find volume of ${CI_XMEM_LOADLIB}, skipped."
+else
+  echo "[${SCRIPT_NAME}] found volume of ${CI_XMEM_LOADLIB} is ${XMEM_LOADLIB_VOLUME}, deleting APF settings ..."
+  if [ "$XMEM_LOADLIB_VOLUME" = "SMS" ]; then
+    ${CI_INSTALL_DIR}/opercmd "SETPROG APF,DELETE,DSNAME=${CI_XMEM_LOADLIB},${XMEM_LOADLIB_VOLUME}"
+  else
+    ${CI_INSTALL_DIR}/opercmd "SETPROG APF,DELETE,DSNAME=${CI_XMEM_LOADLIB},VOLUME=${XMEM_LOADLIB_VOLUME}"
+  fi
+fi
+echo
+
 # removing xmem LOADLIB(ZWESIS01)
 echo "[${SCRIPT_NAME}] deleting ${CI_XMEM_LOADLIB}(${CI_XMEM_LOADLIB_MEMBER}) ..."
 if [ ! -f "${CI_INSTALL_DIR}/opercmd" ]; then
