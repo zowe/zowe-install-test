@@ -584,16 +584,10 @@ run_script_with_timeout $RUN_SCRIPT 1800
 EXIT_CODE=$?
 if [[ "$EXIT_CODE" != "0" ]]; then
   echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
-  echo "[${SCRIPT_NAME}][error] here is log file >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-  cat $FULL_EXTRACTED_ZOWE_FOLDER/log/* || true
-  echo "[${SCRIPT_NAME}][error] log end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
   echo
   exit 1
 else
   echo "[${SCRIPT_NAME}] ${RUN_SCRIPT} succeeds."
-  echo "[${SCRIPT_NAME}] here is log file >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-  cat $FULL_EXTRACTED_ZOWE_FOLDER/log/* || true
-  echo "[${SCRIPT_NAME}] log end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
   echo
 fi
 echo
@@ -609,6 +603,7 @@ if [[ "$EXIT_CODE" != "0" ]]; then
   echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
   echo "[${SCRIPT_NAME}][error] here is log file >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
   cat $FULL_EXTRACTED_ZOWE_FOLDER/log/* || true
+  cat $CI_ZOWE_ROOT_DIR/configure_log/* || true
   echo "[${SCRIPT_NAME}][error] log end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
   echo
   exit 1
@@ -616,6 +611,7 @@ else
   echo "[${SCRIPT_NAME}] ${RUN_SCRIPT} succeeds."
   echo "[${SCRIPT_NAME}] here is log file >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
   cat $FULL_EXTRACTED_ZOWE_FOLDER/log/* || true
+  cat $CI_ZOWE_ROOT_DIR/configure_log/* || true
   echo "[${SCRIPT_NAME}] log end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
   echo
 fi

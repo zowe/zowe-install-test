@@ -191,6 +191,14 @@ else
 fi
 echo
 
+################################################################################
+# delete started tasks
+echo "[${SCRIPT_NAME}] deleting started tasks ..."
+(exec "${CI_INSTALL_DIR}/opercmd" "RDELETE STARTED (ZWESIS*.*)")
+(exec "${CI_INSTALL_DIR}/opercmd" "RDELETE STARTED (ZOWESVR.*)")
+(exec "${CI_INSTALL_DIR}/opercmd" "SETR RACLIST(STARTED) REFRESH")
+echo
+
 # removing environment viarables from .profile
 echo "[${SCRIPT_NAME}] cleaning $PROFILE ..."
 echo "[${SCRIPT_NAME}]   - before cleaning:"
