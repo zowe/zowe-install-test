@@ -107,6 +107,7 @@ describe('test api mediation layer zosmf api', function() {
       url: '/api/v1/zosmf/info',
       headers: {
         Cookie: `${APIML_AUTH_COOKIE}=${cookies[APIML_AUTH_COOKIE].value}`,
+        'X-CSRF-ZOSMF-HEADER': '*'
       },
     };
     debug('request', req);

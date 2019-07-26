@@ -193,7 +193,7 @@ node('ibm-jenkins-slave-dind') {
     string(
       name: 'ZOWE_MVD_TELNET_PORT',
       description: 'telnetPort for Zowe MVD terminals',
-      defaultValue: '23',
+      defaultValue: '623',
       trim: true,
       required: true
     ),
