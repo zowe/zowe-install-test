@@ -126,6 +126,13 @@ node('ibm-jenkins-slave-dind') {
       required: true
     ),
     string(
+      name: 'ZOWE_JOB_PREFIX',
+      description: 'Zowe job prefix',
+      defaultValue: 'ZOWE',
+      trim: true,
+      required: true
+    ),
+    string(
       name: 'ZOSMF_PORT',
       description: 'Port of z/OSMF service',
       defaultValue: '10443',
@@ -306,11 +313,23 @@ node('ibm-jenkins-slave-dind') {
   pipeline.createStage(
     name          : "Download Zowe",
     isSkippable   : true,
-    shouldExecute : {
-      return !params.SKIP_INSTALLATION
-    },
     stage         : {
-      if (params.IS_SMPE_PACKAGE) {
+      if (params.SKIP_INSTALLATION) {
+        pipeline.artifactory.download(
+          specContent : """
+{
+  "files": [{
+    "pattern": "${params.ZOWE_CLI_ARTIFACTORY_PATTERN}",
+    "target": ".tmp/",
+    "flat": "true",
+    "build": "${params.ZOWE_CLI_ARTIFACTORY_BUILD}",
+    "explode": "true"
+  }]
+}
+""",
+          expected    : 1
+        )
+      } else if (params.IS_SMPE_PACKAGE) {
         if (a =~ /\/[^\/-]+-[0-9]+\.[0-9]+\.[0-9]+-[^\/]+\.pax\.Z$/) {
           // the pattern is a static path pointing to one pax.Z file
           smpeReadmePattern = a.replaceAll(/\/([^\/-]+)-([0-9]+\.[0-9]+\.[0-9]+-[^\/]+)\.pax\.Z$/, "/\$1.readme-\$2.txt")
@@ -499,7 +518,7 @@ EOF"""
 cd ${params.INSTALL_DIR} && \
   (iconv -f ISO8859-1 -t IBM-1047 install-zowe.sh > install-zowe.sh.new) && mv install-zowe.sh.new install-zowe.sh && chmod +x install-zowe.sh
 ./install-zowe.sh -n ${params.TEST_IMAGE_GUEST_SSH_HOST} -t ${params.ZOWE_ROOT_DIR} -i ${params.INSTALL_DIR}${skipTempFixes} --zfp ${params.ZOSMF_PORT}\
-  --ds ${params.PROCLIB_DS} --dm ${params.PROCLIB_MEMBER}\
+  --ds ${params.PROCLIB_DS} --dm ${params.PROCLIB_MEMBER} --jp ${params.ZOWE_JOB_PREFIX}\
   --acp ${params.ZOWE_API_MEDIATION_CATALOG_HTTP_PORT} --adp ${params.ZOWE_API_MEDIATION_DISCOVERY_HTTP_PORT} --agp ${params.ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT}\
   --ejp ${params.ZOWE_EXPLORER_JOBS_PORT} --edp ${params.ZOWE_EXPLORER_DATASETS_PORT}\
   --ujp ${params.ZOWE_EXPLORER_UI_JES_PORT} --ump ${params.ZOWE_EXPLORER_UI_MVS_PORT} --uup ${params.ZOWE_EXPLORER_UI_USS_PORT}\
@@ -588,6 +607,7 @@ SSH_USER=${USERNAME} \
 SSH_PASSWD=${PASSWORD} \
 ZOSMF_PORT=${params.ZOSMF_PORT} \
 ZOWE_DS_MEMBER=${params.PROCLIB_MEMBER} \
+ZOWE_JOB_PREFIX=${params.ZOWE_JOB_PREFIX} \
 ZOWE_ZLUX_HTTPS_PORT=${params.ZOWE_ZLUX_HTTPS_PORT} \
 ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT=${params.ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT} \
 ZOWE_EXPLORER_JOBS_PORT=${params.ZOWE_EXPLORER_JOBS_PORT} \
@@ -601,6 +621,7 @@ npm test"""
     htmlReports   : [
       [dir: "reports", files: "index.html", name: "Report: Test Result"],
     ],
+    timeout: [time: 30, unit: 'MINUTES'],
   )
 
   pipeline.end()

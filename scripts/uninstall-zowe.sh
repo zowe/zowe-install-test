@@ -191,6 +191,14 @@ else
 fi
 echo
 
+################################################################################
+# delete started tasks
+echo "[${SCRIPT_NAME}] deleting started tasks ..."
+run_script_with_timeout "tsocmd 'RDELETE STARTED (ZWESIS*.*)'" 10
+run_script_with_timeout "tsocmd 'RDELETE STARTED (ZOWESVR.*)'" 10
+run_script_with_timeout "tsocmd 'SETR RACLIST(STARTED) REFRESH'" 10
+echo
+
 # removing environment viarables from .profile
 echo "[${SCRIPT_NAME}] cleaning $PROFILE ..."
 echo "[${SCRIPT_NAME}]   - before cleaning:"
@@ -247,6 +255,21 @@ if [ -z "$FOUND_ZOWESVR_AT" ]; then
 else
   echo "[${SCRIPT_NAME}] found ${CI_ZOWE_DS_MEMBER} in ${FOUND_ZOWESVR_AT}, deleting ..."
   run_script_with_timeout "tsocmd DELETE '${FOUND_ZOWESVR_AT}(${CI_ZOWE_DS_MEMBER})'" 10
+fi
+echo
+
+# delet APF settings for LOADLIB
+echo "[${SCRIPT_NAME}] deleting APF settings of ${CI_XMEM_LOADLIB}(${CI_XMEM_LOADLIB_MEMBER}) ..."
+XMEM_LOADLIB_VOLUME=$(${CI_INSTALL_DIR}/opercmd "D PROG,APF,DSNAME=${CI_XMEM_LOADLIB}" | grep -e "[0-9]\\+ \\+[a-z0-9A-Z]\\+ \\+${CI_XMEM_LOADLIB}" | awk "{print \$2}")
+if [ -z "$XMEM_LOADLIB_VOLUME" ]; then
+  echo "[${SCRIPT_NAME}][warn] cannot find volume of ${CI_XMEM_LOADLIB}, skipped."
+else
+  echo "[${SCRIPT_NAME}] found volume of ${CI_XMEM_LOADLIB} is ${XMEM_LOADLIB_VOLUME}, deleting APF settings ..."
+  if [ "$XMEM_LOADLIB_VOLUME" = "SMS" ]; then
+    ${CI_INSTALL_DIR}/opercmd "SETPROG APF,DELETE,DSNAME=${CI_XMEM_LOADLIB},${XMEM_LOADLIB_VOLUME}"
+  else
+    ${CI_INSTALL_DIR}/opercmd "SETPROG APF,DELETE,DSNAME=${CI_XMEM_LOADLIB},VOLUME=${XMEM_LOADLIB_VOLUME}"
+  fi
 fi
 echo
 
