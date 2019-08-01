@@ -398,47 +398,6 @@ node('ibm-jenkins-slave-dind') {
     timeout: [time: 20, unit: 'MINUTES']
   )
 
-//   pipeline.createStage(
-//     name          : "Reset zOSaaS Image",
-//     isSkippable   : true,
-//     shouldExecute : {
-//       return !params.SKIP_RESET_IMAGE
-//     },
-//     stage         : {
-//       withCredentials([
-//         usernamePassword(
-//           credentialsId: params.TEST_IMAGE_HOST_SSH_CREDENTIAL,
-//           passwordVariable: 'PASSWORD',
-//           usernameVariable: 'USERNAME'
-//         )
-//       ]) {
-//         // send script to test image host
-//         sh """SSHPASS=${PASSWORD} sshpass -e sftp -o BatchMode=no -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -b - -P ${params.TEST_IMAGE_HOST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_HOST_SSH_HOST} << EOF
-// put scripts/refresh-zosaas.sh /home/ibmsys1
-// put scripts/temp-fixes-prereqs-image.sh /home/ibmsys1
-// chmod 755 /home/ibmsys1/refresh-zosaas.sh
-// chmod 755 /home/ibmsys1/temp-fixes-prereqs-image.sh
-// EOF"""
-
-//         // run refresh-zosaas.sh
-//         timeout(90) {
-//           sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_HOST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_HOST_SSH_HOST} << EOF
-// ~/refresh-zosaas.sh
-// exit 0
-// EOF"""
-//         }
-
-//         // wait a while before testing z/OSMF
-//         sleep time: 10, unit: 'MINUTES'
-//         // check if zD&T & z/OSMF are started
-//         timeout(120) {
-//           sh "./scripts/is-website-ready.sh -r 720 -t 10 -c 20 https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOSMF_PORT}/zosmf/info"
-//         }
-//       }
-//     },
-//     timeout: [time: 120, unit: 'MINUTES']
-//   )
-
   pipeline.createStage(
     name          : "Install Zowe",
     isSkippable   : true,
@@ -470,6 +429,8 @@ EOF"""
           def skipTempFixes = ""
           Boolean uninstallZowe = false
           smpePathZfs = "${params.INSTALL_DIR}/zowe/smpe"
+          // FIXME: remove me
+          smpeFmid = "AZWE001"
           if (params.SKIP_TEMP_FIXES) {
             skipTempFixes = " -s"
           }
@@ -493,6 +454,9 @@ cd ${params.INSTALL_DIR} && \
 echo "[uninstall] done" && exit 0
 EOF"""
           }
+
+          // FIXME: remove me
+          error "debugging premature exit"
 
           if (params.IS_SMPE_PACKAGE) {
             sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
