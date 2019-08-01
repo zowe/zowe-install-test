@@ -365,7 +365,7 @@ node('ibm-jenkins-slave-dind') {
         )
         // extract FMID from downloaded artifact
         smpeFmid = sh(
-          script: "ls -1 .tmp/AZWE*.pax.Z | head -n 1 | awk -F- '{print \$1}'",
+          script: "cd .tmp && ls -1 AZWE*.pax.Z | head -n 1 | awk -F- '{print \$1}'",
           returnStdout: true
         ).trim()
         // rename and prepare for upload
