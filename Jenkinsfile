@@ -330,12 +330,12 @@ node('ibm-jenkins-slave-dind') {
           expected    : 1
         )
       } else if (params.IS_SMPE_PACKAGE) {
-        if (a =~ /\/[^\/-]+-[0-9]+\.[0-9]+\.[0-9]+-[^\/]+\.pax\.Z$/) {
+        if (params.ZOWE_ARTIFACTORY_PATTERN =~ /\/[^\/-]+-[0-9]+\.[0-9]+\.[0-9]+-[^\/]+\.pax\.Z$/) {
           // the pattern is a static path pointing to one pax.Z file
-          smpeReadmePattern = a.replaceAll(/\/([^\/-]+)-([0-9]+\.[0-9]+\.[0-9]+-[^\/]+)\.pax\.Z$/, "/\$1.readme-\$2.txt")
-        } else if (a =~ /\/[^\/]+\.pax\.Z$/) {
+          smpeReadmePattern = params.ZOWE_ARTIFACTORY_PATTERN.replaceAll(/\/([^\/-]+)-([0-9]+\.[0-9]+\.[0-9]+-[^\/]+)\.pax\.Z$/, "/\$1.readme-\$2.txt")
+        } else if (params.ZOWE_ARTIFACTORY_PATTERN =~ /\/[^\/]+\.pax\.Z$/) {
           // the pattern is not a static path but including *
-          smpeReadmePattern = a.replaceAll(/\/([^\/]+)\.pax\.Z$/, "/\$1.txt")
+          smpeReadmePattern = params.ZOWE_ARTIFACTORY_PATTERN.replaceAll(/\/([^\/]+)\.pax\.Z$/, "/\$1.txt")
         } else {
           error "The Zowe SMP/e package pattern (ZOWE_ARTIFACTORY_PATTERN) should end with .pax.Z"
         }
