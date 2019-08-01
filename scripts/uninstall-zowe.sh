@@ -164,6 +164,9 @@ done
 
 ################################################################################
 # essential validations
+# make sure profile noprefix
+export TSOPROFILE="noprefix"
+run_script_with_timeout "tsocmd profile noprefix" 10
 
 ################################################################################
 echo "[${SCRIPT_NAME}] uninstall script started ..."
@@ -230,9 +233,6 @@ if [ ! -f "${CI_INSTALL_DIR}/opercmd" ]; then
   echo "[${SCRIPT_NAME}][error] opercmd doesn't exist."
   exit 1;
 fi
-# make sure profile noprefix
-export TSOPROFILE="noprefix"
-tsocmd profile noprefix
 # listing all proclibs and members
 FOUND_ZOWESVR_AT=
 procs=$("${CI_INSTALL_DIR}/opercmd" '$d proclib' | grep 'DSNAME=.*\.PROCLIB' | sed 's/.*DSNAME=\(.*\)\.PROCLIB.*/\1.PROCLIB/')
@@ -279,9 +279,6 @@ if [ ! -f "${CI_INSTALL_DIR}/opercmd" ]; then
   echo "[${SCRIPT_NAME}][error] opercmd doesn't exist."
   exit 1;
 fi
-# make sure profile noprefix
-export TSOPROFILE="noprefix"
-tsocmd profile noprefix
 # listing all proclibs and members
 FOUND_DS_MEMBER_AT=
 echo "[${SCRIPT_NAME}] - finding in ${CI_XMEM_LOADLIB} ..."
@@ -310,9 +307,6 @@ if [ ! -f "${CI_INSTALL_DIR}/opercmd" ]; then
   echo "[${SCRIPT_NAME}][error] opercmd doesn't exist."
   exit 1;
 fi
-# make sure profile noprefix
-export TSOPROFILE="noprefix"
-tsocmd profile noprefix
 # listing all proclibs and members
 FOUND_DS_MEMBER_AT=
 echo "[${SCRIPT_NAME}] - finding in ${CI_XMEM_PARMLIB} ..."
@@ -341,9 +335,6 @@ if [ ! -f "${CI_INSTALL_DIR}/opercmd" ]; then
   echo "[${SCRIPT_NAME}][error] opercmd doesn't exist."
   exit 1;
 fi
-# make sure profile noprefix
-export TSOPROFILE="noprefix"
-tsocmd profile noprefix
 # listing all proclibs and members
 FOUND_ZWESIS01_AT=
 procs=$("${CI_INSTALL_DIR}/opercmd" '$d proclib' | grep 'DSNAME=.*\.PROCLIB' | sed 's/.*DSNAME=\(.*\)\.PROCLIB.*/\1.PROCLIB/')
@@ -376,3 +367,4 @@ rm -fr $CI_ZOWE_ROOT_DIR || true
 ################################################################################
 echo
 echo "[${SCRIPT_NAME}] done."
+exit 0
