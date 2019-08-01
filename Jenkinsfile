@@ -487,11 +487,11 @@ EOF"""
 cd ${params.INSTALL_DIR} && \
   (iconv -f ISO8859-1 -t IBM-1047 opercmd > opercmd.new) && mv opercmd.new opercmd && chmod +x opercmd && \
   (iconv -f ISO8859-1 -t IBM-1047 uninstall-zowe.sh > uninstall-zowe.sh.new) && mv uninstall-zowe.sh.new uninstall-zowe.sh && chmod +x uninstall-zowe.sh && \
-  (iconv -f ISO8859-1 -t IBM-1047 uninstall-SMPE-PAX.sh > uninstall-SMPE-PAX.sh.new) && mv uninstall-SMPE-PAX.sh.new uninstall-SMPE-PAX.sh && chmod +x uninstall-SMPE-PAX.sh && \
-  {./uninstall-zowe.sh -i ${params.INSTALL_DIR} -t ${params.ZOWE_ROOT_DIR} -m ${params.PROCLIB_MEMBER} || { echo "[uninstall-zowe.sh] failed"; exit 0; }} && \
-  echo "-----------------------------" && \
-  {./uninstall-SMPE-PAX.sh ${smpeHlq} ${smpeHlqCsi} ${smpeHlqTzone} ${smpeHlqDzone} ${smpePathPrefix} ${params.INSTALL_DIR} ${smpePathZfs} ${smpeFmid} ${smpeRelfilePrefix} || { echo "[uninstall-SMPE-PAX.sh] failed"; exit 0; }} && \
-  echo "[uninstall] done" && exit 0
+  (iconv -f ISO8859-1 -t IBM-1047 uninstall-SMPE-PAX.sh > uninstall-SMPE-PAX.sh.new) && mv uninstall-SMPE-PAX.sh.new uninstall-SMPE-PAX.sh && chmod +x uninstall-SMPE-PAX.sh
+./uninstall-zowe.sh -i ${params.INSTALL_DIR} -t ${params.ZOWE_ROOT_DIR} -m ${params.PROCLIB_MEMBER}
+echo "-----------------------------"
+./uninstall-SMPE-PAX.sh ${smpeHlq} ${smpeHlqCsi} ${smpeHlqTzone} ${smpeHlqDzone} ${smpePathPrefix} ${params.INSTALL_DIR} ${smpePathZfs} ${smpeFmid} ${smpeRelfilePrefix}
+echo "[uninstall] done" && exit 0
 EOF"""
           }
 
