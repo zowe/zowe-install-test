@@ -469,6 +469,7 @@ EOF"""
         timeout(60) {
           def skipTempFixes = ""
           Boolean uninstallZowe = false
+          smpePathZfs = "${params.INSTALL_DIR}/zowe/smpe"
           if (params.SKIP_TEMP_FIXES) {
             skipTempFixes = " -s"
           }
@@ -495,7 +496,6 @@ EOF"""
           }
 
           if (params.IS_SMPE_PACKAGE) {
-            smpePathZfs = "${params.INSTALL_DIR}/zowe/smpe"
             sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
 cd ${params.INSTALL_DIR} && \
   (iconv -f ISO8859-1 -t IBM-1047 install-SMPE-PAX.sh > install-SMPE-PAX.sh.new) && mv install-SMPE-PAX.sh.new install-SMPE-PAX.sh && chmod +x install-SMPE-PAX.sh
