@@ -88,3 +88,4 @@ chmod -R 777 ${pathprefix}usr
 rm -fR ${pathprefix}usr # because target is ${pathprefix}usr/lpp/zowe
 
 echo script $SCRIPT ended from $SCRIPT_DIR
+kill -9 $$
