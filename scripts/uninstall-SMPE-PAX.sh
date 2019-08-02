@@ -86,8 +86,8 @@ echo $SCRIPT    PREFIX=$9
 # tsocmd "free all"
 chmod -R 777 ${pathprefix}usr
 rm -fR ${pathprefix}usr # because target is ${pathprefix}usr/lpp/zowe
-echo "tsocmd $@" > tsocmd.sh
+echo "tsocmd lu" > tsocmd.sh
 chmod +x tsocmd.sh
-sh tsocmd.sh lu
+sh tsocmd.sh 
 echo script $SCRIPT ended from $SCRIPT_DIR
 
