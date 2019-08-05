@@ -84,10 +84,10 @@ echo $SCRIPT    PREFIX=$9
 # tsocmd "delete (TEST.jcl.*)"
 # tsocmd "free all"
 chmod -R 777 ${pathprefix}usr
-tsocmd lu
+# tsocmd lu
 rm -fR ${pathprefix}usr # because target is ${pathprefix}usr/lpp/zowe
-tso exec "'tstradm.smpe.jcl(isfslash)'"
-kill -9 $$
+tso exec "'tstradm.smpe.jcl(rexcmd)'"
+# kill -9 $$
 
 echo script $SCRIPT ended from $SCRIPT_DIR
 
