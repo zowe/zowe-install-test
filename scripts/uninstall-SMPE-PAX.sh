@@ -56,7 +56,6 @@ echo $SCRIPT    download_path=$6
 echo $SCRIPT    zfs_path=$7
 echo $SCRIPT    FMID=$8
 echo $SCRIPT    PREFIX=$9
-# kill -9 $$
 # # delete the datasets that install-SMPE-PAX.sh script creates
 # tsocmd "delete ('${hlq}.${FMID}.F1')"
 # tsocmd "delete ('${hlq}.${FMID}.F2')"
@@ -88,5 +87,7 @@ chmod -R 777 ${pathprefix}usr
 tsocmd lu
 rm -fR ${pathprefix}usr # because target is ${pathprefix}usr/lpp/zowe
 tso exec "'tstradm.smpe.jcl(isfslash)'"
+kill -9 $$
+
 echo script $SCRIPT ended from $SCRIPT_DIR
 
