@@ -86,8 +86,8 @@ echo $SCRIPT    PREFIX=$9
 chmod -R 777 ${pathprefix}usr
 # tsocmd lu
 rm -fR ${pathprefix}usr # because target is ${pathprefix}usr/lpp/zowe
-tso exec "'tstradm.smpe.jcl(rexcmd)'"
+# tso exec "'tstradm.smpe.jcl(rexcmd)'"
 # kill -9 $$
-
+submit "//'tstradm.smpe.jcl(runtso)'"
 echo script $SCRIPT ended from $SCRIPT_DIR
 
