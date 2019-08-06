@@ -64,6 +64,7 @@ rm -fR ${pathprefix}usr # because target is ${pathprefix}usr/lpp/zowe
 # tso exec "'tstradm.smpe.jcl(rexcmd)'"
 # kill -9 $$
 pwd # where are we?
+date # debug
 cat > tso.cmd <<EndOfList
 delete ('${hlq}.${FMID}.F1')
 delete ('${hlq}.${FMID}.F2')
@@ -97,6 +98,7 @@ cat /u/tstradm/runtso1.jcl tso.cmd /u/tstradm/runtso2.jcl > tsocmd.jcl
 cat tsocmd.jcl # debug
 # cp  tsocmd.jcl "//'tstradm.smpe.JCL(runtso)'"
 # submit         "//'tstradm.smpe.JCL(runtso)'"
+date # debug
 submit tsocmd.jcl
 
     # wait for job to finish
@@ -110,6 +112,7 @@ submit tsocmd.jcl
             jobdone=1
             break
         fi
+        date # debug
     done
     if [[ $jobdone -eq 0 ]]
     then
@@ -119,7 +122,7 @@ submit tsocmd.jcl
         echo; echo $SCRIPT job "$jobname(JOB$jobid)" completed
     fi
 
-cat tso.out #debug
+cat /u/tstradm/tso.out #debug
 
 echo script $SCRIPT ended from $SCRIPT_DIR
 
