@@ -57,77 +57,6 @@ echo $SCRIPT    zfs_path=$7
 echo $SCRIPT    FMID=$8
 echo $SCRIPT    PREFIX=$9
 
-function runJob {
-
-    echo; echo $SCRIPT function runJob started
-    jclname=$1
-    # jobname=`echo $jclname | tr [a-z] [A-Z]`    # job names are upper case
-
-    echo; echo $SCRIPT jclname=$jclname #jobname=$jobname
-
-    # submit the job
-    submit $jclname.jcl > /tmp/$$.submit.job.out
-    if [[ $? -ne 0 ]]
-    then
-        echo; echo $SCRIPT submit JCL $jclname failed
-        exit 1
-    fi
-
-    # capture JOBID of submitted job
-    jobid=`cat /tmp/$$.submit.job.out \
-        | sed "s/.*JOB JOB\([0-9]*\) submitted.*/\1/"`
-
-    echo; echo $SCRIPT JOBID=$jobid
-
-    operdir=$SCRIPT_DIR       # this is where opercmd should be available
-
-    # wait for job to finish
-    jobdone=0
-    for secs in 1 5 10 30 100
-    do
-        sleep $secs
-    
-        $operdir/opercmd "\$DJ${jobid},CC" > /tmp/$$.dj.cc
-        grep CC= /tmp/$$.dj.cc
-        if [[ $? -eq 0 ]]
-        then
-            jobdone=1
-            break
-        fi
-    done
-    if [[ $jobdone -eq 0 ]]
-    then
-        echo; echo $SCRIPT job not run in time
-        exit 2
-    else
-        echo; echo $SCRIPT job JOB$jobid completed
-    fi
-
-    jobname=`sed -n 's/.*JOB(\([^ ]*\)).*/\1/p' /tmp/$$.dj.cc`
-    echo $SCRIPT jobname $jobname
-    
-    # $DJ gives ...
-    # ... $HASP890 JOB(JOB1)      CC=(COMPLETED,RC=0)
-
-    $operdir/opercmd "\$DJ${jobid},CC" > /tmp/$$.dj.cc
-    grep RC= /tmp/$$.dj.cc
-    if [[ $? -ne 0 ]]
-    then
-        echo No return code for jobid $jobid
-        exit 3
-    fi
-    
-    rc=`sed -n 's/.*RC=\([0-9]*\))/\1/p' /tmp/$$.dj.cc`
-    echo; echo $SCRIPT return code for JOB$jobid is $rc
-
-    if [[ $rc -gt 4 ]]
-    then
-        echo; echo $SCRIPT job "$jobname(JOB$jobid)" failed
-        exit 4
-    fi
-    echo; echo $SCRIPT function runJob ended
-}
-
 chmod -R 777 ${pathprefix}usr
 rm -fR ${pathprefix}usr # because target is ${pathprefix}usr/lpp/zowe
 
@@ -160,25 +89,6 @@ delete ('${hlq}.install.jcl')
 delete (TEST.jcl.*)
 free all
 EndOfList
-
-# prepare TSOCMD job JCL
-userid=`logname`
-if [[ ! -n "$userid" ]]
-then  
-  userid=$USER 
-fi
-if [[ ! -n "$userid" ]]
-then  
-  userid=TSTRADM 
-fi
-
-sed "s/TSTRADM/$userid/" /u/tstradm/runtso1.jcl > runtso1.e.jcl
-sed "s/TSTRADM/$userid/" /u/tstradm/runtso2.jcl > runtso2.e.jcl
-
-# build JCL deck
-cat runtso1.e.jcl tso.cmd runtso2.e.jcl > tsocmd.jcl
-runJob tsocmd
-
-rm  runtso1.e.jcl tso.cmd runtso2.e.jcl
+tsocmd.sh tso.cmd
 
 echo script $SCRIPT ended from $SCRIPT_DIR
