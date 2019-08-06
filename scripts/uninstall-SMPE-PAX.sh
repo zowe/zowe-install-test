@@ -106,10 +106,8 @@ function runJob {
     jobname=`sed -n 's/.*JOB(\([^ ]*\)).*/\1/p' /tmp/$$.dj.cc`
     echo $SCRIPT jobname $jobname
     
-    # get job return code from JES
-    # GET /zosmf/restjobs/jobs/<jobname>/<jobid>?[step-data=Y|N]
-    
-    # RESPONSE=MV3B      $HASP890 JOB(JOB1)      CC=(COMPLETED,RC=0)
+    # $DJ gives ...
+    # ... $HASP890 JOB(JOB1)      CC=(COMPLETED,RC=0)
 
     $operdir/opercmd "\$DJ${jobid},CC" > /tmp/$$.dj.cc
     grep RC= /tmp/$$.dj.cc
@@ -131,11 +129,7 @@ function runJob {
 }
 
 chmod -R 777 ${pathprefix}usr
-# tsocmd lu
 rm -fR ${pathprefix}usr # because target is ${pathprefix}usr/lpp/zowe
-
-pwd # where are we?
-date # debug
 
 # delete the datasets that install-SMPE-PAX.sh script creates
 cat > tso.cmd <<EndOfList
@@ -167,27 +161,24 @@ delete (TEST.jcl.*)
 free all
 EndOfList
 
-cat /u/tstradm/runtso1.jcl tso.cmd /u/tstradm/runtso2.jcl > tsocmd.jcl
+# prepare TSOCMD job JCL
+userid=`logname`
+if [[ ! -n "$userid" ]]
+then  
+  userid=$USER 
+fi
+if [[ ! -n "$userid" ]]
+then  
+  userid=TSTRADM 
+fi
+
+sed "s/TSTRADM/$userid/" /u/tstradm/runtso1.jcl > runtso1.e.jcl
+sed "s/TSTRADM/$userid/" /u/tstradm/runtso2.jcl > runtso2.e.jcl
+
+# build JCL deck
+cat runtso1.e.jcl tso.cmd runtso2.e.jcl > tsocmd.jcl
 runJob tsocmd
 
-    # # wait for job to finish
-    # jobdone=0
-    # for secs in 1 5 10 30 100
-    # do
-    #     sleep $secs
-    #     grep ^END /u/tstradm/tso.out > /dev/null
-    #     if [[ $? -eq 0 ]]
-    #     then
-    #         jobdone=1
-    #         break
-    #     fi
-    # done
-    # if [[ $jobdone -eq 0 ]]
-    # then
-    #     echo; echo $SCRIPT job not run in time
-    #     exit 2
-    # else
-    #     echo; echo $SCRIPT job "$jobname(JOB$jobid)" completed
-    # fi
+rm  runtso1.e.jcl tso.cmd runtso2.e.jcl
 
 echo script $SCRIPT ended from $SCRIPT_DIR
