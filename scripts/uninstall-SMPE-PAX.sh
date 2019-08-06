@@ -63,7 +63,7 @@ chmod -R 777 ${pathprefix}usr
 rm -fR ${pathprefix}usr # because target is ${pathprefix}usr/lpp/zowe
 # tso exec "'tstradm.smpe.jcl(rexcmd)'"
 # kill -9 $$
-
+pwd # where are we?
 cat > tso.cmd <<EndOfList
 delete ('${hlq}.${FMID}.F1')
 delete ('${hlq}.${FMID}.F2')
@@ -93,8 +93,10 @@ delete (TEST.jcl.*)
 free all
 EndOfList
 
-cat runtso1.jcl tso.cmd runtso2.jcl > tsocmd.jcl
+cat /u/tstradm/runtso1.jcl tso.cmd /u/tstradm/runtso2.jcl > tsocmd.jcl
 cat tsocmd.jcl # debug
+# cp  tsocmd.jcl "//'tstradm.smpe.JCL(runtso)'"
+# submit         "//'tstradm.smpe.JCL(runtso)'"
 submit tsocmd.jcl
 
     # wait for job to finish
