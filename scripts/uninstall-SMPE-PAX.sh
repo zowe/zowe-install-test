@@ -168,7 +168,7 @@ free all
 EndOfList
 
 cat /u/tstradm/runtso1.jcl tso.cmd /u/tstradm/runtso2.jcl > tsocmd.jcl
-runjob tsocmd
+runJob tsocmd
 
     # # wait for job to finish
     # jobdone=0
