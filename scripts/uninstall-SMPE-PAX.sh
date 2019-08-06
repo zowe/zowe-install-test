@@ -57,37 +57,67 @@ echo $SCRIPT    zfs_path=$7
 echo $SCRIPT    FMID=$8
 echo $SCRIPT    PREFIX=$9
 # # delete the datasets that install-SMPE-PAX.sh script creates
-# tsocmd "delete ('${hlq}.${FMID}.F1')"
-# tsocmd "delete ('${hlq}.${FMID}.F2')"
-# tsocmd "delete ('${hlq}.${FMID}.F3')"
-# tsocmd "delete ('${hlq}.${FMID}.F4')"
-# tsocmd "delete ('${hlq}.${FMID}.smpmcs')"
-# tsocmd "delete ('${hlq}.ZOWE.${FMID}.F1')"
-# tsocmd "delete ('${hlq}.ZOWE.${FMID}.F2')"
-# tsocmd "delete ('${hlq}.ZOWE.${FMID}.F3')"
-# tsocmd "delete ('${hlq}.ZOWE.${FMID}.F4')"
-# tsocmd "delete ('${hlq}.ZOWE.${FMID}.smpmcs')"
-# tsocmd "delete ('${hlq}.SMPE.CSI')"
-# tsocmd "delete ('${hlq}.SMPE.SMPLOG')"
-# tsocmd "delete ('${hlq}.SMPE.SMPLOGA')"
-# tsocmd "delete ('${hlq}.SMPE.SMPLTS')"
-# tsocmd "delete ('${hlq}.SMPE.SMPMTS')"
-# tsocmd "delete ('${hlq}.SMPE.SMPPTS')"
-# tsocmd "delete ('${hlq}.SMPE.SMPSCDS')"
-# tsocmd "delete ('${hlq}.SMPE.SMPSTS')"
-# tsocmd "delete ('${hlq}.SMPE.AZWEAUTH')"
-# tsocmd "delete ('${hlq}.SMPE.AZWESAMP')"
-# tsocmd "delete ('${hlq}.SMPE.AZWEZFS')"
-# tsocmd "delete ('${hlq}.SMPE.SZWEAUTH')"
-# tsocmd "delete ('${hlq}.SMPE.SZWESAMP')"
-# tsocmd "delete ('${hlq}.install.jcl')"
-# tsocmd "delete (TEST.jcl.*)"
-# tsocmd "free all"
+
 chmod -R 777 ${pathprefix}usr
 # tsocmd lu
 rm -fR ${pathprefix}usr # because target is ${pathprefix}usr/lpp/zowe
 # tso exec "'tstradm.smpe.jcl(rexcmd)'"
 # kill -9 $$
-submit "//'tstradm.smpe.jcl(runtso)'"
+
+cat > tso.cmd <<EndOfList
+delete ('${hlq}.${FMID}.F1')
+delete ('${hlq}.${FMID}.F2')
+delete ('${hlq}.${FMID}.F3')
+delete ('${hlq}.${FMID}.F4')
+delete ('${hlq}.${FMID}.smpmcs')
+delete ('${hlq}.ZOWE.${FMID}.F1')
+delete ('${hlq}.ZOWE.${FMID}.F2')
+delete ('${hlq}.ZOWE.${FMID}.F3')
+delete ('${hlq}.ZOWE.${FMID}.F4')
+delete ('${hlq}.ZOWE.${FMID}.smpmcs')
+delete ('${hlq}.SMPE.CSI')
+delete ('${hlq}.SMPE.SMPLOG')
+delete ('${hlq}.SMPE.SMPLOGA')
+delete ('${hlq}.SMPE.SMPLTS')
+delete ('${hlq}.SMPE.SMPMTS')
+delete ('${hlq}.SMPE.SMPPTS')
+delete ('${hlq}.SMPE.SMPSCDS')
+delete ('${hlq}.SMPE.SMPSTS')
+delete ('${hlq}.SMPE.AZWEAUTH')
+delete ('${hlq}.SMPE.AZWESAMP')
+delete ('${hlq}.SMPE.AZWEZFS')
+delete ('${hlq}.SMPE.SZWEAUTH')
+delete ('${hlq}.SMPE.SZWESAMP')
+delete ('${hlq}.install.jcl')
+delete (TEST.jcl.*)
+free all
+EndOfList
+
+cat runtso1.jcl tso.cmd runtso2.jcl > tsocmd.jcl
+cat tsocmd.jcl # debug
+submit tsocmd.jcl
+
+    # wait for job to finish
+    jobdone=0
+    for secs in 1 5 10 30 100
+    do
+        sleep $secs
+        grep ^END tso.out
+        if [[ $? -eq 0 ]]
+        then
+            jobdone=1
+            break
+        fi
+    done
+    if [[ $jobdone -eq 0 ]]
+    then
+        echo; echo $SCRIPT job not run in time
+        exit 2
+    else
+        echo; echo $SCRIPT job "$jobname(JOB$jobid)" completed
+    fi
+
+cat tso.out #debug
+
 echo script $SCRIPT ended from $SCRIPT_DIR
 
