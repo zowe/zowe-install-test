@@ -104,7 +104,7 @@ submit tsocmd.jcl
     for secs in 1 5 10 30 100
     do
         sleep $secs
-        grep ^END tso.out
+        grep ^END /u/tstradm/tso.out
         if [[ $? -eq 0 ]]
         then
             jobdone=1
