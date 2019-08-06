@@ -56,15 +56,88 @@ echo $SCRIPT    download_path=$6
 echo $SCRIPT    zfs_path=$7
 echo $SCRIPT    FMID=$8
 echo $SCRIPT    PREFIX=$9
-# # delete the datasets that install-SMPE-PAX.sh script creates
+
+function runJob {
+
+    echo; echo $SCRIPT function runJob started
+    jclname=$1
+    # jobname=`echo $jclname | tr [a-z] [A-Z]`    # job names are upper case
+
+    echo; echo $SCRIPT jclname=$jclname #jobname=$jobname
+
+    # submit the job
+    submit $jclname.jcl > /tmp/$$.submit.job.out
+    if [[ $? -ne 0 ]]
+    then
+        echo; echo $SCRIPT submit JCL $jclname failed
+        exit 1
+    fi
+
+    # capture JOBID of submitted job
+    jobid=`cat /tmp/$$.submit.job.out \
+        | sed "s/.*JOB JOB\([0-9]*\) submitted.*/\1/"`
+
+    echo; echo $SCRIPT JOBID=$jobid
+
+    operdir=$SCRIPT_DIR       # this is where opercmd should be available
+
+    # wait for job to finish
+    jobdone=0
+    for secs in 1 5 10 30 100
+    do
+        sleep $secs
+    
+        $operdir/opercmd "\$DJ${jobid},CC" > /tmp/$$.dj.cc
+        grep CC= /tmp/$$.dj.cc
+        if [[ $? -eq 0 ]]
+        then
+            jobdone=1
+            break
+        fi
+    done
+    if [[ $jobdone -eq 0 ]]
+    then
+        echo; echo $SCRIPT job not run in time
+        exit 2
+    else
+        echo; echo $SCRIPT job JOB$jobid completed
+    fi
+
+    jobname=`sed -n 's/.*JOB(\([^ ]*\)).*/\1/p' /tmp/$$.dj.cc`
+    echo $SCRIPT jobname $jobname
+    
+    # get job return code from JES
+    # GET /zosmf/restjobs/jobs/<jobname>/<jobid>?[step-data=Y|N]
+    
+    # RESPONSE=MV3B      $HASP890 JOB(JOB1)      CC=(COMPLETED,RC=0)
+
+    $operdir/opercmd "\$DJ${jobid},CC" > /tmp/$$.dj.cc
+    grep RC= /tmp/$$.dj.cc
+    if [[ $? -ne 0 ]]
+    then
+        echo No return code for jobid $jobid
+        exit 3
+    fi
+    
+    rc=`sed -n 's/.*RC=\([0-9]*\))/\1/p' /tmp/$$.dj.cc`
+    echo; echo $SCRIPT return code for JOB$jobid is $rc
+
+    if [[ $rc -gt 4 ]]
+    then
+        echo; echo $SCRIPT job "$jobname(JOB$jobid)" failed
+        exit 4
+    fi
+    echo; echo $SCRIPT function runJob ended
+}
 
 chmod -R 777 ${pathprefix}usr
 # tsocmd lu
 rm -fR ${pathprefix}usr # because target is ${pathprefix}usr/lpp/zowe
-# tso exec "'tstradm.smpe.jcl(rexcmd)'"
-# kill -9 $$
+
 pwd # where are we?
 date # debug
+
+# delete the datasets that install-SMPE-PAX.sh script creates
 cat > tso.cmd <<EndOfList
 delete ('${hlq}.${FMID}.F1')
 delete ('${hlq}.${FMID}.F2')
@@ -95,34 +168,26 @@ free all
 EndOfList
 
 cat /u/tstradm/runtso1.jcl tso.cmd /u/tstradm/runtso2.jcl > tsocmd.jcl
-cat tsocmd.jcl # debug
-# cp  tsocmd.jcl "//'tstradm.smpe.JCL(runtso)'"
-# submit         "//'tstradm.smpe.JCL(runtso)'"
-date # debug
-submit tsocmd.jcl
+runjob tsocmd
 
-    # wait for job to finish
-    jobdone=0
-    for secs in 1 5 10 30 100
-    do
-        sleep $secs
-        grep ^END /u/tstradm/tso.out
-        if [[ $? -eq 0 ]]
-        then
-            jobdone=1
-            break
-        fi
-        date # debug
-    done
-    if [[ $jobdone -eq 0 ]]
-    then
-        echo; echo $SCRIPT job not run in time
-        exit 2
-    else
-        echo; echo $SCRIPT job "$jobname(JOB$jobid)" completed
-    fi
-
-cat /u/tstradm/tso.out #debug
+    # # wait for job to finish
+    # jobdone=0
+    # for secs in 1 5 10 30 100
+    # do
+    #     sleep $secs
+    #     grep ^END /u/tstradm/tso.out > /dev/null
+    #     if [[ $? -eq 0 ]]
+    #     then
+    #         jobdone=1
+    #         break
+    #     fi
+    # done
+    # if [[ $jobdone -eq 0 ]]
+    # then
+    #     echo; echo $SCRIPT job not run in time
+    #     exit 2
+    # else
+    #     echo; echo $SCRIPT job "$jobname(JOB$jobid)" completed
+    # fi
 
 echo script $SCRIPT ended from $SCRIPT_DIR
-
