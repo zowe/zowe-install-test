@@ -89,6 +89,12 @@ delete ('${hlq}.install.jcl')
 delete (TEST.jcl.*)
 free all
 EndOfList
-tsocmd.sh tso.cmd
+
+#test the single TSO command version
+tsocmd.sh lu
+
+#test the multiple TSO command version
+tsocmds.sh tso.cmd
+rm tso.cmd 
 
 echo script $SCRIPT ended from $SCRIPT_DIR
