@@ -39,6 +39,7 @@ node('ibm-jenkins-slave-dind') {
     "scripts/uninstall-SMPE-PAX.sh",
     "scripts/opercmd",
     "scripts/tsocmd.sh",
+    "scripts/tsocmds.sh",
   ]
 
   pipeline.admins.add("jackjia")
@@ -450,6 +451,7 @@ EOF"""
 cd ${params.INSTALL_DIR}
 (iconv -f ISO8859-1 -t IBM-1047 opercmd > opercmd.new) && mv opercmd.new opercmd && chmod +x opercmd
 (iconv -f ISO8859-1 -t IBM-1047 tsocmd.sh > tsocmd.sh.new) && mv tsocmd.sh.new tsocmd.sh && chmod +x tsocmd.sh
+(iconv -f ISO8859-1 -t IBM-1047 tsocmds.sh > tsocmds.sh.new) && mv tsocmds.sh.new tsocmds.sh && chmod +x tsocmds.sh
 (iconv -f ISO8859-1 -t IBM-1047 uninstall-zowe.sh > uninstall-zowe.sh.new) && mv uninstall-zowe.sh.new uninstall-zowe.sh && chmod +x uninstall-zowe.sh
 (iconv -f ISO8859-1 -t IBM-1047 uninstall-SMPE-PAX.sh > uninstall-SMPE-PAX.sh.new) && mv uninstall-SMPE-PAX.sh.new uninstall-SMPE-PAX.sh && chmod +x uninstall-SMPE-PAX.sh
 (./uninstall-SMPE-PAX.sh ${smpeHlq} ${smpeHlqCsi} ${smpeHlqTzone} ${smpeHlqDzone} ${smpePathPrefix} ${params.INSTALL_DIR} ${smpePathZfs} ${smpeFmid} ${smpeRelfilePrefix})
