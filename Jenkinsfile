@@ -446,7 +446,6 @@ EOF"""
             // FIXME: modify uninstall-zowe.sh to uninstall Zowe installed with SMP/e package
             // FIXME: since we don't know what's the last installation is with regular PAX or SMP/e package,
             //        we need to test and uninstall both of them.
-            // (./uninstall-zowe.sh -i ${params.INSTALL_DIR} -t ${params.ZOWE_ROOT_DIR} -m ${params.PROCLIB_MEMBER})
             sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
 cd ${params.INSTALL_DIR}
 (iconv -f ISO8859-1 -t IBM-1047 opercmd > opercmd.new) && mv opercmd.new opercmd && chmod +x opercmd
@@ -454,7 +453,8 @@ cd ${params.INSTALL_DIR}
 (iconv -f ISO8859-1 -t IBM-1047 tsocmds.sh > tsocmds.sh.new) && mv tsocmds.sh.new tsocmds.sh && chmod +x tsocmds.sh
 (iconv -f ISO8859-1 -t IBM-1047 uninstall-zowe.sh > uninstall-zowe.sh.new) && mv uninstall-zowe.sh.new uninstall-zowe.sh && chmod +x uninstall-zowe.sh
 (iconv -f ISO8859-1 -t IBM-1047 uninstall-SMPE-PAX.sh > uninstall-SMPE-PAX.sh.new) && mv uninstall-SMPE-PAX.sh.new uninstall-SMPE-PAX.sh && chmod +x uninstall-SMPE-PAX.sh
-(./uninstall-SMPE-PAX.sh ${smpeHlq} ${smpeHlqCsi} ${smpeHlqTzone} ${smpeHlqDzone} ${smpePathPrefix} ${params.INSTALL_DIR} ${smpePathZfs} ${smpeFmid} ${smpeRelfilePrefix})
+./uninstall-zowe.sh -i ${params.INSTALL_DIR} -t ${params.ZOWE_ROOT_DIR} -m ${params.PROCLIB_MEMBER}
+./uninstall-SMPE-PAX.sh ${smpeHlq} ${smpeHlqCsi} ${smpeHlqTzone} ${smpeHlqDzone} ${smpePathPrefix} ${params.INSTALL_DIR} ${smpePathZfs} ${smpeFmid} ${smpeRelfilePrefix}
 echo "[uninstall] done" && exit 0
 EOF"""
           }
