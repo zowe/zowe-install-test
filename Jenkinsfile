@@ -459,9 +459,6 @@ echo "[uninstall] done" && exit 0
 EOF"""
           }
 
-          // FIXME: remove me
-          error "debugging premature exit"
-
           if (params.IS_SMPE_PACKAGE) {
             sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
 cd ${params.INSTALL_DIR} && \
