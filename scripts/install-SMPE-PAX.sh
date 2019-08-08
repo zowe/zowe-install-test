@@ -68,77 +68,75 @@ README=readme.txt                   # the filename of the FMID.readme-v.m.r-smpe
 
 # In case previous run failed,
 # delete the datasets that this script creates
-tsocmd "delete ('${hlq}.${FMID}.F1')"
-tsocmd "delete ('${hlq}.${FMID}.F2')"
-tsocmd "delete ('${hlq}.${FMID}.F3')"
-tsocmd "delete ('${hlq}.${FMID}.F4')"
-tsocmd "delete ('${hlq}.${FMID}.smpmcs')"
-tsocmd "delete ('${hlq}.ZOWE.${FMID}.F1')"
-tsocmd "delete ('${hlq}.ZOWE.${FMID}.F2')"
-tsocmd "delete ('${hlq}.ZOWE.${FMID}.F3')"
-tsocmd "delete ('${hlq}.ZOWE.${FMID}.F4')"
-tsocmd "delete ('${hlq}.ZOWE.${FMID}.smpmcs')"
-tsocmd "delete ('${hlq}.SMPE.CSI')"
-tsocmd "delete ('${hlq}.SMPE.SMPLOG')"
-tsocmd "delete ('${hlq}.SMPE.SMPLOGA')"
-tsocmd "delete ('${hlq}.SMPE.SMPLTS')"
-tsocmd "delete ('${hlq}.SMPE.SMPMTS')"
-tsocmd "delete ('${hlq}.SMPE.SMPPTS')"
-tsocmd "delete ('${hlq}.SMPE.SMPSCDS')"
-tsocmd "delete ('${hlq}.SMPE.SMPSTS')"
-tsocmd "delete ('${hlq}.SMPE.AZWEAUTH')"
-tsocmd "delete ('${hlq}.SMPE.AZWESAMP')"
-tsocmd "delete ('${hlq}.SMPE.AZWEZFS')"
-tsocmd "delete ('${hlq}.SMPE.SZWEAUTH')"
-tsocmd "delete ('${hlq}.SMPE.SZWESAMP')"
-tsocmd "delete ('${hlq}.install.jcl')"
-tsocmd "delete (TEST.jcl.*)"
+cat > /tmp/tso.$$.cmd <<EndOfList
+delete ('${hlq}.${FMID}.F1')
+delete ('${hlq}.${FMID}.F2')
+delete ('${hlq}.${FMID}.F3')
+delete ('${hlq}.${FMID}.F4')
+delete ('${hlq}.${FMID}.smpmcs')
+delete ('${hlq}.ZOWE.${FMID}.F1')
+delete ('${hlq}.ZOWE.${FMID}.F2')
+delete ('${hlq}.ZOWE.${FMID}.F3')
+delete ('${hlq}.ZOWE.${FMID}.F4')
+delete ('${hlq}.ZOWE.${FMID}.smpmcs')
+delete ('${hlq}.SMPE.CSI')
+delete ('${hlq}.SMPE.SMPLOG')
+delete ('${hlq}.SMPE.SMPLOGA')
+delete ('${hlq}.SMPE.SMPLTS')
+delete ('${hlq}.SMPE.SMPMTS')
+delete ('${hlq}.SMPE.SMPPTS')
+delete ('${hlq}.SMPE.SMPSCDS')
+delete ('${hlq}.SMPE.SMPSTS')
+delete ('${hlq}.SMPE.AZWEAUTH')
+delete ('${hlq}.SMPE.AZWESAMP')
+delete ('${hlq}.SMPE.AZWEZFS')
+delete ('${hlq}.SMPE.SZWEAUTH')
+delete ('${hlq}.SMPE.SZWESAMP')
+delete ('${hlq}.install.jcl')
+delete (TEST.jcl.*)
+free all
+EndOfList
+
+# execute the multiple TSO commands
+tsocmds.sh /tmp/tso.$$.cmd
+rm /tmp/tso.$$.cmd 
+
 chmod -R 777 ${pathprefix}usr
 rm -fR ${pathprefix}usr # because target is ${pathprefix}usr/lpp/zowe
 
 
 function runJob {
 
-    echo; echo $SCRIPT function runJob started
+    # echo; echo $SCRIPT function runJob started
     jclname=$1
-    jobname=`echo $jclname | tr [a-z] [A-Z]`    # job names are upper case
 
-    echo; echo $SCRIPT jclname=$jclname jobname=$jobname
+    # echo; echo $SCRIPT jclname=$jclname #jobname=$jobname
 
-
-    # create a temporary dataset under my userid to hold the job JCL to be submitted
-    tsocmd "delete (TEST.jcl.$jclname)" 1> /dev/null # delete the temporary dataset
-    tsocmd "alloc dataset(TEST.jcl.$jclname) \
-                new space(1) tracks \
-                blksize(3120) \
-                lrecl(80) \
-                recfm(f,b) \
-                dsorg(ps)"
-
-    tsocmd oget " '$jclname.jcl'  TEST.jcl.$jclname "   # copy USS jcl file to MVS
-
-    # submit the job
-    tsocmd submit "TEST.jcl.$jclname" > /tmp/$$.submit.job.out
+    # submit the job using the USS submit command
+    submit $jclname > /tmp/submit.job.$$.out
     if [[ $? -ne 0 ]]
     then
-        echo; echo $SCRIPT submit job $jclname failed
-        exit 1
+        echo; echo $SCRIPT ERROR: submit JCL $jclname failed
+        return 1
     fi
 
     # capture JOBID of submitted job
-    jobid=`cat /tmp/$$.submit.job.out \
-        | sed "s/.*JOB $jobname(JOB\([0-9]*\)) SUBMITTED/\1/"`
+    jobid=`cat /tmp/submit.job.$$.out \
+        | sed "s/.*JOB JOB\([0-9]*\) submitted.*/\1/"`
+    rm /tmp/submit.job.$$.out 2> /dev/null 
 
-    echo; echo $SCRIPT JOBID=$jobid
-
-
+    # echo; echo $SCRIPT JOBID=$jobid
 
     # wait for job to finish
     jobdone=0
     for secs in 1 5 10 30 100
     do
         sleep $secs
-        tsocmd status "$jobname(job$jobid)" | grep "JOB $jobname(JOB$jobid) ON OUTPUT QUEUE"
+    
+        $operdir/opercmd "\$DJ${jobid},CC" > /tmp/dj.$$.cc
+            # $DJ gives ...
+            # ... $HASP890 JOB(JOB1)      CC=(COMPLETED,RC=0)
+        grep CC= /tmp/dj.$$.cc > /dev/null
         if [[ $? -eq 0 ]]
         then
             jobdone=1
@@ -147,35 +145,32 @@ function runJob {
     done
     if [[ $jobdone -eq 0 ]]
     then
-        echo; echo $SCRIPT job not run in time
-        exit 2
+        echo $SCRIPT ERROR: job ${jobid} not run in time
+        return 2
     else
-        echo; echo $SCRIPT job "$jobname(JOB$jobid)" completed
+        : # echo; echo $SCRIPT job JOB$jobid completed
     fi
 
-    # get job return code from JES
-    # GET /zosmf/restjobs/jobs/<jobname>/<jobid>?[step-data=Y|N]
-    operdir=$SCRIPT_DIR       # this is where opercmd should be available
-
-    # RESPONSE=MV3B      $HASP890 JOB(JOB1)      CC=(COMPLETED,RC=0)
-
-    $operdir/opercmd "\$DJ${jobid},CC" > /tmp/$$.dj.cc
-    grep RC= /tmp/$$.dj.cc
+    jobname=`sed -n 's/.*JOB(\([^ ]*\)).*/\1/p' /tmp/dj.$$.cc`
+    # echo $SCRIPT jobname $jobname
+    
+    $operdir/opercmd "\$DJ${jobid},CC" > /tmp/dj.$$.cc
+    grep RC= /tmp/dj.$$.cc > /dev/null
     if [[ $? -ne 0 ]]
     then
-        echo No return code for jobid $jobid
-        exit 3
+        echo $SCRIPT ERROR: no return code for jobid $jobid
+        return 3
     fi
-
-    rc=`sed -n 's/.*RC=\([0-9]*\))/\1/p' /tmp/$$.dj.cc`
-    echo; echo $SCRIPT return code for "$jobname(JOB$jobid)" is $rc
-
-    if [[ $rc -gt 4 ]]
-    then
-        echo; echo $SCRIPT job "$jobname(JOB$jobid)" failed
-        exit 4
-    fi
-    echo; echo $SCRIPT function runJob ended
+    
+    # rc=`sed -n 's/.*RC=\([0-9]*\))/\1/p' /tmp/dj.$$.cc`
+    # # echo; echo $SCRIPT return code for JOB$jobid is $rc
+    # rm /tmp/dj.$$.cc 2> /dev/null 
+    # if [[ $rc -gt 4 ]]
+    # then
+    #     echo $SCRIPT ERROR: job "$jobname(JOB$jobid)" failed, RC=$rc 
+    #     return 4
+    # fi
+    # echo; echo $SCRIPT function runJob ended
 }
 
 # README -- README -- README
@@ -249,7 +244,7 @@ sed '1 i\
 # tsocmd oput "  '${hlq}.install.jcl(gimunzip)' 'gimunzip.jcl' "
 
 # Run the GIMUNZIP job
-runJob gimunzip
+runJob gimunzip.jcl
 
 
 # SMP/E -- SMP/E -- SMP/E -- SMP/E
@@ -265,7 +260,7 @@ for smpejob in \
 do
     # tailor the SMP/E jobs (unedited ones are in .BAK)
     # tsocmd oput "  '${hlq}.${FMID}.F1($smpejob)' '$smpejob.jcl0' "
-    tsocmd oput "  '${PREFIX}.ZOWE.${FMID}.F1($smpejob)' '$smpejob.jcl0' "
+    tsocmd.sh oput "  '${PREFIX}.ZOWE.${FMID}.F1($smpejob)' '$smpejob.jcl0' "
     # ${hlq}.${FMID}.F1 ... ZOE.AZWE001.F1.BAK($smpejob)
 
 	# sed "s/#hlq/$PREFIX/" $smpejob.jcl0 > $smpejob.jcl1
@@ -296,14 +291,14 @@ do
     if [[ $smpejob = ZWE7APLY ]]
     then
         echo; echo $SCRIPT fix error in APPLY job PAX parameter
-        tsocmd oput "  '${csihlq}.${FMID}.F4(ZWESHPAX)' 'ZWESHPAX.jcl0' "
+        tsocmd.sh oput "  '${csihlq}.${FMID}.F4(ZWESHPAX)' 'ZWESHPAX.jcl0' "
         echo; echo $SCRIPT find pe in JCL
         grep " -pe " ZWESHPAX.jcl0
         sed 's/ -pe / -pp /' ZWESHPAX.jcl0 > ZWESHPAX.jcl
-        tsocmd oget " 'ZWESHPAX.jcl'  '${csihlq}.${FMID}.F4(ZWESHPAX)' "
+        tsocmd.sh oget " 'ZWESHPAX.jcl'  '${csihlq}.${FMID}.F4(ZWESHPAX)' "
     fi
 
-    runJob $smpejob
+    runJob $smpejob.jcl
 
 done
 

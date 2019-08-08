@@ -90,10 +90,7 @@ delete (TEST.jcl.*)
 free all
 EndOfList
 
-#test the single TSO command version
-tsocmd.sh lu
-
-#test the multiple TSO command version
+# execute the multiple TSO commands
 tsocmds.sh tso.cmd
 rm tso.cmd 
 
