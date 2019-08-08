@@ -44,87 +44,6 @@ function finish {
 trap finish SIGINT
 
 ################################################################################
-# Kill process and all children processes
-# 
-# Arguments:
-#   $1        Process ID
-################################################################################
-function kill_all_childen {
-  TO_KILL_PID=$1
-
-  ALL_CHILDREN=
-  CHILDREN=$TO_KILL_PID
-  while [ -n "$CHILDREN" ]; do
-    ALL_CHILDREN="$ALL_CHILDREN $CHILDREN"
-
-    SUB_CHILDREN=
-    for one in $CHILDREN; do
-      ONE_SUB_CHILDREN=$(ps -o pid,ppid | grep "[0-9]\+[ ]\+$one" | awk '{print $1}')
-      if [ -n "$ONE_SUB_CHILDREN" ]; then
-  SUB_CHILDREN="$SUB_CHILDREN $ONE_SUB_CHILDREN"
-      fi
-    done
-    CHILDREN=$SUB_CHILDREN
-  done
-  echo "[kill_all_childen] process $TO_KILL_PID has children: $ALL_CHILDREN, killing all."
-  kill -9 $ALL_CHILDREN || true
-}
-
-################################################################################
-# Run a script with a timeout
-# 
-# Arguments:
-#   $1        Script path
-#   $2        Timeout format supported by "sleep". Example:
-#             - 60      60 seconds
-#             - 2m      2 minutes
-#
-# Returns:
-#   exit code
-################################################################################
-function run_script_with_timeout {
-  SCRIPT_TO_RUN=$1
-  TIMEOUT=$2
-
-  echo
-  echo "################################################################################"
-
-  TMP_LOG_FILE="$$-$RANDOM.log"
-  (exec sh -c "$SCRIPT_TO_RUN" > $TMP_LOG_FILE) & CMD_PID=$!
-  echo "[run_script_with_timeout] '${SCRIPT_TO_RUN}' process ID is $CMD_PID"
-  # start waiter process in background
-  (sleep $TIMEOUT && kill -9 $CMD_PID) & WAITER_PID=$!
-  # wait for process to exit
-  wait $CMD_PID
-  EXIT_CODE=$?
-
-  # check if waiter process is still there
-  WAITER_EXISTENCE=$(ps -o pid | grep $WAITER_PID)
-  if [ -n "$WAITER_EXISTENCE" ]; then
-    # waiter process is still there, process exit by itself
-    kill_all_childen $WAITER_PID
-  else
-    # waiter process is gone, means process if killed after timeout
-    EXIT_CODE=9999
-  fi
-
-  echo "[run_script_with_timeout] '${SCRIPT_TO_RUN}' exit: $EXIT_CODE"
-
-  # show log if exists
-  if [ -f "$TMP_LOG_FILE" ]; then
-    if [ -s "$TMP_LOG_FILE" ]; then
-      echo "[run_script_with_timeout] stdout log >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-      cat $TMP_LOG_FILE || true
-      echo "[run_script_with_timeout] log end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
-    fi
-    rm $TMP_LOG_FILE
-  fi
-  echo
-
-  return $EXIT_CODE
-}
-
-################################################################################
 # parse parameters
 function usage {
   echo "Uninstall Zowe."
@@ -203,9 +122,9 @@ echo
 ################################################################################
 # delete started tasks
 echo "[${SCRIPT_NAME}] deleting started tasks ..."
-run_script_with_timeout "tsocmd.sh 'RDELETE STARTED (ZWESIS*.*)'" 10
-run_script_with_timeout "tsocmd.sh 'RDELETE STARTED (ZOWESVR.*)'" 10
-run_script_with_timeout "tsocmd.sh 'SETR RACLIST(STARTED) REFRESH'" 10
+tsocmd.sh 'RDELETE STARTED (ZWESIS*.*)'
+tsocmd.sh 'RDELETE STARTED (ZOWESVR.*)'
+tsocmd.sh 'SETR RACLIST(STARTED) REFRESH'
 echo
 
 # removing environment viarables from .profile
@@ -239,16 +158,13 @@ if [ ! -f "${CI_INSTALL_DIR}/opercmd" ]; then
   echo "[${SCRIPT_NAME}][error] opercmd doesn't exist."
   exit 1;
 fi
-# make sure profile noprefix
-export TSOPROFILE="noprefix"
-tsocmd.sh profile noprefix
 # listing all proclibs and members
 FOUND_ZOWESVR_AT=
 procs=$("${CI_INSTALL_DIR}/opercmd" '$d proclib' | grep 'DSNAME=.*\.PROCLIB' | sed 's/.*DSNAME=\(.*\)\.PROCLIB.*/\1.PROCLIB/')
 for proclib in $procs
 do
   echo "[${SCRIPT_NAME}] - finding in $proclib ..."
-  members=$(tsocmd.sh listds "${proclib}" members | sed -e '1,/--MEMBERS--/d')
+  members=$(tsocmd.sh listds "'${proclib}'" members | sed -e '1,/--MEMBERS--/d')
   for member in $members
   do
     echo "[${SCRIPT_NAME}]   - ${member}"
@@ -263,7 +179,7 @@ if [ -z "$FOUND_ZOWESVR_AT" ]; then
   echo "[${SCRIPT_NAME}][warn] cannot find ${CI_ZOWE_DS_MEMBER} in PROCLIBs, skipped."
 else
   echo "[${SCRIPT_NAME}] found ${CI_ZOWE_DS_MEMBER} in ${FOUND_ZOWESVR_AT}, deleting ..."
-  run_script_with_timeout "tsocmd.sh DELETE '${FOUND_ZOWESVR_AT}(${CI_ZOWE_DS_MEMBER})'" 10
+  tsocmd.sh DELETE "'${FOUND_ZOWESVR_AT}(${CI_ZOWE_DS_MEMBER})'"
 fi
 echo
 
@@ -288,13 +204,10 @@ if [ ! -f "${CI_INSTALL_DIR}/opercmd" ]; then
   echo "[${SCRIPT_NAME}][error] opercmd doesn't exist."
   exit 1;
 fi
-# make sure profile noprefix
-export TSOPROFILE="noprefix"
-tsocmd.sh profile noprefix
 # listing all proclibs and members
 FOUND_DS_MEMBER_AT=
 echo "[${SCRIPT_NAME}] - finding in ${CI_XMEM_LOADLIB} ..."
-members=$(tsocmd.sh listds "${CI_XMEM_LOADLIB}" members | sed -e '1,/--MEMBERS--/d')
+members=$(tsocmd.sh listds "'${CI_XMEM_LOADLIB}'" members | sed -e '1,/--MEMBERS--/d')
 for member in $members
 do
   echo "[${SCRIPT_NAME}]   - ${member}"
@@ -308,8 +221,7 @@ if [ -z "$FOUND_DS_MEMBER_AT" ]; then
   echo "[${SCRIPT_NAME}][warn] cannot find ${CI_XMEM_LOADLIB_MEMBER} in ${CI_XMEM_LOADLIB}, skipped."
 else
   echo "[${SCRIPT_NAME}] found ${CI_XMEM_LOADLIB_MEMBER} in ${FOUND_DS_MEMBER_AT}, deleting ..."
-  # run_script_with_timeout "tsocmd DELETE '${FOUND_DS_MEMBER_AT}(${CI_XMEM_LOADLIB_MEMBER})'" 10
-  run_script_with_timeout "tsocmd.sh DELETE '${FOUND_DS_MEMBER_AT}'" 10
+  tsocmd.sh DELETE "'${FOUND_DS_MEMBER_AT}(${CI_XMEM_LOADLIB_MEMBER})'"
 fi
 echo
 
@@ -319,13 +231,10 @@ if [ ! -f "${CI_INSTALL_DIR}/opercmd" ]; then
   echo "[${SCRIPT_NAME}][error] opercmd doesn't exist."
   exit 1;
 fi
-# make sure profile noprefix
-export TSOPROFILE="noprefix"
-tsocmd.sh profile noprefix
 # listing all proclibs and members
 FOUND_DS_MEMBER_AT=
 echo "[${SCRIPT_NAME}] - finding in ${CI_XMEM_PARMLIB} ..."
-members=$(tsocmd.sh listds "${CI_XMEM_PARMLIB}" members | sed -e '1,/--MEMBERS--/d')
+members=$(tsocmd.sh listds "'${CI_XMEM_PARMLIB}'" members | sed -e '1,/--MEMBERS--/d')
 for member in $members
 do
   echo "[${SCRIPT_NAME}]   - ${member}"
@@ -339,8 +248,7 @@ if [ -z "$FOUND_DS_MEMBER_AT" ]; then
   echo "[${SCRIPT_NAME}][warn] cannot find ${CI_XMEM_PARMLIB_MEMBER} in ${CI_XMEM_PARMLIB}, skipped."
 else
   echo "[${SCRIPT_NAME}] found ${CI_XMEM_PARMLIB_MEMBER} in ${FOUND_DS_MEMBER_AT}, deleting ..."
-  # run_script_with_timeout "tsocmd DELETE '${FOUND_DS_MEMBER_AT}(${CI_XMEM_PARMLIB_MEMBER})'" 10
-  run_script_with_timeout "tsocmd.sh DELETE '${FOUND_DS_MEMBER_AT}'" 10
+  tsocmd.sh DELETE "'${FOUND_DS_MEMBER_AT}(${CI_XMEM_PARMLIB_MEMBER})'"
 fi
 echo
 
@@ -350,16 +258,13 @@ if [ ! -f "${CI_INSTALL_DIR}/opercmd" ]; then
   echo "[${SCRIPT_NAME}][error] opercmd doesn't exist."
   exit 1;
 fi
-# make sure profile noprefix
-export TSOPROFILE="noprefix"
-tsocmd.sh profile noprefix
 # listing all proclibs and members
 FOUND_ZWESIS01_AT=
 procs=$("${CI_INSTALL_DIR}/opercmd" '$d proclib' | grep 'DSNAME=.*\.PROCLIB' | sed 's/.*DSNAME=\(.*\)\.PROCLIB.*/\1.PROCLIB/')
 for proclib in $procs
 do
   echo "[${SCRIPT_NAME}] - finding in $proclib ..."
-  members=$(tsocmd.sh listds "${proclib}" members | sed -e '1,/--MEMBERS--/d')
+  members=$(tsocmd.sh listds "'${proclib}'" members | sed -e '1,/--MEMBERS--/d')
   for member in $members
   do
     echo "[${SCRIPT_NAME}]   - ${member}"
@@ -374,7 +279,7 @@ if [ -z "$FOUND_ZWESIS01_AT" ]; then
   echo "[${SCRIPT_NAME}][warn] cannot find ${CI_XMEM_PROCLIB_MEMBER} in PROCLIBs, skipped."
 else
   echo "[${SCRIPT_NAME}] found ${CI_XMEM_PROCLIB_MEMBER} in ${FOUND_ZWESIS01_AT}, deleting ..."
-  run_script_with_timeout "tsocmd.sh DELETE '${FOUND_ZWESIS01_AT}(${CI_XMEM_PROCLIB_MEMBER})'" 10
+  tsocmd.sh DELETE "'${FOUND_ZWESIS01_AT}(${CI_XMEM_PROCLIB_MEMBER})'"
 fi
 echo
 
