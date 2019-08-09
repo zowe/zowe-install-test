@@ -159,6 +159,7 @@ function runJob {
         $operdir/opercmd "\$DJ${jobid},CC" > /tmp/dj.$$.cc
             # $DJ gives ...
             # ... $HASP890 JOB(JOB1)      CC=(COMPLETED,RC=0)
+            cat /tmp/dj.$$.cc
         grep CC= /tmp/dj.$$.cc > /dev/null
         if [[ $? -eq 0 ]]
         then
