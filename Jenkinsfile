@@ -26,7 +26,6 @@ node('ibm-jenkins-slave-dind') {
   def smpeHlqTzone      = 'ZOE.SMPE'
   def smpeHlqDzone      = 'ZOE.SMPE'
   def smpePathPrefix    = '/tmp/'
-  def smpePathZfs       = ''
   def smpeFmid          = ''
   def smpeRelfilePrefix = 'ZOE'
   def artifactsForUploadAndInstallation = [
@@ -430,7 +429,6 @@ EOF"""
         timeout(60) {
           def skipTempFixes = ""
           Boolean uninstallZowe = false
-          smpePathZfs = "${params.INSTALL_DIR}/zowe/smpe"
           // FIXME: remove me
           smpeFmid = "AZWE001"
           if (params.SKIP_TEMP_FIXES) {
@@ -446,7 +444,6 @@ EOF"""
             // FIXME: modify uninstall-zowe.sh to uninstall Zowe installed with SMP/e package
             // FIXME: since we don't know what's the last installation is with regular PAX or SMP/e package,
             //        we need to test and uninstall both of them.
-            // (./uninstall-zowe.sh -i ${params.INSTALL_DIR} -t ${params.ZOWE_ROOT_DIR} -m ${params.PROCLIB_MEMBER})
             sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
 cd ${params.INSTALL_DIR}
 (iconv -f ISO8859-1 -t IBM-1047 opercmd > opercmd.new) && mv opercmd.new opercmd && chmod +x opercmd
@@ -454,18 +451,17 @@ cd ${params.INSTALL_DIR}
 (iconv -f ISO8859-1 -t IBM-1047 tsocmds.sh > tsocmds.sh.new) && mv tsocmds.sh.new tsocmds.sh && chmod +x tsocmds.sh
 (iconv -f ISO8859-1 -t IBM-1047 uninstall-zowe.sh > uninstall-zowe.sh.new) && mv uninstall-zowe.sh.new uninstall-zowe.sh && chmod +x uninstall-zowe.sh
 (iconv -f ISO8859-1 -t IBM-1047 uninstall-SMPE-PAX.sh > uninstall-SMPE-PAX.sh.new) && mv uninstall-SMPE-PAX.sh.new uninstall-SMPE-PAX.sh && chmod +x uninstall-SMPE-PAX.sh
-(./uninstall-SMPE-PAX.sh ${smpeHlq} ${smpeHlqCsi} ${smpeHlqTzone} ${smpeHlqDzone} ${smpePathPrefix} ${params.INSTALL_DIR} ${smpePathZfs} ${smpeFmid} ${smpeRelfilePrefix})
+./uninstall-zowe.sh -i ${params.INSTALL_DIR} -t ${params.ZOWE_ROOT_DIR} -m ${params.PROCLIB_MEMBER}
+./uninstall-SMPE-PAX.sh ${smpeHlq} ${smpeHlqCsi} ${smpeHlqTzone} ${smpeHlqDzone} ${smpePathPrefix} ${params.INSTALL_DIR} ${params.INSTALL_DIR}/extracted ${smpeFmid} ${smpeRelfilePrefix}
 echo "[uninstall] done" && exit 0
 EOF"""
           }
-
-          // FIXME: remove me
-          error "debugging premature exit"
 
           if (params.IS_SMPE_PACKAGE) {
             sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
 cd ${params.INSTALL_DIR} && \
   (iconv -f ISO8859-1 -t IBM-1047 install-SMPE-PAX.sh > install-SMPE-PAX.sh.new) && mv install-SMPE-PAX.sh.new install-SMPE-PAX.sh && chmod +x install-SMPE-PAX.sh
+rm -fr ${params.INSTALL_DIR}/extracted && mkdir -p ${params.INSTALL_DIR}/extracted
 ./install-SMPE-PAX.sh \
   ${smpeHlq} \
   ${smpeHlqCsi} \
@@ -473,7 +469,7 @@ cd ${params.INSTALL_DIR} && \
   ${smpeHlqDzone} \
   ${smpePathPrefix} \
   ${params.INSTALL_DIR} \
-  ${smpePathZfs} \
+  ${params.INSTALL_DIR}/extracted \
   ${smpeFmid} \
   ${smpeRelfilePrefix} || { echo "[install-SMPE-PAX.sh] failed"; exit 1; }
 echo "[install-SMPE-PAX.sh] done, start configuring ..."
