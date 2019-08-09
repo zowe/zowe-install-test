@@ -5,7 +5,8 @@
 # Requires opercmd to check job RC
 
 # Inputs
-# $download_path/$FMID.$README      # EBCDIC text of README job JCL text file
+# <OLD VERSION> $download_path/$FMID.$README      # EBCDIC text of README job JCL text file
+# $download_path/$FMID.$README      # ASCII  text of README job JCL text file
 # $download_path/$FMID.pax.Z        # binary SMP/E PAX file of Zowe product
 
 # identify this script
@@ -176,30 +177,21 @@ function runJob {
 # README -- README -- README
 
 # convert the README to EBCDIC if required
-# iconv -f ISO8859-1 -t IBM-1047 $download_path/$FMID.$README > iebupdte.jcl0  # old
-# iconv -f ISO8859-1 -t IBM-1047 $download_path/$FMID.README.jcl > iebupdte.jcl0  # old
-# cp $download_path/$FMID.$README iebupdte.jcl0
+iconv -f ISO8859-1 -t IBM-1047 $download_path/$FMID.$README > gimunzip.EBCDIC.jcl
+grep "//GIMUNZIP " gimunzip.EBCDIC.jcl > /dev/null
+if [[ $? -ne 0 ]]
+then
+    echo $SCRIPT ERROR: No GIMUNZIP JOB statement found in $download_path/$FMID.$README
+    exit 1
+fi
+
 # Extract the GIMUNZIP job step
-sed -n '/\/\/GIMUNZIP /,$p' $download_path/$FMID.$README > gimunzip.jcl0
+# sed -n '/\/\/GIMUNZIP /,$p' $download_path/$FMID.$README > gimunzip.jcl0
+sed -n '/\/\/GIMUNZIP /,$p' gimunzip.EBCDIC.jcl > gimunzip.jcl0
 # chmod a+r AZWE001.readme.EBCDIC.txt
 
 # tailor the README
 # tailor the job
-# ... manually for now .... :sed -f gimunzip.sed iebupdte.jcl0 > iebupdte.jcl
-
-# sed "\
-#     s+@zfs_path@+${zfs_path}+; \
-#     s+"&FMID..SMPMCS+"SMPMCS+; \
-#     s+@PREFIX@.&FMID..SMPMCS+${hlq}.${FMID}.SMPMCS+; \
-#     s+"&FMID..F1+"${FMID}.F1+; \
-#     s+@PREFIX@.&FMID..F1+${hlq}.${FMID}.F1+; \
-#     s+"&FMID..F2+"${FMID}.F2+; \
-#     s+@PREFIX@.&FMID..F2+${hlq}.${FMID}.F2+; \
-#     s+"&FMID..F3+"${FMID}.F3+; \
-#     s+@PREFIX@.&FMID..F3+${hlq}.${FMID}.F3+; \
-#     s+"&FMID..F4+"${FMID}.F4+; \
-#     s+@PREFIX@.&FMID..F4+${hlq}.${FMID}.F4+; " \
-#     iebupdte.jcl0 > iebupdte.jcl
 
 # Tailor the STEP JCL
 sed "\
@@ -207,10 +199,6 @@ sed "\
     s+&FMID\.+${FMID}+; \
     s+@PREFIX@+${PREFIX}+" \
     gimunzip.jcl0 > gimunzip.jcl1
-
-# Run the iebupdte job
-    #  s+@PREFIX@+${hlq}+" \
-# runJob iebupdte
 
 # loads 3 jobs:
 #
@@ -229,19 +217,9 @@ cd $zfs_path
 echo; echo $SCRIPT un-PAX SMP/E file
 pax -rvf $download_path/$FMID.pax.Z
 
-
-# # extract the GIMUNZIP job
-# sed -n '/\/\/GIMUNZIP /,$p' AZWE001.readme.EBCDIC.txt > gimunzip.jcl0
-
 # prepend the JOB statement
 sed '1 i\
 \/\/GIMUNZIP JOB' gimunzip.jcl1 > gimunzip.jcl
-
-# # tailor the job
-# sed -f gimunzip.sed gimunzip.jcl1 > gimunzip.jcl
-
-# fetch the GIMUNZIP job from the PDS that IEBUPDTE created
-# tsocmd oput "  '${hlq}.install.jcl(gimunzip)' 'gimunzip.jcl' "
 
 # Run the GIMUNZIP job
 runJob gimunzip.jcl
