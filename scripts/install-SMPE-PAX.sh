@@ -106,7 +106,11 @@ chmod -R 777 ${pathprefix}usr
 rm -fR ${pathprefix}usr # because target is ${pathprefix}usr/lpp/zowe
 
 operdir=$SCRIPT_DIR       # this is where opercmd should be available
-grep REXX $operdir/opercmd 1> /dev/null 2> /dev/null
+
+echo operdir contains 
+ls -l $operdir
+
+head -1 $operdir/opercmd | grep REXX 1> /dev/null 2> /dev/null
 if [[ $? -ne 0 ]]
 then
     echo $SCRIPT ERROR: opercmd not found in $operdir or is not valid REXX 
@@ -182,7 +186,7 @@ function runJob {
     # echo; echo $SCRIPT function runJob ended
 }
 
-cd $zfs_path    # extract pax file and create work files here
+
 
 # README -- README -- README
 
@@ -222,18 +226,17 @@ sed "\
 # make the directory to hold the runtimes
 mkdir -p ${pathprefix}usr/lpp/zowe/SMPE
 
-# un-pax the main FMID file
-
-echo; echo $SCRIPT un-PAX SMP/E file in `pwd`
-pax -rvf $download_path/$FMID.pax.Z
-
 # prepend the JOB statement
 sed '1 i\
 \/\/GIMUNZIP JOB' gimunzip.jcl1 > gimunzip.jcl
 
-# Run the GIMUNZIP job
-runJob gimunzip.jcl
+# un-pax the main FMID file
+cd $zfs_path    # extract pax file and create work files here
+echo; echo $SCRIPT un-PAX SMP/E file in `pwd`
+pax -rvf $download_path/$FMID.pax.Z
 
+# Run the GIMUNZIP job
+runJob $operdir/gimunzip.jcl
 
 # SMP/E -- SMP/E -- SMP/E -- SMP/E
 
@@ -248,7 +251,7 @@ for smpejob in \
 do
     # tailor the SMP/E jobs (unedited ones are in .BAK)
     # tsocmd oput "  '${hlq}.${FMID}.F1($smpejob)' '$smpejob.jcl0' "
-    tsocmd.sh oput "  '${PREFIX}.ZOWE.${FMID}.F1($smpejob)' '$smpejob.jcl0' "
+    $operdir/tsocmd.sh oput "  '${PREFIX}.ZOWE.${FMID}.F1($smpejob)' '$smpejob.jcl0' "
     # ${hlq}.${FMID}.F1 ... ZOE.AZWE001.F1.BAK($smpejob)
 
 	# sed "s/#hlq/$PREFIX/" $smpejob.jcl0 > $smpejob.jcl1
