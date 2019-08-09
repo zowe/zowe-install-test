@@ -22,11 +22,13 @@ SCRIPT_NAME=$(basename "$0")
 DEFAULT_CI_ZOWE_ROOT_DIR=/zaas1/zowe
 DEFAULT_CI_INSTALL_DIR=/zaas1/zowe-install
 DEFAULT_CI_ZOWE_DS_MEMBER=ZOWESVR
+DEFAULT_CI_ZOWE_JOB_NAME=ZOWESV1
 CI_ZOWE_ROOT_DIR=$DEFAULT_CI_ZOWE_ROOT_DIR
 CI_INSTALL_DIR=$DEFAULT_CI_INSTALL_DIR
 PROFILE=~/.profile
 ZOWE_PROFILE=~/.zowe_profile
 CI_ZOWE_DS_MEMBER=$DEFAULT_CI_ZOWE_DS_MEMBER
+CI_ZOWE_JOB_NAME=$DEFAULT_CI_ZOWE_JOB_NAME
 # FIXME: these are hardcoded
 CI_XMEM_PROCLIB_MEMBER=ZWESIS01
 CI_XMEM_PARMLIB=IZUSVR.PARMLIB
@@ -134,9 +136,10 @@ function usage {
   echo "  -i  Zowe install working folder. Optional, default is $DEFAULT_CI_INSTALL_DIR."
   echo "  -t  Zowe target folder. Optional, default is $DEFAULT_CI_ZOWE_ROOT_DIR."
   echo "  -m  Zowe PROCLIB data set member name. Optional, default is $DEFAULT_CI_ZOWE_DS_MEMBER."
+  echo "  -j  Zowe job name. Optional, default is $DEFAULT_CI_ZOWE_JOB_NAME."
   echo
 }
-while getopts ":hi:t:m:" opt; do
+while getopts ":hi:t:m:j:" opt; do
   case ${opt} in
     h)
       usage
@@ -150,6 +153,9 @@ while getopts ":hi:t:m:" opt; do
       ;;
     m)
       CI_ZOWE_DS_MEMBER=$OPTARG
+      ;;
+    j)
+      CI_ZOWE_JOB_NAME=$OPTARG
       ;;
     \?)
       echo "[${SCRIPT_NAME}][error] invalid option: -$OPTARG" >&2
@@ -185,10 +191,21 @@ echo "[${SCRIPT_NAME}] stopping Zowe ..."
 if [ -f "${CI_ZOWE_ROOT_DIR}/scripts/zowe-stop.sh" ]; then
   (exec "${CI_ZOWE_ROOT_DIR}/scripts/zowe-stop.sh")
 elif [ -f "${CI_INSTALL_DIR}/opercmd" ]; then
+  # stop zowe before 1.4.0
   (exec "${CI_INSTALL_DIR}/opercmd" "C ${CI_ZOWE_DS_MEMBER}")
+  # stop zowe after 1.4.0
+  (exec "${CI_INSTALL_DIR}/opercmd" "C ${CI_ZOWE_JOB_NAME}")
 else
-  echo "[${SCRIPT_NAME}][WARN] - cannot find opercmd, please make sure ${CI_ZOWE_DS_MEMBER} is stopped."
+  echo "[${SCRIPT_NAME}][WARN] - cannot find opercmd, please make sure ${CI_ZOWE_JOB_NAME} is stopped."
 fi
+echo
+
+################################################################################
+# delete started tasks
+echo "[${SCRIPT_NAME}] deleting started tasks ..."
+run_script_with_timeout "tsocmd 'RDELETE STARTED (ZWESIS*.*)'" 10
+run_script_with_timeout "tsocmd 'RDELETE STARTED (ZOWESVR.*)'" 10
+run_script_with_timeout "tsocmd 'SETR RACLIST(STARTED) REFRESH'" 10
 echo
 
 # removing environment viarables from .profile
@@ -247,6 +264,21 @@ if [ -z "$FOUND_ZOWESVR_AT" ]; then
 else
   echo "[${SCRIPT_NAME}] found ${CI_ZOWE_DS_MEMBER} in ${FOUND_ZOWESVR_AT}, deleting ..."
   run_script_with_timeout "tsocmd DELETE '${FOUND_ZOWESVR_AT}(${CI_ZOWE_DS_MEMBER})'" 10
+fi
+echo
+
+# delet APF settings for LOADLIB
+echo "[${SCRIPT_NAME}] deleting APF settings of ${CI_XMEM_LOADLIB}(${CI_XMEM_LOADLIB_MEMBER}) ..."
+XMEM_LOADLIB_VOLUME=$(${CI_INSTALL_DIR}/opercmd "D PROG,APF,DSNAME=${CI_XMEM_LOADLIB}" | grep -e "[0-9]\\+ \\+[a-z0-9A-Z]\\+ \\+${CI_XMEM_LOADLIB}" | awk "{print \$2}")
+if [ -z "$XMEM_LOADLIB_VOLUME" ]; then
+  echo "[${SCRIPT_NAME}][warn] cannot find volume of ${CI_XMEM_LOADLIB}, skipped."
+else
+  echo "[${SCRIPT_NAME}] found volume of ${CI_XMEM_LOADLIB} is ${XMEM_LOADLIB_VOLUME}, deleting APF settings ..."
+  if [ "$XMEM_LOADLIB_VOLUME" = "SMS" ]; then
+    ${CI_INSTALL_DIR}/opercmd "SETPROG APF,DELETE,DSNAME=${CI_XMEM_LOADLIB},${XMEM_LOADLIB_VOLUME}"
+  else
+    ${CI_INSTALL_DIR}/opercmd "SETPROG APF,DELETE,DSNAME=${CI_XMEM_LOADLIB},VOLUME=${XMEM_LOADLIB_VOLUME}"
+  fi
 fi
 echo
 

@@ -96,7 +96,9 @@ describe(`test ${APP_TO_TEST}`, function() {
     // wait for page is loaded
     const treeContent = await waitUntilElement(driver, MVD_EXPLORER_TREE_SECTION);
     expect(treeContent).to.be.an('object');
-    await waitUntilElementIsGone(driver, 'div[mode=indeterminate]', treeContent);
+    // wait for a little bit before checking loading icon
+    await driver.sleep(10 * 1000);
+    await waitUntilElementIsGone(driver, 'div#loading-icon', treeContent);
     debug('page is fully loaded');
 
     // save screenshot

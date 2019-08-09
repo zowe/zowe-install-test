@@ -36,16 +36,16 @@ const PRE_INSTALLED_APPS = [
   // 'ZOS Subsystems',
   'API Catalog',
   'Editor',
+  'Sample Angular App',
+  'Sample React App',
   'IFrame Sample',
-  'React Sample',
-  'Angular Sample',
   // 'Hello World',
 ];
 const PRE_PINNED_APPS = [
   'TN3270',
   'VT Terminal',
-  'Angular Sample',
-  'React Sample',
+  'Sample Angular App',
+  'Sample React App',
   'IFrame Sample',
 ];
 
@@ -480,6 +480,7 @@ const waitUntilIframe = async(driver, iframeSelector, parent) => {
  * @param  {String}     appName  application name
  */
 const launchApp = async(driver, appName) => {
+  debug(`[launchApp] launching ${appName}`);
   await driver.switchTo().defaultContent();
 
   // find start icon
@@ -497,12 +498,14 @@ const launchApp = async(driver, appName) => {
   for (let item of menuItems) {
     const itemTitle = await getElement(item, 'p');
     const text = await itemTitle.getText();
+    debug(`[launchApp] found menu item ${text}`);
     if (text === appName) {
       app = item;
       break;
     }
   }
-  expect(app).to.not.be.null;
+  expect(app).to.not.be.undefined;
+  debug(`[launchApp] found ${appName}: ${app}`);
 
   // start app
   if (app) { // this check is not neccessary but SonarQube reports it as major bug
