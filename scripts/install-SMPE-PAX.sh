@@ -250,10 +250,7 @@ for smpejob in \
  ZWE7APLY \
  ZWE8ACPT
 do
-    # tailor the SMP/E jobs (unedited ones are in .BAK)
-    # tsocmd oput "  '${hlq}.${FMID}.F1($smpejob)' '$smpejob.jcl0' "
-    $operdir/tsocmd.sh oput "  '${PREFIX}.ZOWE.${FMID}.F1($smpejob)' '$smpejob.jcl0' "
-    # ${hlq}.${FMID}.F1 ... ZOE.AZWE001.F1.BAK($smpejob)
+    $operdir/tsocmd.sh oput "  '${PREFIX}.ZOWE.${FMID}.F1($smpejob)' '$zfs_path/$smpejob.jcl0' "
 
 	# sed "s/#hlq/$PREFIX/" $smpejob.jcl0 > $smpejob.jcl1
     # sed -f smpejob.sed $smpejob.jcl1 > $smpejob.jcl
@@ -283,11 +280,11 @@ do
     if [[ $smpejob = ZWE7APLY ]]
     then
         echo; echo $SCRIPT fix error in APPLY job PAX parameter
-        tsocmd.sh oput "  '${csihlq}.${FMID}.F4(ZWESHPAX)' 'ZWESHPAX.jcl0' "
+        tsocmd.sh oput "  '${csihlq}.${FMID}.F4(ZWESHPAX)' '$zfs_path/ZWESHPAX.jcl0' "
         echo; echo $SCRIPT find pe in JCL
         grep " -pe " ZWESHPAX.jcl0
         sed 's/ -pe / -pp /' ZWESHPAX.jcl0 > ZWESHPAX.jcl
-        tsocmd.sh oget " 'ZWESHPAX.jcl'  '${csihlq}.${FMID}.F4(ZWESHPAX)' "
+        tsocmd.sh oget " '$zfs_path/ZWESHPAX.jcl'  '${csihlq}.${FMID}.F4(ZWESHPAX)' "
     fi
 
     runJob $smpejob.jcl
