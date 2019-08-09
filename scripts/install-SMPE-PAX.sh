@@ -73,13 +73,17 @@ then
     exit 9
 fi
 
-head -1 $tsodir/tsocmd.sh | grep '#!/bin/sh' 1> /dev/null 2> /dev/null
-if [[ $? -ne 0 ]]
-then
-    echo $SCRIPT ERROR: tsocmd.h not found in $operdir or is not valid shell script  
-    echo $SCRIPT INFO: CWD is `pwd`
-    exit 9
-fi
+for cmd in tsocmds # tsocmd is not used
+do
+    head -1 $tsodir/$cmd.sh | grep '#!/bin/sh' 1> /dev/null 2> /dev/null
+    if [[ $? -ne 0 ]]
+    then
+        echo $SCRIPT ERROR: $cmd.sh not found in $tsodir or is not valid shell script  
+        echo $SCRIPT INFO: CWD is `pwd`
+        exit 9
+    fi
+done 
+
 
 README=readme.txt                   # the filename of the FMID.readme-v.m.r-smpe-test-nn-yyyymmddhhmmss.txt file
 
@@ -117,15 +121,11 @@ free all
 EndOfList
 
 # execute the multiple TSO commands
-tsocmds.sh /tmp/tso.$$.cmd
+$tsodir/tsocmds.sh /tmp/tso.$$.cmd
 rm /tmp/tso.$$.cmd 
 
 chmod -R 777 ${pathprefix}usr
 rm -fR ${pathprefix}usr # because target is ${pathprefix}usr/lpp/zowe
-
-
-
-
 
 function runJob {
 
@@ -201,8 +201,8 @@ function runJob {
 # README -- README -- README
 
 # convert the README to EBCDIC if required
-iconv -f ISO8859-1 -t IBM-1047 $download_path/$FMID.$README > gimunzip.EBCDIC.jcl
-grep "//GIMUNZIP " gimunzip.EBCDIC.jcl > /dev/null
+iconv -f ISO8859-1 -t IBM-1047 $download_path/$FMID.$README > $zfs_path/readme.EBCDIC.jcl
+grep "//GIMUNZIP " $zfs_path/readme.EBCDIC.jcl > /dev/null
 if [[ $? -ne 0 ]]
 then
     echo $SCRIPT ERROR: No GIMUNZIP JOB statement found in $download_path/$FMID.$README
@@ -211,7 +211,7 @@ fi
 
 # Extract the GIMUNZIP job step
 # sed -n '/\/\/GIMUNZIP /,$p' $download_path/$FMID.$README > gimunzip.jcl0
-sed -n '/\/\/GIMUNZIP /,$p' gimunzip.EBCDIC.jcl > gimunzip.jcl0
+sed -n '/\/\/GIMUNZIP /,$p' $zfs_path/readme.EBCDIC.jcl > $zfs_path/gimunzip.jcl0
 # chmod a+r AZWE001.readme.EBCDIC.txt
 
 # tailor the README
@@ -222,7 +222,7 @@ sed "\
     s+@zfs_path@+${zfs_path}+; \
     s+&FMID\.+${FMID}+; \
     s+@PREFIX@+${PREFIX}+" \
-    gimunzip.jcl0 > gimunzip.jcl1
+    $zfs_path/gimunzip.jcl0 > $zfs_path/gimunzip.jcl1
 
 # loads 3 jobs:
 #
@@ -238,7 +238,7 @@ mkdir -p ${pathprefix}usr/lpp/zowe/SMPE
 
 # prepend the JOB statement
 sed '1 i\
-\/\/GIMUNZIP JOB' gimunzip.jcl1 > gimunzip.jcl
+\/\/GIMUNZIP JOB' $zfs_path/gimunzip.jcl1 > $zfs_path/gimunzip.jcl
 
 # un-pax the main FMID file
 cd $zfs_path    # extract pax file and create work files here
@@ -246,7 +246,7 @@ echo; echo $SCRIPT un-PAX SMP/E file to $zfs_path
 pax -rvf $download_path/$FMID.pax.Z
 
 # Run the GIMUNZIP job
-runJob $operdir/gimunzip.jcl
+runJob $zfs_path/gimunzip.jcl
 
 # SMP/E -- SMP/E -- SMP/E -- SMP/E
 
@@ -259,8 +259,9 @@ for smpejob in \
  ZWE7APLY \
  ZWE8ACPT
 do
-    $operdir/tsocmd.sh oput "  '${PREFIX}.ZOWE.${FMID}.F1($smpejob)' '$zfs_path/$smpejob.jcl0' "
-
+    # $tsodir/tsocmd.sh oput "  '${PREFIX}.ZOWE.${FMID}.F1($smpejob)' '$smpejob.jcl0' "
+    cp "//'${PREFIX}.ZOWE.${FMID}.F1($smpejob)'" $zfs_path/$smpejob.jcl0
+    
 	# sed "s/#hlq/$PREFIX/" $smpejob.jcl0 > $smpejob.jcl1
     # sed -f smpejob.sed $smpejob.jcl1 > $smpejob.jcl
 
@@ -278,7 +279,7 @@ do
         s/<job parameters>//; \
         s+-PathPrefix-+${pathprefix}+; \
         s/ CHECK //" \
-        $smpejob.jcl0 > $smpejob.jcl
+        $zfs_path/$smpejob.jcl0 > $zfs_path/$smpejob.jcl
 
     #   hlq was PREFIX in later PAXes, so that line was as below to cater for that
             # s/#hlq/${PREFIX}/; \
@@ -289,11 +290,13 @@ do
     if [[ $smpejob = ZWE7APLY ]]
     then
         echo; echo $SCRIPT fix error in APPLY job PAX parameter
-        tsocmd.sh oput "  '${csihlq}.${FMID}.F4(ZWESHPAX)' '$zfs_path/ZWESHPAX.jcl0' "
+        # $tsodir/tsocmd.sh oput "  '${csihlq}.${FMID}.F4(ZWESHPAX)' 'ZWESHPAX.jcl0' "
+        cp "//'${csihlq}.${FMID}.F4(ZWESHPAX)'" $zfs_path/ZWESHPAX.jcl0
         echo; echo $SCRIPT find pe in JCL
-        grep " -pe " ZWESHPAX.jcl0
-        sed 's/ -pe / -pp /' ZWESHPAX.jcl0 > ZWESHPAX.jcl
-        tsocmd.sh oget " '$zfs_path/ZWESHPAX.jcl'  '${csihlq}.${FMID}.F4(ZWESHPAX)' "
+        grep " -pe " $zfs_path/ZWESHPAX.jcl0
+        sed 's/ -pe / -pp /' $zfs_path/ZWESHPAX.jcl0 > $zfs_path/ZWESHPAX.jcl
+        # $tsodir/tsocmd.sh oget " 'ZWESHPAX.jcl'  '${csihlq}.${FMID}.F4(ZWESHPAX)' "
+        cp $zfs_path/ZWESHPAX.jcl  "//'${csihlq}.${FMID}.F4(ZWESHPAX)'"
     fi
 
     runJob $zfs_path/$smpejob.jcl
