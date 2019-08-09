@@ -105,6 +105,14 @@ rm /tmp/tso.$$.cmd
 chmod -R 777 ${pathprefix}usr
 rm -fR ${pathprefix}usr # because target is ${pathprefix}usr/lpp/zowe
 
+operdir=$SCRIPT_DIR       # this is where opercmd should be available
+grep REXX $operdir/opercmd 1> /dev/null 2> /dev/null
+if [[ $? -ne 0 ]]
+then
+    echo $SCRIPT ERROR: opercmd not found in $operdir or is not valid REXX 
+    echo $SCRIPT INFO: CWD is `pwd`
+    exit 9
+fi
 
 function runJob {
 
@@ -174,6 +182,8 @@ function runJob {
     # echo; echo $SCRIPT function runJob ended
 }
 
+cd $zfs_path    # extract pax file and create work files here
+
 # README -- README -- README
 
 # convert the README to EBCDIC if required
@@ -213,8 +223,8 @@ sed "\
 mkdir -p ${pathprefix}usr/lpp/zowe/SMPE
 
 # un-pax the main FMID file
-cd $zfs_path
-echo; echo $SCRIPT un-PAX SMP/E file
+
+echo; echo $SCRIPT un-PAX SMP/E file in `pwd`
 pax -rvf $download_path/$FMID.pax.Z
 
 # prepend the JOB statement
