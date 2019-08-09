@@ -62,8 +62,25 @@ echo $SCRIPT    zfs_path=$7
 echo $SCRIPT    FMID=$8
 echo $SCRIPT    PREFIX=$9
 
-# download_path=/tmp               # change this to where PAX and README are located
-# FMID=AZWE001
+operdir=$SCRIPT_DIR         # this is where opercmd should be available
+tsodir=$SCRIPT_DIR          # this is where tsocmd(s).sh should be available
+
+head -1 $operdir/opercmd | grep REXX 1> /dev/null 2> /dev/null
+if [[ $? -ne 0 ]]
+then
+    echo $SCRIPT ERROR: opercmd not found in $operdir or is not valid REXX 
+    echo $SCRIPT INFO: CWD is `pwd`
+    exit 9
+fi
+
+head -1 $tsodir/tsocmd.sh | grep '#!/bin/sh' 1> /dev/null 2> /dev/null
+if [[ $? -ne 0 ]]
+then
+    echo $SCRIPT ERROR: tsocmd.h not found in $operdir or is not valid shell script  
+    echo $SCRIPT INFO: CWD is `pwd`
+    exit 9
+fi
+
 README=readme.txt                   # the filename of the FMID.readme-v.m.r-smpe-test-nn-yyyymmddhhmmss.txt file
 
 # # prepare to run this script
@@ -106,25 +123,17 @@ rm /tmp/tso.$$.cmd
 chmod -R 777 ${pathprefix}usr
 rm -fR ${pathprefix}usr # because target is ${pathprefix}usr/lpp/zowe
 
-operdir=$SCRIPT_DIR       # this is where opercmd should be available
 
-echo operdir contains 
-ls -l $operdir
 
-head -1 $operdir/opercmd | grep REXX 1> /dev/null 2> /dev/null
-if [[ $? -ne 0 ]]
-then
-    echo $SCRIPT ERROR: opercmd not found in $operdir or is not valid REXX 
-    echo $SCRIPT INFO: CWD is `pwd`
-    exit 9
-fi
+
 
 function runJob {
 
-    # echo; echo $SCRIPT function runJob started
+    echo; echo $SCRIPT function runJob started
     jclname=$1
 
-    # echo; echo $SCRIPT jclname=$jclname #jobname=$jobname
+    echo $SCRIPT jclname=$jclname #jobname=$jobname
+    ls -l $jclname
 
     # submit the job using the USS submit command
     submit $jclname > /tmp/submit.job.$$.out
@@ -287,7 +296,7 @@ do
         tsocmd.sh oget " '$zfs_path/ZWESHPAX.jcl'  '${csihlq}.${FMID}.F4(ZWESHPAX)' "
     fi
 
-    runJob $smpejob.jcl
+    runJob $zfs_path/$smpejob.jcl
 
 done
 
