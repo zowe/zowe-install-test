@@ -10,7 +10,8 @@
 # $download_path/$FMID.pax.Z        # binary SMP/E PAX file of Zowe product
 
 # identify this script
-SCRIPT_DIR="$(dirname $0)"
+# SCRIPT_DIR="$(dirname $0)"
+SCRIPT_DIR=`pwd`
 SCRIPT="$(basename $0)"
 echo script $SCRIPT started from $SCRIPT_DIR
 
@@ -232,7 +233,7 @@ sed '1 i\
 
 # un-pax the main FMID file
 cd $zfs_path    # extract pax file and create work files here
-echo; echo $SCRIPT un-PAX SMP/E file in `pwd`
+echo; echo $SCRIPT un-PAX SMP/E file to $zfs_path
 pax -rvf $download_path/$FMID.pax.Z
 
 # Run the GIMUNZIP job
