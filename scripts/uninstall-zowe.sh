@@ -22,11 +22,13 @@ SCRIPT_NAME=$(basename "$0")
 DEFAULT_CI_ZOWE_ROOT_DIR=/ZOWE/staging/zowe
 DEFAULT_CI_INSTALL_DIR=/ZOWE/zowe-installs
 DEFAULT_CI_ZOWE_DS_MEMBER=ZOWESVR
+DEFAULT_CI_ZOWE_JOB_NAME=ZOWESV1
 CI_ZOWE_ROOT_DIR=$DEFAULT_CI_ZOWE_ROOT_DIR
 CI_INSTALL_DIR=$DEFAULT_CI_INSTALL_DIR
 PROFILE=~/.profile
 ZOWE_PROFILE=~/.zowe_profile
 CI_ZOWE_DS_MEMBER=$DEFAULT_CI_ZOWE_DS_MEMBER
+CI_ZOWE_JOB_NAME=$DEFAULT_CI_ZOWE_JOB_NAME
 # FIXME: these are hardcoded
 CI_XMEM_PROCLIB_MEMBER=ZWESIS01
 CI_XMEM_PARMLIB=ZOWEAD3.PARMLIB
@@ -134,9 +136,10 @@ function usage {
   echo "  -i  Zowe install working folder. Optional, default is $DEFAULT_CI_INSTALL_DIR."
   echo "  -t  Zowe target folder. Optional, default is $DEFAULT_CI_ZOWE_ROOT_DIR."
   echo "  -m  Zowe PROCLIB data set member name. Optional, default is $DEFAULT_CI_ZOWE_DS_MEMBER."
+  echo "  -j  Zowe job name. Optional, default is $DEFAULT_CI_ZOWE_JOB_NAME."
   echo
 }
-while getopts ":hi:t:m:" opt; do
+while getopts ":hi:t:m:j:" opt; do
   case ${opt} in
     h)
       usage
@@ -150,6 +153,9 @@ while getopts ":hi:t:m:" opt; do
       ;;
     m)
       CI_ZOWE_DS_MEMBER=$OPTARG
+      ;;
+    j)
+      CI_ZOWE_JOB_NAME=$OPTARG
       ;;
     \?)
       echo "[${SCRIPT_NAME}][error] invalid option: -$OPTARG" >&2
@@ -187,8 +193,13 @@ echo
 echo "[${SCRIPT_NAME}] stopping Zowe ..."
 if [ -f "${CI_ZOWE_ROOT_DIR}/scripts/zowe-stop.sh" ]; then
   (exec "${CI_ZOWE_ROOT_DIR}/scripts/zowe-stop.sh")
-else
+elif [ -f "${CI_INSTALL_DIR}/opercmd" ]; then
+  # stop zowe before 1.4.0
   (exec "${CI_INSTALL_DIR}/opercmd" "C ${CI_ZOWE_DS_MEMBER}")
+  # stop zowe after 1.4.0
+  (exec "${CI_INSTALL_DIR}/opercmd" "C ${CI_ZOWE_JOB_NAME}")
+else
+  echo "[${SCRIPT_NAME}][WARN] - cannot find opercmd, please make sure ${CI_ZOWE_JOB_NAME} is stopped."
 fi
 echo
 
