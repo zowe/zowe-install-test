@@ -236,7 +236,7 @@ sed "\
     s+&FMID\.+${FMID}+; \
     s+@PREFIX@+${PREFIX}+; \
     /archid=/ a\\
-        volser=$volser" \
+    \ \ \ \ \ \ \ \ \ volume=\"$volser\"" \
     $zfs_path/gimunzip.jcl0 > $zfs_path/gimunzip.jcl1    
 
 # loads 3 jobs:
