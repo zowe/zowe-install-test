@@ -15,7 +15,7 @@ SCRIPT_DIR=`pwd`
 SCRIPT="$(basename $0)"
 echo script $SCRIPT started from $SCRIPT_DIR
 
-if [[ $# -ne 10 ]]
+if [[ $# -ne 9 ]]   # until script is called with 10 parms
 then
 echo; echo $SCRIPT Usage:
 cat <<EndOfUsage
@@ -54,6 +54,7 @@ FMID=$8
 PREFIX=$9
 shift
 volser=$9
+volser=B3PRD3
 
 echo $SCRIPT    hlq=$hlq
 echo $SCRIPT    csihlq=$csihlq
