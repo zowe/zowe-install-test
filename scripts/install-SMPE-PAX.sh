@@ -298,7 +298,7 @@ do
         s/<job parameters>//; \
         s+-PathPrefix-+${pathprefix}+; \
         s+/\*VOLUMES(&CSIVOL)\*/+  VOLUMES(\&CSIVOL)  +; \
-        sed "s+//\* *VOL=SER=&CSIVOL+// VOL=SER=\&CSIVOL+"; \
+        s+//\* *VOL=SER=&CSIVOL+// VOL=SER=\&CSIVOL+; \
         s/ CHECK //" \
         $zfs_path/$smpejob.jcl0 > $zfs_path/$smpejob.jcl
 
