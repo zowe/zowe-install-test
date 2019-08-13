@@ -280,9 +280,13 @@ do
 	# sed "s/#hlq/$PREFIX/" $smpejob.jcl0 > $smpejob.jcl1
     # sed -f smpejob.sed $smpejob.jcl1 > $smpejob.jcl
 
+    # Also fix ... 
+    # //*           VOL=SER=&CSIVOL, 
+    # /*VOLUMES(DUMMY)*/
+
     sed "\
         s/#csihlq/${csihlq}/; \
-        s/#csivol/DUMMY/; \
+        s/#csivol/$volser/; \
         s/#tzone/TZONE/; \
         s/#dzone/DZONE/; \
         s/#hlq/${PREFIX}/; \
@@ -293,6 +297,8 @@ do
         s/#dvol//; \
         s/<job parameters>//; \
         s+-PathPrefix-+${pathprefix}+; \
+        s+/\*VOLUMES(&CSIVOL)\*/+  VOLUMES(\&CSIVOL)  +; \
+        sed "s+//\* *VOL=SER=&CSIVOL+// VOL=SER=\&CSIVOL+"; \
         s/ CHECK //" \
         $zfs_path/$smpejob.jcl0 > $zfs_path/$smpejob.jcl
 
