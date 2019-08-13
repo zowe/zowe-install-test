@@ -157,7 +157,7 @@ function runJob {
 
     # wait for job to finish
     jobdone=0
-    for secs in 1 5 10 30 100
+    for secs in 1 5 10 30 100 300 500
     do
         sleep $secs
     
@@ -230,7 +230,7 @@ sed -n '/\/\/GIMUNZIP /,$p' $zfs_path/readme.EBCDIC.jcl > $zfs_path/gimunzip.jcl
 #     s+&FMID\.+${FMID}+; \
 #     s+@PREFIX@+${PREFIX}+" \
 #     $zfs_path/gimunzip.jcl0 > $zfs_path/gimunzip.jcl1
-# Now also insert 'volser' after 'archid'
+# Now also insert 'volume=' after 'archid'
 sed "\
     s+@zfs_path@+${zfs_path}+; \
     s+&FMID\.+${FMID}+; \
