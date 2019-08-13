@@ -15,11 +15,11 @@ SCRIPT_DIR=`pwd`
 SCRIPT="$(basename $0)"
 echo script $SCRIPT started from $SCRIPT_DIR
 
-if [[ $# -ne 9 ]]
+if [[ $# -ne 10 ]]
 then
 echo; echo $SCRIPT Usage:
 cat <<EndOfUsage
-$SCRIPT Hlq Csihlq Thlq Dhlq Pathprefix download_path zfs_path FMID PREFIX
+$SCRIPT Hlq Csihlq Thlq Dhlq Pathprefix download_path zfs_path FMID PREFIX volser
 
    Parameter subsitutions:
  a.  for SMP/E jobs:
@@ -37,6 +37,7 @@ $SCRIPT Hlq Csihlq Thlq Dhlq Pathprefix download_path zfs_path FMID PREFIX
  7  zfs_path 	    /tmp/zowe/smpe	SMPDIR where GIMUNZIP unzips the PAX file
  8  FMID	        AZWE001	        The FMID for this release (omitted in archid of SMPMCS?)
  9  PREFIX	        ZOE.ZOWE        RELFILE prefix?
+10  volser          B3PRD3          volume serial number of a DASD volume to hold MVS datasets 
 
 EndOfUsage
 exit
@@ -51,16 +52,19 @@ download_path=$6
 zfs_path=$7
 FMID=$8
 PREFIX=$9
+shift
+volser=$9
 
-echo $SCRIPT    hlq=$1
-echo $SCRIPT    csihlq=$2
-echo $SCRIPT    thlq=$3
-echo $SCRIPT    dhlq=$4
-echo $SCRIPT    pathprefix=$5
-echo $SCRIPT    download_path=$6
-echo $SCRIPT    zfs_path=$7
-echo $SCRIPT    FMID=$8
-echo $SCRIPT    PREFIX=$9
+echo $SCRIPT    hlq=$hlq
+echo $SCRIPT    csihlq=$csihlq
+echo $SCRIPT    thlq=$thlq
+echo $SCRIPT    dhlq=$dhlq
+echo $SCRIPT    pathprefix=$pathprefix
+echo $SCRIPT    download_path=$download_path
+echo $SCRIPT    zfs_path=$zfs_path
+echo $SCRIPT    FMID=$FMID
+echo $SCRIPT    PREFIX=$PREFIX
+echo $SCRIPT    volser=$volser
 
 operdir=$SCRIPT_DIR         # this is where opercmd should be available
 tsodir=$SCRIPT_DIR          # this is where tsocmd(s).sh should be available
@@ -158,9 +162,10 @@ function runJob {
     
         $operdir/opercmd "\$DJ${jobid},CC" > /tmp/dj.$$.cc
             # $DJ gives ...
-            # ... $HASP890 JOB(JOB1)      CC=(COMPLETED,RC=0)
+            # ... $HASP890 JOB(JOB1)      CC=(COMPLETED,RC=0)  <-- accept this value
+            # ... $HASP890 JOB(GIMUNZIP)  CC=()  <-- reject this value
             cat /tmp/dj.$$.cc
-        grep CC= /tmp/dj.$$.cc > /dev/null
+        grep "CC=(..*)" /tmp/dj.$$.cc > /dev/null   # ensure CC() is not empty
         if [[ $? -eq 0 ]]
         then
             jobdone=1
@@ -219,11 +224,19 @@ sed -n '/\/\/GIMUNZIP /,$p' $zfs_path/readme.EBCDIC.jcl > $zfs_path/gimunzip.jcl
 # tailor the job
 
 # Tailor the STEP JCL
+# sed "\
+#     s+@zfs_path@+${zfs_path}+; \
+#     s+&FMID\.+${FMID}+; \
+#     s+@PREFIX@+${PREFIX}+" \
+#     $zfs_path/gimunzip.jcl0 > $zfs_path/gimunzip.jcl1
+# Now also insert 'volser' after 'archid'
 sed "\
     s+@zfs_path@+${zfs_path}+; \
     s+&FMID\.+${FMID}+; \
-    s+@PREFIX@+${PREFIX}+" \
-    $zfs_path/gimunzip.jcl0 > $zfs_path/gimunzip.jcl1
+    s+@PREFIX@+${PREFIX}+; \
+    /archid=/ a\\
+        volser=$volser" \
+    $zfs_path/gimunzip.jcl0 > $zfs_path/gimunzip.jcl1    
 
 # loads 3 jobs:
 #
