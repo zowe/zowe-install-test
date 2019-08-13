@@ -298,9 +298,12 @@ do
         s/<job parameters>//; \
         s+-PathPrefix-+${pathprefix}+; \
         s+/\*VOLUMES(&CSIVOL)\*/+  VOLUMES(\&CSIVOL)  +; \
-        s+//\* *VOL=SER=&CSIVOL+// VOL=SER=\&CSIVOL+; \
         s/ CHECK //" \
         $zfs_path/$smpejob.jcl0 > $zfs_path/$smpejob.jcl
+
+# don't specify this or you may run out of space 
+# s+//\* *VOL=SER=&CSIVOL+// VOL=SER=\&CSIVOL+; \
+
 
     #   hlq was PREFIX in later PAXes, so that line was as below to cater for that
             # s/#hlq/${PREFIX}/; \
