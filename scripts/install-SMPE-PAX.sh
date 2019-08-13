@@ -54,7 +54,7 @@ FMID=$8
 PREFIX=$9
 shift
 volser=$9
-volser=B3PRD3
+volser=B3IME1  # B3PRD3
 
 echo $SCRIPT    hlq=$hlq
 echo $SCRIPT    csihlq=$csihlq
@@ -287,6 +287,7 @@ do
     sed "\
         s/#csihlq/${csihlq}/; \
         s/#csivol/$volser/; \
+        s/#dvol/$volser/; \
         s/#tzone/TZONE/; \
         s/#dzone/DZONE/; \
         s/#hlq/${PREFIX}/; \
@@ -298,11 +299,13 @@ do
         s/<job parameters>//; \
         s+-PathPrefix-+${pathprefix}+; \
         s+/\*VOLUMES(&CSIVOL)\*/+  VOLUMES(\&CSIVOL)  +; \
+        s+//\* *VOL=SER=&CSIVOL+// VOL=SER=\&CSIVOL+; \
+        s+//\* *VOL=SER=&DVOL+// VOL=SER=\&DVOL+; \
         s/ CHECK //" \
         $zfs_path/$smpejob.jcl0 > $zfs_path/$smpejob.jcl
 
-# don't specify this or you may run out of space 
-# s+//\* *VOL=SER=&CSIVOL+// VOL=SER=\&CSIVOL+; \
+# ... you may run out of space 
+
 
 
     #   hlq was PREFIX in later PAXes, so that line was as below to cater for that
