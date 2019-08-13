@@ -47,14 +47,14 @@ node('ibm-jenkins-slave-dind') {
     string(
       name: 'ZOWE_ARTIFACTORY_PATTERN',
       description: 'Zowe artifactory download pattern',
-      defaultValue: 'libs-snapshot-local/com/project/zowe/*.pax',
+      defaultValue: 'libs-snapshot-local/org/zowe/*.pax',
       trim: true,
       required: true
     ),
     string(
       name: 'ZOWE_ARTIFACTORY_BUILD',
       description: 'Zowe artifactory download build',
-      defaultValue: 'zowe-install-packaging :: master',
+      defaultValue: 'zowe-install-packaging :: staging',
       trim: true
     ),
     string(
@@ -74,14 +74,14 @@ node('ibm-jenkins-slave-dind') {
     string(
       name: 'ZOWE_ROOT_DIR',
       description: 'Zowe installation root directory',
-      defaultValue: '/zaas1/zowe',
+      defaultValue: '/ZOWE/staging/zowe',
       trim: true,
       required: true
     ),
     string(
       name: 'INSTALL_DIR',
       description: 'Installation working directory',
-      defaultValue: '/zaas1/zowe-install',
+      defaultValue: '/ZOWE/zowe-installs',
       trim: true,
       required: true
     ),
@@ -193,52 +193,23 @@ node('ibm-jenkins-slave-dind') {
     string(
       name: 'ZOWE_MVD_TELNET_PORT',
       description: 'telnetPort for Zowe MVD terminals',
-      defaultValue: '23',
+      defaultValue: '623',
       trim: true,
-      required: true
-    ),
-    // >>>>>>>> SSH access of testing server Ubuntu layer
-    string(
-      name: 'TEST_IMAGE_HOST_SSH_HOST',
-      description: 'Test image host IP',
-      defaultValue: 'river.zowe.org',
-      trim: true,
-      required: true
-    ),
-    string(
-      name: 'TEST_IMAGE_HOST_SSH_PORT',
-      description: 'Test image host SSH port',
-      defaultValue: '22',
-      trim: true,
-      required: true
-    ),
-    credentials(
-      name: 'TEST_IMAGE_HOST_SSH_CREDENTIAL',
-      description: 'The SSH credential used to connect to zD&T test image host (Ubuntu layer)',
-      credentialType: 'com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl',
-      defaultValue: 'ssh-zdt-test-image-host',
       required: true
     ),
     // >>>>>>>> SSH access of testing server zOSaaS layer
-    string(
-      name: 'TEST_IMAGE_GUEST_SSH_HOST',
-      description: 'Test image guest IP',
-      defaultValue: 'river.zowe.org',
-      trim: true,
-      required: true
-    ),
-    string(
-      name: 'TEST_IMAGE_GUEST_SSH_PORT',
-      description: 'Test image guest SSH port',
-      defaultValue: '2022',
-      trim: true,
+    credentials(
+      name: 'TEST_IMAGE_GUEST_SSH_HOSTPORT',
+      description: 'The SSH credential used to connect to zD&T test image guest (zOSaaS layer)',
+      credentialType: 'com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl',
+      defaultValue: 'ssh-marist-server-zzow01-hostport',
       required: true
     ),
     credentials(
       name: 'TEST_IMAGE_GUEST_SSH_CREDENTIAL',
       description: 'The SSH credential used to connect to zD&T test image guest (zOSaaS layer)',
       credentialType: 'com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl',
-      defaultValue: 'ssh-zdt-test-image-guest',
+      defaultValue: 'ssh-marist-server-zzow01',
       required: true
     ),
     // >>>>>>>> parametters for test cases
@@ -321,47 +292,6 @@ node('ibm-jenkins-slave-dind') {
     timeout: [time: 20, unit: 'MINUTES']
   )
 
-//   pipeline.createStage(
-//     name          : "Reset zOSaaS Image",
-//     isSkippable   : true,
-//     shouldExecute : {
-//       return !params.SKIP_RESET_IMAGE
-//     },
-//     stage         : {
-//       withCredentials([
-//         usernamePassword(
-//           credentialsId: params.TEST_IMAGE_HOST_SSH_CREDENTIAL,
-//           passwordVariable: 'PASSWORD',
-//           usernameVariable: 'USERNAME'
-//         )
-//       ]) {
-//         // send script to test image host
-//         sh """SSHPASS=${PASSWORD} sshpass -e sftp -o BatchMode=no -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -b - -P ${params.TEST_IMAGE_HOST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_HOST_SSH_HOST} << EOF
-// put scripts/refresh-zosaas.sh /home/ibmsys1
-// put scripts/temp-fixes-prereqs-image.sh /home/ibmsys1
-// chmod 755 /home/ibmsys1/refresh-zosaas.sh
-// chmod 755 /home/ibmsys1/temp-fixes-prereqs-image.sh
-// EOF"""
-
-//         // run refresh-zosaas.sh
-//         timeout(90) {
-//           sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_HOST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_HOST_SSH_HOST} << EOF
-// ~/refresh-zosaas.sh
-// exit 0
-// EOF"""
-//         }
-
-//         // wait a while before testing z/OSMF
-//         sleep time: 10, unit: 'MINUTES'
-//         // check if zD&T & z/OSMF are started
-//         timeout(120) {
-//           sh "./scripts/is-website-ready.sh -r 720 -t 10 -c 20 https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOSMF_PORT}/zosmf/info"
-//         }
-//       }
-//     },
-//     timeout: [time: 120, unit: 'MINUTES']
-//   )
-
   pipeline.createStage(
     name          : "Install Zowe",
     isSkippable   : true,
@@ -371,16 +301,23 @@ node('ibm-jenkins-slave-dind') {
     stage         : {
       withCredentials([
         usernamePassword(
+          credentialsId: params.TEST_IMAGE_GUEST_SSH_HOSTPORT,
+          passwordVariable: 'SSH_PORT',
+          usernameVariable: 'SSH_HOST'
+        )
+      ]) {
+      withCredentials([
+        usernamePassword(
           credentialsId: params.TEST_IMAGE_GUEST_SSH_CREDENTIAL,
           passwordVariable: 'PASSWORD',
           usernameVariable: 'USERNAME'
         )
       ]) {
         // create INSTALL_DIR
-        sh "SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} 'mkdir -p ${params.INSTALL_DIR}'"
+        sh "SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${SSH_PORT} ${USERNAME}@${SSH_HOST} 'mkdir -p ${params.INSTALL_DIR}'"
 
         // send file to test image host
-        sh """SSHPASS=${PASSWORD} sshpass -e sftp -o BatchMode=no -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -b - -P ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
+        sh """SSHPASS=${PASSWORD} sshpass -e sftp -o BatchMode=no -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -b - -P ${SSH_PORT} ${USERNAME}@${SSH_HOST} << EOF
 cd ${params.INSTALL_DIR}
 put scripts/temp-fixes-before-install.sh
 put scripts/temp-fixes-after-install.sh
@@ -401,10 +338,10 @@ EOF"""
           if (params.SKIP_RESET_IMAGE) {
             uninstallZowe = " -u"
           }
-          sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
+          sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${SSH_PORT} ${USERNAME}@${SSH_HOST} << EOF
 cd ${params.INSTALL_DIR} && \
   (iconv -f ISO8859-1 -t IBM-1047 install-zowe.sh > install-zowe.sh.new) && mv install-zowe.sh.new install-zowe.sh && chmod +x install-zowe.sh
-./install-zowe.sh -n ${params.TEST_IMAGE_GUEST_SSH_HOST} -t ${params.ZOWE_ROOT_DIR} -i ${params.INSTALL_DIR}${skipTempFixes}${uninstallZowe} --zfp ${params.ZOSMF_PORT}\
+./install-zowe.sh -n ${SSH_HOST} -t ${params.ZOWE_ROOT_DIR} -i ${params.INSTALL_DIR}${skipTempFixes}${uninstallZowe} --zfp ${params.ZOSMF_PORT}\
   --ds ${params.PROCLIB_DS} --dm ${params.PROCLIB_MEMBER} --jp ${params.ZOWE_JOB_PREFIX}\
   --acp ${params.ZOWE_API_MEDIATION_CATALOG_HTTP_PORT} --adp ${params.ZOWE_API_MEDIATION_DISCOVERY_HTTP_PORT} --agp ${params.ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT}\
   --ejp ${params.ZOWE_EXPLORER_JOBS_PORT} --edp ${params.ZOWE_EXPLORER_DATASETS_PORT}\
@@ -416,48 +353,30 @@ echo "[install-zowe.sh] succeeds" && exit 0
 EOF"""
         }
 
-        // wait a while before testing zLux
-        sleep time: 2, unit: 'MINUTES'
-        // check if zLux is started
+        // wait for Zowe is fully started
         timeout(60) {
-          sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOWE_ZLUX_HTTPS_PORT}/"
+          // check if zLux is started
+          sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 https://${SSH_HOST}:${params.ZOWE_ZLUX_HTTPS_PORT}/"
+          // check if explorer server is started
+          sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 'https://${USERNAME}:${PASSWORD}@${SSH_HOST}:${params.ZOWE_EXPLORER_JOBS_PORT}/api/v1/jobs?prefix=ZOWE*&status=ACTIVE'"
+          // check if apiml gateway is started
+          sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 https://${USERNAME}:${PASSWORD}@${SSH_HOST}:${params.ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT}/"
+          // check if apiml catalog is started
+          sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 -d '{\"username\":\"${USERNAME}\",\"password\":\"${PASSWORD}\"}' 'https://${SSH_HOST}:${params.ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT}/api/v1/apicatalog/auth/login'"
         }
-        // check if explorer server is started
-        timeout(60) {
-          sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 'https://${USERNAME}:${PASSWORD}@${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOWE_EXPLORER_JOBS_PORT}/api/v1/jobs?prefix=ZOWE*&status=ACTIVE'"
-        }
-        // check if apiml gateway is started
-        timeout(60) {
-          sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 https://${USERNAME}:${PASSWORD}@${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT}/"
-        }
-        // check if apiml catalog is started
-        timeout(60) {
-          sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 -d '{\"username\":\"${USERNAME}\",\"password\":\"${PASSWORD}\"}' 'https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT}/api/v1/apicatalog/auth/login'"
-        }
-        // check if zD&T & z/OSMF are started again in case z/OSMF is restarted
-        timeout(60) {
-          sh "./scripts/is-website-ready.sh -r 720 -t 10 -c 20 https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOSMF_PORT}/zosmf/info"
-        }
+
         // post install verify script
         timeout(30) {
           // always exit 0 to ignore failures in zowe-verify.sh
-          sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
+          sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${SSH_PORT} ${USERNAME}@${SSH_HOST} << EOF
 cd ${params.INSTALL_DIR} && \
-  temp-fixes-after-started.sh "${params.ZOWE_ROOT_DIR}" || { echo "[temp-fixes-after-started.sh] failed"; exit 0; }
+  temp-fixes-after-started.sh "${params.ZOWE_ROOT_DIR}" \
+    "${USERNAME}" "${PASSWORD}" \
+    "${SSH_HOST}" "${ZOWE_ZLUX_HTTPS_PORT}" || { echo "[temp-fixes-after-started.sh] failed"; exit 0; }
 echo "[temp-fixes-after-started.sh] succeeds" && exit 0
 EOF"""
         }
-
-        // wait a while before starting test
-        sleep time: 10, unit: 'MINUTES'
-        // FIXME: zLux login may hang there which blocks UI test cases
-        // try a login to the zlux auth api
-        def zluxAuth = sh(
-          script: "curl -d '{\\\"username\\\":\\\"${USERNAME}\\\",\\\"password\\\":\\\"${PASSWORD}\\\"}' -H 'Content-Type: application/json' -X POST -k https://${params.TEST_IMAGE_GUEST_SSH_HOST}:${params.ZOWE_ZLUX_HTTPS_PORT}/auth",
-          returnStdout: true
-        ).trim()
-        echo "zLux login result:"
-        echo zluxAuth
+      }
       }
     },
     timeout: [time: 120, unit: 'MINUTES']
@@ -479,6 +398,13 @@ EOF"""
     name              : "Smoke",
     operation         : {
       ansiColor('xterm') {
+      withCredentials([
+        usernamePassword(
+          credentialsId: params.TEST_IMAGE_GUEST_SSH_HOSTPORT,
+          passwordVariable: 'SSH_PORT',
+          usernameVariable: 'SSH_HOST'
+        )
+      ]) {
         withCredentials([
           usernamePassword(
             credentialsId: params.TEST_IMAGE_GUEST_SSH_CREDENTIAL,
@@ -487,8 +413,8 @@ EOF"""
           )
         ]) {
           sh """ZOWE_ROOT_DIR=${params.ZOWE_ROOT_DIR} \
-SSH_HOST=${params.TEST_IMAGE_GUEST_SSH_HOST} \
-SSH_PORT=${params.TEST_IMAGE_GUEST_SSH_PORT} \
+SSH_HOST=${SSH_HOST} \
+SSH_PORT=${SSH_PORT} \
 SSH_USER=${USERNAME} \
 SSH_PASSWD=${PASSWORD} \
 ZOSMF_PORT=${params.ZOSMF_PORT} \
@@ -500,6 +426,7 @@ ZOWE_EXPLORER_JOBS_PORT=${params.ZOWE_EXPLORER_JOBS_PORT} \
 ZOWE_EXPLORER_DATASETS_PORT=${params.ZOWE_EXPLORER_DATASETS_PORT} \
 DEBUG=${params.TEST_CASE_DEBUG_INFORMATION} \
 npm test"""
+        }
         }
       }
     },
