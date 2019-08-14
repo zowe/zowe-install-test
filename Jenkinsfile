@@ -476,7 +476,7 @@ cd ${smpePathPrefix}usr/lpp/zowe/scripts
 . ~/.zowe_profile
 echo "[install-SMPE-PAX.sh] done, start configuring ..."
 ./configure/zowe-configure.sh < /dev/null
-if [ -f "zowe-start.sh"]; then
+if [ -f "zowe-start.sh" ]; then
   echo "[zowe-configure.sh] done, starting Zowe ..."
   ./zowe-start.sh
 else
