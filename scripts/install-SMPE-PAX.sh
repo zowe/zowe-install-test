@@ -207,6 +207,14 @@ function runJob {
 
 # README -- README -- README
 
+# README contains 3 jobs:
+#
+# //FILESYS     JOB - create and mount FILESYS
+#
+# //UNPAX       JOB - unpax the SMP/E PAX file
+#
+# //GIMUNZIP    JOB - runs GIMUNZIP to create SMP/E datasets and files
+
 # convert the README to EBCDIC if required
 iconv -f ISO8859-1 -t IBM-1047 $download_path/$FMID.$README > $zfs_path/readme.EBCDIC.jcl
 grep "//GIMUNZIP " $zfs_path/readme.EBCDIC.jcl > /dev/null
@@ -221,31 +229,27 @@ fi
 sed -n '/\/\/GIMUNZIP /,$p' $zfs_path/readme.EBCDIC.jcl > $zfs_path/gimunzip.jcl0
 # chmod a+r AZWE001.readme.EBCDIC.txt
 
-# tailor the README
-# tailor the job
-
-# Tailor the STEP JCL
+# Tailor the GIMUNZIP JCL
 # sed "\
 #     s+@zfs_path@+${zfs_path}+; \
 #     s+&FMID\.+${FMID}+; \
 #     s+@PREFIX@+${PREFIX}+" \
 #     $zfs_path/gimunzip.jcl0 > $zfs_path/gimunzip.jcl1
-# Now also insert 'volume=' after 'archid'
 sed "\
     s+@zfs_path@+${zfs_path}+; \
     s+&FMID\.+${FMID}+; \
     s+@PREFIX@+${PREFIX}+; \
-    /archid=/ a\\
-    \ \ \ \ \ \ \ \ \ volume=\"$volser\"" \
+    /<GIMUNZIP>/ a\\
+    <TEMPDS volume=\"$volser\"> </TEMPDS> " \
     $zfs_path/gimunzip.jcl0 > $zfs_path/gimunzip.jcl1    
 
-# loads 3 jobs:
-#
-# //FILESYS     JOB - create and mount FILESYS
-#
-# //UNPAX       JOB - unpax the SMP/E PAX file
-#
-# //GIMUNZIP    JOB - runs GIMUNZIP to create SMP/E datasets and files
+# Now also insert 'volume=' after 'archid'
+# (drop this for now)
+    # /archid=/ a\\
+    # \ \ \ \ \ \ \ \ \ volume=\"$volser\"" \
+
+
+
 
 
 # make the directory to hold the runtimes
@@ -253,7 +257,7 @@ mkdir -p ${pathprefix}usr/lpp/zowe/SMPE
 
 # prepend the JOB statement
 sed '1 i\
-\/\/GIMUNZIP JOB' $zfs_path/gimunzip.jcl1 > $zfs_path/gimunzip.jcl
+\/\/ZWE0GUNZ JOB' $zfs_path/gimunzip.jcl1 > $zfs_path/gimunzip.jcl
 
 # un-pax the main FMID file
 cd $zfs_path    # extract pax file and create work files here
@@ -301,7 +305,7 @@ do
         s+/\*VOLUMES(&CSIVOL)\*/+  VOLUMES(\&CSIVOL)  +; \
         s+//\* *VOL=SER=&CSIVOL+// VOL=SER=\&CSIVOL+; \
         s+//\* *VOL=SER=&DVOL+// VOL=SER=\&DVOL+; \
-        s/ CHECK //" \
+        /^ *CHECK *$/d" \
         $zfs_path/$smpejob.jcl0 > $zfs_path/$smpejob.jcl
 
 # ... you may run out of space 
