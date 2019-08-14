@@ -475,7 +475,7 @@ rm -fr ${params.INSTALL_DIR}/extracted && mkdir -p ${params.INSTALL_DIR}/extract
 cd ${smpePathPrefix}usr/lpp/zowe/scripts
 . ~/.zowe_profile
 echo "[install-SMPE-PAX.sh] done, start configuring ..."
-./configure/zowe-configure.sh
+./configure/zowe-configure.sh < /dev/null
 if [ -f "zowe-start.sh"]; then
   echo "[zowe-configure.sh] done, starting Zowe ..."
   ./zowe-start.sh
