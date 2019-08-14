@@ -473,9 +473,9 @@ rm -fr ${params.INSTALL_DIR}/extracted && mkdir -p ${params.INSTALL_DIR}/extract
   ${smpeFmid} \
   ${smpeRelfilePrefix} || { echo "[install-SMPE-PAX.sh] failed"; exit 1; }
 echo "[install-SMPE-PAX.sh] done, start configuring ..."
-. ${smpePathPrefix}/scripts/configure/zowe-configure.sh
+. ${smpePathPrefix}usr/lpp/zowe/scripts/configure/zowe-configure.sh
 echo "[zowe-configure.sh] done, starting Zowe ..."
-. ${smpePathPrefix}/scripts/zowe-start.sh
+. ${smpePathPrefix}usr/lpp/zowe/scripts/zowe-start.sh
 exit 0
 EOF"""
           } else {
