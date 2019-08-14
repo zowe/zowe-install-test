@@ -426,7 +426,7 @@ ${allPuts}
 EOF"""
 
         // run install-zowe.sh
-        timeout(60) {
+        timeout(90) {
           def skipTempFixes = ""
           Boolean uninstallZowe = false
           // FIXME: remove me
@@ -472,10 +472,17 @@ rm -fr ${params.INSTALL_DIR}/extracted && mkdir -p ${params.INSTALL_DIR}/extract
   ${params.INSTALL_DIR}/extracted \
   ${smpeFmid} \
   ${smpeRelfilePrefix} || { echo "[install-SMPE-PAX.sh] failed"; exit 1; }
+cd ${smpePathPrefix}usr/lpp/zowe/scripts
+. ~/.zowe_profile
 echo "[install-SMPE-PAX.sh] done, start configuring ..."
-cd ${smpePathPrefix}usr/lpp/zowe/scripts/configure && ./zowe-configure.sh
-echo "[zowe-configure.sh] done, starting Zowe ..."
-cd ${smpePathPrefix}usr/lpp/zowe/scripts && ./zowe-start.sh
+./configure/zowe-configure.sh
+if [ -f "zowe-start.sh"]; then
+  echo "[zowe-configure.sh] done, starting Zowe ..."
+  ./zowe-start.sh
+else
+  echo "Error: cannot find zowe-start.sh"
+  exit 1
+fi
 exit 0
 EOF"""
           } else {
