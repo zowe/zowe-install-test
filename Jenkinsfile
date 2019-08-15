@@ -472,17 +472,19 @@ rm -fr ${params.INSTALL_DIR}/extracted && mkdir -p ${params.INSTALL_DIR}/extract
   ${params.INSTALL_DIR}/extracted \
   ${smpeFmid} \
   ${smpeRelfilePrefix} || { echo "[install-SMPE-PAX.sh] failed"; exit 1; }
+if [ ! -d "${smpePathPrefix}usr/lpp/zowe/scripts" ]; then
+  echo "Error: installation is not successfully, ${smpePathPrefix}usr/lpp/zowe/scripts doesn't exist."
+  exit 1
+fi
 cd ${smpePathPrefix}usr/lpp/zowe/scripts
-. ~/.zowe_profile
 echo "[install-SMPE-PAX.sh] done, start configuring ..."
 ./configure/zowe-configure.sh < /dev/null
-if [ -f "zowe-start.sh" ]; then
-  echo "[zowe-configure.sh] done, starting Zowe ..."
-  ./zowe-start.sh
-else
+if [ ! -f "zowe-start.sh" ]; then
   echo "Error: cannot find zowe-start.sh"
   exit 1
 fi
+echo "[zowe-configure.sh] done, starting Zowe ..."
+./zowe-start.sh
 exit 0
 EOF"""
           } else {
