@@ -144,8 +144,10 @@ function runJob {
     submit $jclname > /tmp/submit.job.$$.out
     if [[ $? -ne 0 ]]
     then
-        echo; echo $SCRIPT ERROR: submit JCL $jclname failed
+        echo $SCRIPT ERROR: submit JCL $jclname failed
         return 1
+    else
+        echo $SCRIPT INFO: JCL $jclname submitted
     fi
 
     # capture JOBID of submitted job
@@ -160,12 +162,13 @@ function runJob {
     for secs in 1 5 10 30 100 300 500
     do
         sleep $secs
-    
+        echo $SCRIPT INFO: Checking for completion of job $jclname $jobid
         $operdir/opercmd "\$DJ${jobid},CC" > /tmp/dj.$$.cc
             # $DJ gives ...
             # ... $HASP890 JOB(JOB1)      CC=(COMPLETED,RC=0)  <-- accept this value
             # ... $HASP890 JOB(GIMUNZIP)  CC=()  <-- reject this value
-            cat /tmp/dj.$$.cc
+            # cat /tmp/dj.$$.cc
+        
         grep "CC=(..*)" /tmp/dj.$$.cc > /dev/null   # ensure CC() is not empty
         if [[ $? -eq 0 ]]
         then
