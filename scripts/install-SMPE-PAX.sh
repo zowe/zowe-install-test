@@ -314,7 +314,7 @@ do
         s+/\*VOLUMES(&CSIVOL)\*/+  VOLUMES(\&CSIVOL)  +; \
         s+//\* *VOL=SER=&CSIVOL+// VOL=SER=\&CSIVOL+; \
         s+//\* *VOL=SER=&DVOL+// VOL=SER=\&DVOL+; \
-        s+ADD DDDEF(SMPTLIB)+ADD DDDEF(SMPTLIB) CYL SPACE(2,1) DIR(10)+; \
+        s+ADD DDDEF(SMPTLIB)+ADD DDDEF(SMPTLIB) CYL SPACE(864,25) DIR(10)+; \
         /^ *CHECK *$/d" \
         $zfs_path/$smpejob.jcl0 > $zfs_path/$smpejob.jcl
 
