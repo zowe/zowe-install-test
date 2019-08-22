@@ -33,6 +33,7 @@ node('ibm-jenkins-slave-dind') {
     "scripts/temp-fixes-after-install.sh",
     "scripts/temp-fixes-after-started.sh",
     "scripts/install-zowe.sh",
+    "scripts/install-xmem-server.sh",
     "scripts/uninstall-zowe.sh",
     "scripts/install-SMPE-PAX.sh",
     "scripts/uninstall-SMPE-PAX.sh",
@@ -426,7 +427,7 @@ ${allPuts}
 EOF"""
 
         // run install-zowe.sh
-        timeout(60) {
+        timeout(90) {
           def skipTempFixes = ""
           Boolean uninstallZowe = false
           // FIXME: remove me
@@ -459,8 +460,9 @@ EOF"""
 
           if (params.IS_SMPE_PACKAGE) {
             sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
-cd ${params.INSTALL_DIR} && \
-  (iconv -f ISO8859-1 -t IBM-1047 install-SMPE-PAX.sh > install-SMPE-PAX.sh.new) && mv install-SMPE-PAX.sh.new install-SMPE-PAX.sh && chmod +x install-SMPE-PAX.sh
+cd ${params.INSTALL_DIR}
+(iconv -f ISO8859-1 -t IBM-1047 install-SMPE-PAX.sh > install-SMPE-PAX.sh.new) && mv install-SMPE-PAX.sh.new install-SMPE-PAX.sh && chmod +x install-SMPE-PAX.sh
+(iconv -f ISO8859-1 -t IBM-1047 install-xmem-server.sh > install-xmem-server.sh.new) && mv install-xmem-server.sh.new install-xmem-server.sh && chmod +x install-xmem-server.sh
 rm -fr ${params.INSTALL_DIR}/extracted && mkdir -p ${params.INSTALL_DIR}/extracted
 ./install-SMPE-PAX.sh \
   ${smpeHlq} \
@@ -472,16 +474,30 @@ rm -fr ${params.INSTALL_DIR}/extracted && mkdir -p ${params.INSTALL_DIR}/extract
   ${params.INSTALL_DIR}/extracted \
   ${smpeFmid} \
   ${smpeRelfilePrefix} || { echo "[install-SMPE-PAX.sh] failed"; exit 1; }
+if [ ! -d "${smpePathPrefix}usr/lpp/zowe/scripts" ]; then
+  echo "Error: installation is not successfully, ${smpePathPrefix}usr/lpp/zowe/scripts doesn't exist."
+  exit 1
+fi
 echo "[install-SMPE-PAX.sh] done, start configuring ..."
-. ${smpePathPrefix}/scripts/configure/zowe-configure.sh
-echo "[zowe-configure.sh] done, starting Zowe ..."
-. ${smpePathPrefix}/scripts/zowe-start.sh
+cd ${smpePathPrefix}usr/lpp/zowe/scripts
+./configure/zowe-configure.sh < /dev/null
+if [ ! -f "zowe-start.sh" ]; then
+  echo "Error: cannot find zowe-start.sh"
+  exit 1
+fi
+echo "[zowe-configure.sh] done, installing xmem server ..."
+cd ${smpePathPrefix}usr/lpp/zowe/xmem-server
+${params.INSTALL_DIR}/install-xmem-server.sh
+echo "[install-xmem-server.sh] done, starting Zowe ..."
+cd ${smpePathPrefix}usr/lpp/zowe/scripts
+./zowe-start.sh
 exit 0
 EOF"""
           } else {
             sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
-cd ${params.INSTALL_DIR} && \
-  (iconv -f ISO8859-1 -t IBM-1047 install-zowe.sh > install-zowe.sh.new) && mv install-zowe.sh.new install-zowe.sh && chmod +x install-zowe.sh
+cd ${params.INSTALL_DIR}
+(iconv -f ISO8859-1 -t IBM-1047 install-zowe.sh > install-zowe.sh.new) && mv install-zowe.sh.new install-zowe.sh && chmod +x install-zowe.sh
+(iconv -f ISO8859-1 -t IBM-1047 install-xmem-server.sh > install-xmem-server.sh.new) && mv install-xmem-server.sh.new install-xmem-server.sh && chmod +x install-xmem-server.sh
 ./install-zowe.sh -n ${params.TEST_IMAGE_GUEST_SSH_HOST} -t ${params.ZOWE_ROOT_DIR} -i ${params.INSTALL_DIR}${skipTempFixes} --zfp ${params.ZOSMF_PORT}\
   --ds ${params.PROCLIB_DS} --dm ${params.PROCLIB_MEMBER} --jp ${params.ZOWE_JOB_PREFIX}\
   --acp ${params.ZOWE_API_MEDIATION_CATALOG_HTTP_PORT} --adp ${params.ZOWE_API_MEDIATION_DISCOVERY_HTTP_PORT} --agp ${params.ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT}\
