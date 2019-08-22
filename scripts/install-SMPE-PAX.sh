@@ -192,14 +192,14 @@ function runJob {
         return 3
     fi
     
-    # rc=`sed -n 's/.*RC=\([0-9]*\))/\1/p' /tmp/dj.$$.cc`
-    # # echo; echo $SCRIPT return code for JOB$jobid is $rc
-    # rm /tmp/dj.$$.cc 2> /dev/null 
-    # if [[ $rc -gt 4 ]]
-    # then
-    #     echo $SCRIPT ERROR: job "$jobname(JOB$jobid)" failed, RC=$rc 
-    #     return 4
-    # fi
+    rc=`sed -n 's/.*RC=\([0-9]*\))/\1/p' /tmp/dj.$$.cc`
+    # echo; echo $SCRIPT return code for JOB$jobid is $rc
+    rm /tmp/dj.$$.cc 2> /dev/null 
+    if [[ $rc -gt 4 ]]
+    then
+        echo $SCRIPT ERROR: job "$jobname(JOB$jobid)" failed, RC=$rc 
+        return 4
+    fi
     # echo; echo $SCRIPT function runJob ended
 }
 
@@ -266,6 +266,12 @@ pax -rvf $download_path/$FMID.pax.Z
 
 # Run the GIMUNZIP job
 runJob $zfs_path/gimunzip.jcl
+if [[ $? -ne 0 ]]
+then
+    echo $SCRIPT ERROR: GIMUNZIP JOB failed
+    exit 1
+fi
+
 
 # SMP/E -- SMP/E -- SMP/E -- SMP/E
 
@@ -305,11 +311,13 @@ do
         s+/\*VOLUMES(&CSIVOL)\*/+  VOLUMES(\&CSIVOL)  +; \
         s+//\* *VOL=SER=&CSIVOL+// VOL=SER=\&CSIVOL+; \
         s+//\* *VOL=SER=&DVOL+// VOL=SER=\&DVOL+; \
+        s+ADD DDDEF(SMPTLIB)+ADD DDDEF(SMPTLIB) CYL SPACE(2,1) DIR(10)+; \
         /^ *CHECK *$/d" \
         $zfs_path/$smpejob.jcl0 > $zfs_path/$smpejob.jcl
 
 # ... you may run out of space 
-
+# E37 on SMPTLIB:
+# ADD DDDEF(SMPTLIB)
 
 
     #   hlq was PREFIX in later PAXes, so that line was as below to cater for that
@@ -331,6 +339,11 @@ do
     fi
 
     runJob $zfs_path/$smpejob.jcl
+    if [[ $? -ne 0 ]]
+    then
+        echo $SCRIPT ERROR: SMP/E JOB $smpejob failed
+        exit 2
+    fi
 
 done
 
