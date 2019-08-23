@@ -229,7 +229,9 @@ node('ibm-jenkins-slave-dind') {
     artifactory: [
       url                        : lib.Constants.DEFAULT_ARTIFACTORY_URL,
       usernamePasswordCredential : lib.Constants.DEFAULT_ARTIFACTORY_ROBOT_CREDENTIAL,
-    ]
+    ],
+    // don't want audit failure blocks nightly test
+    ignoreAuditFailure           : true
   )
 
   pipeline.build(
