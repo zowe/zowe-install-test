@@ -162,12 +162,23 @@ function runJob {
     for secs in 1 5 10 30 100 300 500
     do
         sleep $secs
-        echo $SCRIPT INFO: Checking for completion of job $jclname $jobid
         $operdir/opercmd "\$DJ${jobid},CC" > /tmp/dj.$$.cc
             # $DJ gives ...
             # ... $HASP890 JOB(JOB1)      CC=(COMPLETED,RC=0)  <-- accept this value
             # ... $HASP890 JOB(GIMUNZIP)  CC=()  <-- reject this value
-            # cat /tmp/dj.$$.cc
+        
+        grep "$HASP890 JOB(.*)  CC=(.*)" /tmp/dj.$$.cc > /dev/null
+        if [[ $? -eq 0 ]]
+        then
+            jobname=`sed -n "s/.*$HASP890 JOB(\(.*\))  CC=(.*).*/\1/p" /tmp/dj.$$.cc`
+            if [[ ! -n "$jobname" ]]
+            then
+                jobname=empty
+            fi 
+        else
+            jobname=unknown
+        fi
+        echo $SCRIPT INFO: Checking for completion of jobname $jobname jobid $jobid
         
         grep "CC=(..*)" /tmp/dj.$$.cc > /dev/null   # ensure CC() is not empty
         if [[ $? -eq 0 ]]

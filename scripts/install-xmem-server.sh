@@ -143,6 +143,7 @@ cat "${CI_ZSS_CONFIG_FILE}"
 echo "[${SCRIPT_NAME}] start ZSS installation ..."
 # FIXME: zowe-install-apf-server.sh should exit by itself, not depends on timeout
 RUN_SCRIPT=zowe-install-apf-server.sh
+echo JAD calling $RUN_SCRIPT from directory `pwd`
 run_script_with_timeout $RUN_SCRIPT 1800
 EXIT_CODE=$?
 if [[ "$EXIT_CODE" != "0" ]]; then
