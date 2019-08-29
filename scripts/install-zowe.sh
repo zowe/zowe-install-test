@@ -419,7 +419,7 @@ CI_SMPE_FMID=
 echo "${CI_ZOWE_PAX}" | grep -qE "pax.Z$"
 if [ $? -eq 0 ]; then
   CI_IS_SMPE=yes
-  CI_SMPE_FMID=$(ls -1 ${CI_ZOWE_PAX} | head -n 1 | awk -F. '{print $1}')
+  CI_SMPE_FMID=$(basename ${CI_ZOWE_PAX} | awk -F. '{print $1}')
   if [ -z "$CI_SMPE_FMID" ]; then
     echo "[${SCRIPT_NAME}][error] cannot determine SMP/e FMID."
     exit 1
