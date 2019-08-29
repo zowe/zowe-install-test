@@ -513,11 +513,11 @@ fi
 
 rm -fr ${CI_INSTALL_DIR}/extracted && mkdir -p ${CI_INSTALL_DIR}/extracted
 if [[ "$CI_IS_SMPE" = "yes" ]]; then
-  echo "[${SCRIPT_NAME}] installing $CI_ZOWE_PAX to $SMPE_INSTALL_PATH_PREFIX/usr/lpp/zowe ..."
   cd $CI_INSTALL_DIR
   . smpe-install-config.sh
   # overwrite this value
   CI_ZOWE_ROOT_DIR="${SMPE_INSTALL_PATH_PREFIX}usr/lpp/zowe"
+  echo "[${SCRIPT_NAME}] installing $CI_ZOWE_PAX to $CI_ZOWE_ROOT_DIR ..."
   ./install-SMPE-PAX.sh \
     ${SMPE_INSTALL_HLQ_DSN} \
     ${SMPE_INSTALL_HLQ_CSI} \
