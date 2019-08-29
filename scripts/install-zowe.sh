@@ -532,14 +532,15 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
     echo "[${SCRIPT_NAME}][error] installation is not successfully, ${CI_ZOWE_ROOT_DIR}/scripts doesn't exist."
     exit 1
   fi
+  echo
   cd ${CI_ZOWE_ROOT_DIR}/scripts
+  echo "[${SCRIPT_NAME}] installation is done, start configuring ..."
+  ./configure/zowe-configure.sh < /dev/null
   if [ ! -f "zowe-start.sh" ]; then
     echo "[${SCRIPT_NAME}][error] installation is not successfully, cannot find zowe-start.sh."
     exit 1
   fi
   echo
-  echo "[${SCRIPT_NAME}] installation is done, start configuring ..."
-  ./configure/zowe-configure.sh < /dev/null
   echo "[${SCRIPT_NAME}] configuration is done, start installing xmem server ..."
   cd ${smpePathPrefix}usr/lpp/zowe/xmem-server
   ${CI_INSTALL_DIR}/install-xmem-server.sh
