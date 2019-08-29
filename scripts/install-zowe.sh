@@ -542,7 +542,7 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   ./configure/zowe-configure.sh < /dev/null
   echo "[${SCRIPT_NAME}] configuration is done, start installing xmem server ..."
   cd ${smpePathPrefix}usr/lpp/zowe/xmem-server
-  ${params.INSTALL_DIR}/install-xmem-server.sh
+  ${CI_INSTALL_DIR}/install-xmem-server.sh
   echo "[${SCRIPT_NAME}] all SMP/e install/config are done."
 else
   # extract Zowe
