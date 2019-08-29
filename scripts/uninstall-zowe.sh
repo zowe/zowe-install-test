@@ -44,6 +44,44 @@ function finish {
 trap finish SIGINT
 
 ################################################################################
+# Check script encoding and make sure it's IBM-1047
+#
+# NOTE: This function will also add execution permission to the script.
+#
+# Arguments:
+#   $1        Scipt path
+#   $2        Sample text to validate the conversion
+#   $3        From encoding. Optional, default is ISO8859-1
+#   $4        To encoding. Optional, default is IBM-1047
+################################################################################
+function ensure_script_encoding {
+  SCRIPT_TO_CHECK=$1
+  SAMPLE_TEXT=$2
+  FROM_ENCODING=$3
+  TO_ENCODING=$4
+
+  if [ -z "$SAMPLE_TEXT" ]; then
+    SAMPLE_TEXT="#!/"
+  fi
+  if [ -z "$FROM_ENCODING"]; then
+    FROM_ENCODING=ISO8859-1
+  fi
+  if [ -z "$TO_ENCODING"]; then
+    TO_ENCODING=IBM-1047
+  fi
+
+  iconv -f $FROM_ENCODING -t $TO_ENCODING "${SCRIPT_TO_CHECK}" > "${SCRIPT_TO_CHECK}.new"
+  REQUIRE_THIS_CONVERT=$(cat "${SCRIPT_TO_CHECK}.new" | grep "${SAMPLE_TEXT}")
+  if [ -n "$REQUIRE_THIS_CONVERT" ]; then
+    mv "${SCRIPT_TO_CHECK}.new" "${SCRIPT_TO_CHECK}" && chmod +x "${SCRIPT_TO_CHECK}"
+    echo "[${SCRIPT_NAME}] - ${SCRIPT_TO_CHECK} encoding is adjusted."
+  else
+    rm "${SCRIPT_TO_CHECK}.new"
+    echo "[${SCRIPT_NAME}] - ${SCRIPT_TO_CHECK} encoding is NOT changed, failed to find pattern '${SAMPLE_TEXT}'."
+  fi
+}
+
+################################################################################
 # parse parameters
 function usage {
   echo "Uninstall Zowe."
@@ -89,6 +127,21 @@ done
 
 ################################################################################
 # essential validations
+if [ -f "opercmd" ]; then
+  ensure_script_encoding opercmd "parse var command opercmd"
+fi
+if [ -f "tsocmd.sh" ]; then
+  ensure_script_encoding tsocmd.sh
+fi
+if [ -f "tsocmds.sh" ]; then
+  ensure_script_encoding tsocmds.sh
+fi
+if [ -f "smpe-install-config.sh" ]; then
+  ensure_script_encoding smpe-install-config.sh
+fi
+if [ -f "uninstall-SMPE-PAX.sh" ]; then
+  ensure_script_encoding uninstall-SMPE-PAX.sh
+fi
 
 ################################################################################
 echo "[${SCRIPT_NAME}] uninstall script started ..."
@@ -286,6 +339,26 @@ echo
 # removing folder
 echo "[${SCRIPT_NAME}] removing installation folder ..."
 rm -fr $CI_ZOWE_ROOT_DIR || true
+
+
+################################################################################
+# uninstall SMP/e installation
+echo "[${SCRIPT_NAME}] uninstalling SMP/e installation ..."
+. smpe-install-config.sh
+for FMID in $SMPE_INSTALL_KNOWN_FMIDS; do
+  echo "[${SCRIPT_NAME}] - ${FMID}"
+  ./uninstall-SMPE-PAX.sh \
+    ${SMPE_INSTALL_HLQ_DSN} \
+    ${SMPE_INSTALL_HLQ_CSI} \
+    ${SMPE_INSTALL_HLQ_TZONE} \
+    ${SMPE_INSTALL_HLQ_DZONE} \
+    ${SMPE_INSTALL_PATH_PREFIX} \
+    ${CI_INSTALL_DIR} \
+    ${CI_INSTALL_DIR}/extracted \
+    ${FMID} \
+    ${SMPE_INSTALL_REL_FILE_PREFIX}
+done
+echo
 
 ################################################################################
 echo

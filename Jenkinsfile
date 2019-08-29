@@ -19,21 +19,13 @@ node('ibm-jenkins-slave-dind') {
 
   def pipeline = lib.pipelines.nodejs.NodeJSPipeline.new(this)
 
-  def smpeReadmePattern = ''
-  // some SMP/e build constants/variables
-  def smpeHlq           = 'ZOE'
-  def smpeHlqCsi        = 'ZOE.SMPE'
-  def smpeHlqTzone      = 'ZOE.SMPE'
-  def smpeHlqDzone      = 'ZOE.SMPE'
-  def smpePathPrefix    = '/tmp/'
-  def smpeFmid          = ''
-  def smpeRelfilePrefix = 'ZOE'
   def artifactsForUploadAndInstallation = [
     "scripts/temp-fixes-before-install.sh",
     "scripts/temp-fixes-after-install.sh",
     "scripts/temp-fixes-after-started.sh",
     "scripts/install-zowe.sh",
     "scripts/install-xmem-server.sh",
+    "scripts/smpe-install-config.sh",
     "scripts/uninstall-zowe.sh",
     "scripts/install-SMPE-PAX.sh",
     "scripts/uninstall-SMPE-PAX.sh",
@@ -41,6 +33,7 @@ node('ibm-jenkins-slave-dind') {
     "scripts/tsocmd.sh",
     "scripts/tsocmds.sh",
   ]
+  def zoweArtifact = ''
 
   pipeline.admins.add("jackjia")
 
@@ -332,6 +325,7 @@ node('ibm-jenkins-slave-dind') {
           expected    : 1
         )
       } else if (params.IS_SMPE_PACKAGE) {
+        def smpeReadmePattern = ''
         if (params.ZOWE_ARTIFACTORY_PATTERN =~ /\/[^\/-]+-[0-9]+\.[0-9]+\.[0-9]+-[^\/]+\.pax\.Z$/) {
           // the pattern is a static path pointing to one pax.Z file
           smpeReadmePattern = params.ZOWE_ARTIFACTORY_PATTERN.replaceAll(/\/([^\/-]+)-([0-9]+\.[0-9]+\.[0-9]+-[^\/]+)\.pax\.Z$/, "/\$1.readme-\$2.txt")
@@ -366,7 +360,7 @@ node('ibm-jenkins-slave-dind') {
           expected    : 3
         )
         // extract FMID from downloaded artifact
-        smpeFmid = sh(
+        def smpeFmid = sh(
           script: "cd .tmp && ls -1 AZWE*.pax.Z | head -n 1 | awk -F- '{print \$1}'",
           returnStdout: true
         ).trim()
@@ -374,6 +368,7 @@ node('ibm-jenkins-slave-dind') {
         sh "mv .tmp/${smpeFmid}*.pax.Z .tmp/${smpeFmid}.pax.Z && mv .tmp/${smpeFmid}*.txt .tmp/${smpeFmid}.readme.txt"
         artifactsForUploadAndInstallation.add(".tmp/${smpeFmid}.pax.Z")
         artifactsForUploadAndInstallation.add(".tmp/${smpeFmid}.readme.txt")
+        zoweArtifact = "${smpeFmid}.pax.Z"
       } else {
         pipeline.artifactory.download(
           specContent : """
@@ -395,6 +390,7 @@ node('ibm-jenkins-slave-dind') {
           expected    : 2
         )
         artifactsForUploadAndInstallation.add(".tmp/zowe.pax")
+        zoweArtifact = 'zowe.pax'
       }
     },
     timeout: [time: 20, unit: 'MINUTES']
@@ -429,86 +425,23 @@ EOF"""
         // run install-zowe.sh
         timeout(90) {
           def skipTempFixes = ""
-          Boolean uninstallZowe = false
-          // FIXME: remove me
-          smpeFmid = "AZWE001"
           if (params.SKIP_TEMP_FIXES) {
             skipTempFixes = " -s"
           }
-          if (params.SKIP_RESET_IMAGE) {
-            // if we are not resetting image, we need to uninstall Zowe first
-            uninstallZowe = true
-          }
-          // FIXME: since we are not resetting image, we always need to run uninstall
-          uninstallZowe = true
-          if (uninstallZowe) {
-            // FIXME: modify uninstall-zowe.sh to uninstall Zowe installed with SMP/e package
-            // FIXME: since we don't know what's the last installation is with regular PAX or SMP/e package,
-            //        we need to test and uninstall both of them.
-            sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
-cd ${params.INSTALL_DIR}
-(iconv -f ISO8859-1 -t IBM-1047 opercmd > opercmd.new) && mv opercmd.new opercmd && chmod +x opercmd
-(iconv -f ISO8859-1 -t IBM-1047 tsocmd.sh > tsocmd.sh.new) && mv tsocmd.sh.new tsocmd.sh && chmod +x tsocmd.sh
-(iconv -f ISO8859-1 -t IBM-1047 tsocmds.sh > tsocmds.sh.new) && mv tsocmds.sh.new tsocmds.sh && chmod +x tsocmds.sh
-(iconv -f ISO8859-1 -t IBM-1047 uninstall-zowe.sh > uninstall-zowe.sh.new) && mv uninstall-zowe.sh.new uninstall-zowe.sh && chmod +x uninstall-zowe.sh
-(iconv -f ISO8859-1 -t IBM-1047 uninstall-SMPE-PAX.sh > uninstall-SMPE-PAX.sh.new) && mv uninstall-SMPE-PAX.sh.new uninstall-SMPE-PAX.sh && chmod +x uninstall-SMPE-PAX.sh
-./uninstall-zowe.sh -i ${params.INSTALL_DIR} -t ${params.ZOWE_ROOT_DIR} -m ${params.PROCLIB_MEMBER}
-./uninstall-SMPE-PAX.sh ${smpeHlq} ${smpeHlqCsi} ${smpeHlqTzone} ${smpeHlqDzone} ${smpePathPrefix} ${params.INSTALL_DIR} ${params.INSTALL_DIR}/extracted ${smpeFmid} ${smpeRelfilePrefix}
-echo "[uninstall] done" && exit 0
-EOF"""
-          }
-
-          if (params.IS_SMPE_PACKAGE) {
-            sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
-cd ${params.INSTALL_DIR}
-(iconv -f ISO8859-1 -t IBM-1047 install-SMPE-PAX.sh > install-SMPE-PAX.sh.new) && mv install-SMPE-PAX.sh.new install-SMPE-PAX.sh && chmod +x install-SMPE-PAX.sh
-(iconv -f ISO8859-1 -t IBM-1047 install-xmem-server.sh > install-xmem-server.sh.new) && mv install-xmem-server.sh.new install-xmem-server.sh && chmod +x install-xmem-server.sh
-rm -fr ${params.INSTALL_DIR}/extracted && mkdir -p ${params.INSTALL_DIR}/extracted
-./install-SMPE-PAX.sh \
-  ${smpeHlq} \
-  ${smpeHlqCsi} \
-  ${smpeHlqTzone} \
-  ${smpeHlqDzone} \
-  ${smpePathPrefix} \
-  ${params.INSTALL_DIR} \
-  ${params.INSTALL_DIR}/extracted \
-  ${smpeFmid} \
-  ${smpeRelfilePrefix} || { echo "[install-SMPE-PAX.sh] failed"; exit 1; }
-if [ ! -d "${smpePathPrefix}usr/lpp/zowe/scripts" ]; then
-  echo "Error: installation is not successfully, ${smpePathPrefix}usr/lpp/zowe/scripts doesn't exist."
-  exit 1
-fi
-echo "[install-SMPE-PAX.sh] done, start configuring ..."
-cd ${smpePathPrefix}usr/lpp/zowe/scripts
-./configure/zowe-configure.sh < /dev/null
-if [ ! -f "zowe-start.sh" ]; then
-  echo "Error: cannot find zowe-start.sh"
-  exit 1
-fi
-echo "[zowe-configure.sh] done, installing xmem server ..."
-cd ${smpePathPrefix}usr/lpp/zowe/xmem-server
-${params.INSTALL_DIR}/install-xmem-server.sh
-echo "[install-xmem-server.sh] done, starting Zowe ..."
-cd ${smpePathPrefix}usr/lpp/zowe/scripts
-./zowe-start.sh
-exit 0
-EOF"""
-          } else {
-            sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
+          // since we are not resetting image, we always need to run uninstall
+          sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
 cd ${params.INSTALL_DIR}
 (iconv -f ISO8859-1 -t IBM-1047 install-zowe.sh > install-zowe.sh.new) && mv install-zowe.sh.new install-zowe.sh && chmod +x install-zowe.sh
-(iconv -f ISO8859-1 -t IBM-1047 install-xmem-server.sh > install-xmem-server.sh.new) && mv install-xmem-server.sh.new install-xmem-server.sh && chmod +x install-xmem-server.sh
-./install-zowe.sh -n ${params.TEST_IMAGE_GUEST_SSH_HOST} -t ${params.ZOWE_ROOT_DIR} -i ${params.INSTALL_DIR}${skipTempFixes} --zfp ${params.ZOSMF_PORT}\
+./install-zowe.sh --uninstall -n ${params.TEST_IMAGE_GUEST_SSH_HOST} -t ${params.ZOWE_ROOT_DIR} -i ${params.INSTALL_DIR}${skipTempFixes} --zfp ${params.ZOSMF_PORT}\
   --ds ${params.PROCLIB_DS} --dm ${params.PROCLIB_MEMBER} --jp ${params.ZOWE_JOB_PREFIX}\
   --acp ${params.ZOWE_API_MEDIATION_CATALOG_HTTP_PORT} --adp ${params.ZOWE_API_MEDIATION_DISCOVERY_HTTP_PORT} --agp ${params.ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT}\
   --ejp ${params.ZOWE_EXPLORER_JOBS_PORT} --edp ${params.ZOWE_EXPLORER_DATASETS_PORT}\
   --ujp ${params.ZOWE_EXPLORER_UI_JES_PORT} --ump ${params.ZOWE_EXPLORER_UI_MVS_PORT} --uup ${params.ZOWE_EXPLORER_UI_USS_PORT}\
   --zp ${params.ZOWE_ZLUX_HTTPS_PORT} --zsp ${params.ZOWE_ZLUX_ZSS_PORT}\
   --tsp ${params.ZOWE_MVD_SSH_PORT} --ttp ${params.ZOWE_MVD_TELNET_PORT}\
-  ${params.INSTALL_DIR}/zowe.pax || { echo "[install-zowe.sh] failed"; exit 1; }
+  ${params.INSTALL_DIR}/${zoweArtifact} || { echo "[install-zowe.sh] failed"; exit 1; }
 echo "[install-zowe.sh] succeeds" && exit 0
 EOF"""
-          }
         }
 
         // wait a while before testing zLux

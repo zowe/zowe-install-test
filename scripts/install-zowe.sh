@@ -78,14 +78,15 @@ function finish {
 trap finish SIGINT
 
 ################################################################################
-# Set up timeout check for a process
+# Check script encoding and make sure it's IBM-1047
 #
 # NOTE: This function will also add execution permission to the script.
 #
 # Arguments:
 #   $1        Scipt path
-#   $2        From encoding. Optional, default is ISO8859-1
-#   $3        To encoding. Optional, default is IBM-1047
+#   $2        Sample text to validate the conversion
+#   $3        From encoding. Optional, default is ISO8859-1
+#   $4        To encoding. Optional, default is IBM-1047
 ################################################################################
 function ensure_script_encoding {
   SCRIPT_TO_CHECK=$1
@@ -413,6 +414,21 @@ if [ ! -f "$CI_ZOWE_PAX" ]; then
   echo "[${SCRIPT_NAME}][error] cannot find the package file."
   exit 1
 fi
+CI_IS_SMPE=no
+CI_SMPE_FMID=
+echo "${CI_ZOWE_PAX}" | grep -qE "pax.Z$"
+if [ $? -eq 0 ]; then
+  CI_IS_SMPE=yes
+  CI_SMPE_FMID=$(ls -1 ${CI_ZOWE_PAX} | head -n 1 | awk -F. '{print \$1}')
+  if [ -z "$CI_SMPE_FMID" ]; then
+    echo "[${SCRIPT_NAME}][error] cannot determine SMP/e FMID."
+    exit 1
+  fi
+  if [ ! -f "${CI_SMPE_FMID}.readme.txt" ]; then
+    echo "[${SCRIPT_NAME}][error] cannot find the SMP/e readme file."
+    exit 1
+  fi
+fi
 if [ -z "$CI_HOSTNAME" ]; then
   echo "[${SCRIPT_NAME}][error] server hostname/IP is required."
   exit 1
@@ -431,6 +447,15 @@ fi
 if [ -f "uninstall-zowe.sh" ]; then
   ensure_script_encoding uninstall-zowe.sh
 fi
+if [ -f "install-SMPE-PAX.sh" ]; then
+  ensure_script_encoding install-SMPE-PAX.sh
+fi
+if [ -f "install-xmem-server.sh" ]; then
+  ensure_script_encoding install-xmem-server.sh
+fi
+if [ -f "smpe-install-config.sh" ]; then
+  ensure_script_encoding smpe-install-config.sh
+fi
 if [ -f "opercmd" ]; then
   ensure_script_encoding opercmd "parse var command opercmd"
 fi
@@ -438,6 +463,8 @@ fi
 ################################################################################
 echo "[${SCRIPT_NAME}] installation script started ..."
 echo "[${SCRIPT_NAME}]   - package file        : $CI_ZOWE_PAX"
+echo "[${SCRIPT_NAME}]   - SMP/e package?      : $CI_IS_SMPE"
+echo "[${SCRIPT_NAME}]   - SMP/e FMID          : $CI_SMPE_FMID"
 echo "[${SCRIPT_NAME}]   - skip temp files     : $CI_SKIP_TEMP_FIXES"
 echo "[${SCRIPT_NAME}]   - uninstall previous  : $CI_UNINSTALL"
 echo "[${SCRIPT_NAME}]   - z/OSMF port         : $CI_ZOSMF_PORT"
@@ -484,116 +511,149 @@ if [[ "$CI_UNINSTALL" = "yes" ]]; then
   fi
 fi
 
-# extract Zowe
-echo "[${SCRIPT_NAME}] extracting $CI_ZOWE_PAX to $CI_INSTALL_DIR/extracted ..."
-mkdir -p $CI_INSTALL_DIR/extracted
-cd $CI_INSTALL_DIR/extracted
-rm -fr *
-pax -ppx -rf $CI_ZOWE_PAX
-EXIT_CODE=$?
-if [[ "$EXIT_CODE" == "0" ]]; then
-  echo "[${SCRIPT_NAME}] $CI_ZOWE_PAX extracted."
-else
-  echo "[${SCRIPT_NAME}][error] start Zowe failed."
-  exit 1
-fi
-echo
-
-# check extracted folder
-# - old version will have several folders like files, install, licenses, scripts, etc
-# - new version will only have one folder of zowe-{version}
-FULL_EXTRACTED_ZOWE_FOLDER=$CI_INSTALL_DIR/extracted
-EXTRACTED_FILES=$(ls -1 $CI_INSTALL_DIR/extracted | wc -l | awk '{print $1}')
-HAS_EXTRA_ZOWE_FOLDER=0
-if [ "$EXTRACTED_FILES" = "1" ]; then
-  HAS_EXTRA_ZOWE_FOLDER=1
-  EXTRACTED_ZOWE_FOLDER=$(ls -1 $CI_INSTALL_DIR/extracted)
-  FULL_EXTRACTED_ZOWE_FOLDER=$CI_INSTALL_DIR/extracted/$EXTRACTED_ZOWE_FOLDER
-fi
-
-# configure installation
-echo "[${SCRIPT_NAME}] configure installation yaml ..."
-cd $FULL_EXTRACTED_ZOWE_FOLDER/install
-cat "${CI_ZOWE_CONFIG_FILE}" | \
-  sed -e "/^install:/,\$s#rootDir=.*\$#rootDir=${CI_ZOWE_ROOT_DIR}#" | \
-  sed -e "/^install:/,\$s#prefix=.*\$#prefix=${CI_JOB_PREFIX}#" | \
-  sed -e "/^zowe-server-proclib:/,\$s#dsName=.*\$#dsName=${CI_PROCLIB_DS_NAME}#" | \
-  sed -e "/^zowe-server-proclib:/,\$s#memberName=.*\$#memberName=${CI_PROCLIB_MEMBER_NAME}#" | \
-  sed -e "/^api-mediation:/,\$s#catalogPort=.*\$#catalogPort=${CI_APIM_CATALOG_PORT}#" | \
-  sed -e "/^api-mediation:/,\$s#discoveryPort=.*\$#discoveryPort=${CI_APIM_DISCOVERY_PORT}#" | \
-  sed -e "/^api-mediation:/,\$s#gatewayPort=.*\$#gatewayPort=${CI_APIM_GATEWAY_PORT}#" | \
-  sed -e "/^api-mediation:/,\$s#externalCertificate=.*\$#externalCertificate=${CI_APIM_EXT_CERT}#" | \
-  sed -e "/^api-mediation:/,\$s#externalCertificateAlias=.*\$#externalCertificateAlias=${CI_APIM_EXT_CERT_ALIAS}#" | \
-  sed -e "/^api-mediation:/,\$s#externalCertificateAuthorities=.*\$#externalCertificateAuthorities=${CI_APIM_EXT_CERT_AUTH}#" | \
-  sed -e "/^api-mediation:/,\$s#verifyCertificatesOfServices=.*\$#verifyCertificatesOfServices=${CI_APIM_VERIFY_CERT}#" | \
-  sed -e "/^explorer-server:/,\$s#jobsPort=.*\$#jobsPort=${CI_EXPLORER_JOBS_PORT}#" | \
-  sed -e "/^explorer-server:/,\$s#dataSetsPort=.*\$#dataSetsPort=${CI_EXPLORER_DATASETS_PORT}#" | \
-  sed -e "/^explorer-ui:/,\$s#explorerJESUI=.*\$#explorerJESUI=${CI_EXPLORER_UI_JES_PORT}#" | \
-  sed -e "/^explorer-ui:/,\$s#explorerMVSUI=.*\$#explorerMVSUI=${CI_EXPLORER_UI_MVS_PORT}#" | \
-  sed -e "/^explorer-ui:/,\$s#explorerUSSUI=.*\$#explorerUSSUI=${CI_EXPLORER_UI_USS_PORT}#" | \
-  sed -e "/^zlux-server:/,\$s#httpsPort=.*\$#httpsPort=${CI_ZLUX_HTTPS_PORT}#" | \
-  sed -e "/^zlux-server:/,\$s#zssPort=.*\$#zssPort=${CI_ZLUX_ZSS_PORT}#" | \
-  sed -e "/^terminals:/,\$s#sshPort=.*\$#sshPort=${CI_TERMINALS_SSH_PORT}#" | \
-  sed -e "/^terminals:/,\$s#telnetPort=.*\$#telnetPort=${CI_TERMINALS_TELNET_PORT}#" > "${CI_ZOWE_CONFIG_FILE}.tmp"
-mv "${CI_ZOWE_CONFIG_FILE}.tmp" "${CI_ZOWE_CONFIG_FILE}"
-echo "[${SCRIPT_NAME}] current Zowe configuration is:"
-cat "${CI_ZOWE_CONFIG_FILE}"
-
-# run temp fixes
-if [ "$CI_SKIP_TEMP_FIXES" != "yes" ]; then
+rm -fr ${CI_INSTALL_DIR}/extracted && mkdir -p ${CI_INSTALL_DIR}/extracted
+if [[ "$CI_IS_SMPE" = "yes" ]]; then
+  echo "[${SCRIPT_NAME}] installing $CI_ZOWE_PAX to $SMPE_INSTALL_PATH_PREFIX/usr/lpp/zowe ..."
   cd $CI_INSTALL_DIR
-  RUN_SCRIPT=temp-fixes-before-install.sh
-  if [ -f "$RUN_SCRIPT" ]; then
-    run_script_with_timeout "${RUN_SCRIPT} ${CI_ZOWE_ROOT_DIR} ${FULL_EXTRACTED_ZOWE_FOLDER}" 1800
-    EXIT_CODE=$?
-    if [[ "$EXIT_CODE" != "0" ]]; then
-      echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
-      exit 1
+  . smpe-install-config.sh
+  # overwrite this value
+  CI_ZOWE_ROOT_DIR="${SMPE_INSTALL_PATH_PREFIX}usr/lpp/zowe"
+  ./install-SMPE-PAX.sh \
+    ${SMPE_INSTALL_HLQ_DSN} \
+    ${SMPE_INSTALL_HLQ_CSI} \
+    ${SMPE_INSTALL_HLQ_TZONE} \
+    ${SMPE_INSTALL_HLQ_DZONE} \
+    ${SMPE_INSTALL_PATH_PREFIX} \
+    ${CI_INSTALL_DIR} \
+    ${CI_INSTALL_DIR}/extracted \
+    ${CI_SMPE_FMID} \
+    ${SMPE_INSTALL_REL_FILE_PREFIX}
+  if [ ! -d "${CI_ZOWE_ROOT_DIR}/scripts" ]; then
+    echo "[${SCRIPT_NAME}][error] installation is not successfully, ${CI_ZOWE_ROOT_DIR}/scripts doesn't exist."
+    exit 1
+  fi
+  cd ${CI_ZOWE_ROOT_DIR}/scripts
+  if [ ! -f "zowe-start.sh" ]; then
+    echo "[${SCRIPT_NAME}][error] installation is not successfully, cannot find zowe-start.sh."
+    exit 1
+  fi
+  echo
+  echo "[${SCRIPT_NAME}] installation is done, start configuring ..."
+  ./configure/zowe-configure.sh < /dev/null
+  echo "[${SCRIPT_NAME}] configuration is done, start installing xmem server ..."
+  cd ${smpePathPrefix}usr/lpp/zowe/xmem-server
+  ${params.INSTALL_DIR}/install-xmem-server.sh
+  echo "[${SCRIPT_NAME}] all SMP/e install/config are done."
+else
+  # extract Zowe
+  echo "[${SCRIPT_NAME}] extracting $CI_ZOWE_PAX to $CI_INSTALL_DIR/extracted ..."
+  cd $CI_INSTALL_DIR/extracted
+  pax -ppx -rf $CI_ZOWE_PAX
+  EXIT_CODE=$?
+  if [[ "$EXIT_CODE" == "0" ]]; then
+    echo "[${SCRIPT_NAME}] $CI_ZOWE_PAX extracted."
+  else
+    echo "[${SCRIPT_NAME}][error] start Zowe failed."
+    exit 1
+  fi
+  echo
+
+  # check extracted folder
+  # - old version will have several folders like files, install, licenses, scripts, etc
+  # - new version will only have one folder of zowe-{version}
+  FULL_EXTRACTED_ZOWE_FOLDER=$CI_INSTALL_DIR/extracted
+  EXTRACTED_FILES=$(ls -1 $CI_INSTALL_DIR/extracted | wc -l | awk '{print $1}')
+  HAS_EXTRA_ZOWE_FOLDER=0
+  if [ "$EXTRACTED_FILES" = "1" ]; then
+    HAS_EXTRA_ZOWE_FOLDER=1
+    EXTRACTED_ZOWE_FOLDER=$(ls -1 $CI_INSTALL_DIR/extracted)
+    FULL_EXTRACTED_ZOWE_FOLDER=$CI_INSTALL_DIR/extracted/$EXTRACTED_ZOWE_FOLDER
+  fi
+
+  # configure installation
+  echo "[${SCRIPT_NAME}] configure installation yaml ..."
+  cd $FULL_EXTRACTED_ZOWE_FOLDER/install
+  cat "${CI_ZOWE_CONFIG_FILE}" | \
+    sed -e "/^install:/,\$s#rootDir=.*\$#rootDir=${CI_ZOWE_ROOT_DIR}#" | \
+    sed -e "/^install:/,\$s#prefix=.*\$#prefix=${CI_JOB_PREFIX}#" | \
+    sed -e "/^zowe-server-proclib:/,\$s#dsName=.*\$#dsName=${CI_PROCLIB_DS_NAME}#" | \
+    sed -e "/^zowe-server-proclib:/,\$s#memberName=.*\$#memberName=${CI_PROCLIB_MEMBER_NAME}#" | \
+    sed -e "/^api-mediation:/,\$s#catalogPort=.*\$#catalogPort=${CI_APIM_CATALOG_PORT}#" | \
+    sed -e "/^api-mediation:/,\$s#discoveryPort=.*\$#discoveryPort=${CI_APIM_DISCOVERY_PORT}#" | \
+    sed -e "/^api-mediation:/,\$s#gatewayPort=.*\$#gatewayPort=${CI_APIM_GATEWAY_PORT}#" | \
+    sed -e "/^api-mediation:/,\$s#externalCertificate=.*\$#externalCertificate=${CI_APIM_EXT_CERT}#" | \
+    sed -e "/^api-mediation:/,\$s#externalCertificateAlias=.*\$#externalCertificateAlias=${CI_APIM_EXT_CERT_ALIAS}#" | \
+    sed -e "/^api-mediation:/,\$s#externalCertificateAuthorities=.*\$#externalCertificateAuthorities=${CI_APIM_EXT_CERT_AUTH}#" | \
+    sed -e "/^api-mediation:/,\$s#verifyCertificatesOfServices=.*\$#verifyCertificatesOfServices=${CI_APIM_VERIFY_CERT}#" | \
+    sed -e "/^explorer-server:/,\$s#jobsPort=.*\$#jobsPort=${CI_EXPLORER_JOBS_PORT}#" | \
+    sed -e "/^explorer-server:/,\$s#dataSetsPort=.*\$#dataSetsPort=${CI_EXPLORER_DATASETS_PORT}#" | \
+    sed -e "/^explorer-ui:/,\$s#explorerJESUI=.*\$#explorerJESUI=${CI_EXPLORER_UI_JES_PORT}#" | \
+    sed -e "/^explorer-ui:/,\$s#explorerMVSUI=.*\$#explorerMVSUI=${CI_EXPLORER_UI_MVS_PORT}#" | \
+    sed -e "/^explorer-ui:/,\$s#explorerUSSUI=.*\$#explorerUSSUI=${CI_EXPLORER_UI_USS_PORT}#" | \
+    sed -e "/^zlux-server:/,\$s#httpsPort=.*\$#httpsPort=${CI_ZLUX_HTTPS_PORT}#" | \
+    sed -e "/^zlux-server:/,\$s#zssPort=.*\$#zssPort=${CI_ZLUX_ZSS_PORT}#" | \
+    sed -e "/^terminals:/,\$s#sshPort=.*\$#sshPort=${CI_TERMINALS_SSH_PORT}#" | \
+    sed -e "/^terminals:/,\$s#telnetPort=.*\$#telnetPort=${CI_TERMINALS_TELNET_PORT}#" > "${CI_ZOWE_CONFIG_FILE}.tmp"
+  mv "${CI_ZOWE_CONFIG_FILE}.tmp" "${CI_ZOWE_CONFIG_FILE}"
+  echo "[${SCRIPT_NAME}] current Zowe configuration is:"
+  cat "${CI_ZOWE_CONFIG_FILE}"
+
+  # run temp fixes
+  if [ "$CI_SKIP_TEMP_FIXES" != "yes" ]; then
+    cd $CI_INSTALL_DIR
+    RUN_SCRIPT=temp-fixes-before-install.sh
+    if [ -f "$RUN_SCRIPT" ]; then
+      run_script_with_timeout "${RUN_SCRIPT} ${CI_ZOWE_ROOT_DIR} ${FULL_EXTRACTED_ZOWE_FOLDER}" 1800
+      EXIT_CODE=$?
+      if [[ "$EXIT_CODE" != "0" ]]; then
+        echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
+        exit 1
+      fi
     fi
   fi
-fi
 
-# run pre-install verify script
-echo "[${SCRIPT_NAME}] run pre-install verify script ..."
-cd $FULL_EXTRACTED_ZOWE_FOLDER/install
-RUN_SCRIPT=zowe-check-prereqs.sh
-if [ -f "$RUN_SCRIPT" ]; then
+  # run pre-install verify script
+  echo "[${SCRIPT_NAME}] run pre-install verify script ..."
+  cd $FULL_EXTRACTED_ZOWE_FOLDER/install
+  RUN_SCRIPT=zowe-check-prereqs.sh
+  if [ -f "$RUN_SCRIPT" ]; then
+    run_script_with_timeout $RUN_SCRIPT 1800
+    EXIT_CODE=$?
+    if [[ "$EXIT_CODE" != "0" ]]; then
+      echo "[${SCRIPT_NAME}][warning] ${RUN_SCRIPT} failed."
+    fi
+  fi
+  echo
+
+  # configure and install cross memory server
+  cd $FULL_EXTRACTED_ZOWE_FOLDER/install
+  ${SCRIPT_PWD}/install-xmem-server.sh
+
+  # start Zowe installation
+  echo "[${SCRIPT_NAME}] start Zowe installation ..."
+  cd $FULL_EXTRACTED_ZOWE_FOLDER/install
+  # FIXME: zowe-install.sh should exit by itself, not depends on timeout
+  RUN_SCRIPT=zowe-install.sh
   run_script_with_timeout $RUN_SCRIPT 1800
   EXIT_CODE=$?
   if [[ "$EXIT_CODE" != "0" ]]; then
-    echo "[${SCRIPT_NAME}][warning] ${RUN_SCRIPT} failed."
+    echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
+    echo "[${SCRIPT_NAME}][error] here is log file >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    cat $FULL_EXTRACTED_ZOWE_FOLDER/log/* || true
+    cat $CI_ZOWE_ROOT_DIR/configure_log/* || true
+    echo "[${SCRIPT_NAME}][error] log end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+    echo
+    exit 1
+  else
+    echo "[${SCRIPT_NAME}] ${RUN_SCRIPT} succeeds."
+    echo "[${SCRIPT_NAME}] here is log file >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    cat $FULL_EXTRACTED_ZOWE_FOLDER/log/* || true
+    cat $CI_ZOWE_ROOT_DIR/configure_log/* || true
+    echo "[${SCRIPT_NAME}] log end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+    echo
   fi
-fi
-echo
-
-# configure and install cross memory server
-cd $FULL_EXTRACTED_ZOWE_FOLDER/install
-${SCRIPT_PWD}/install-xmem-server.sh
-
-# start Zowe installation
-echo "[${SCRIPT_NAME}] start Zowe installation ..."
-cd $FULL_EXTRACTED_ZOWE_FOLDER/install
-# FIXME: zowe-install.sh should exit by itself, not depends on timeout
-RUN_SCRIPT=zowe-install.sh
-run_script_with_timeout $RUN_SCRIPT 1800
-EXIT_CODE=$?
-if [[ "$EXIT_CODE" != "0" ]]; then
-  echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
-  echo "[${SCRIPT_NAME}][error] here is log file >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-  cat $FULL_EXTRACTED_ZOWE_FOLDER/log/* || true
-  cat $CI_ZOWE_ROOT_DIR/configure_log/* || true
-  echo "[${SCRIPT_NAME}][error] log end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
-  echo
-  exit 1
-else
-  echo "[${SCRIPT_NAME}] ${RUN_SCRIPT} succeeds."
-  echo "[${SCRIPT_NAME}] here is log file >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-  cat $FULL_EXTRACTED_ZOWE_FOLDER/log/* || true
-  cat $CI_ZOWE_ROOT_DIR/configure_log/* || true
-  echo "[${SCRIPT_NAME}] log end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
   echo
 fi
-echo
 
 # run temp fixes
 if [ "$CI_SKIP_TEMP_FIXES" != "yes" ]; then
