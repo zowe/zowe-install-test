@@ -30,12 +30,15 @@ CI_PWD=$(pwd)
 # import z/OSMF cert fail due to permission error, so we need to make sure
 #    verifyCertificatesOfServices
 # is set to false for install yaml file
-cd $FULL_EXTRACTED_ZOWE_FOLDER/install
 CI_ZOWE_CONFIG_FILE=zowe-install.yaml
-if [ ! -f "$CI_ZOWE_CONFIG_FILE" ]; then
+if [ -f "$FULL_EXTRACTED_ZOWE_FOLDER/install/$CI_ZOWE_CONFIG_FILE" ]; then
+  # this is convenience build installation
+  cd $FULL_EXTRACTED_ZOWE_FOLDER/install
+else
   # this could be a SMP/e installation
-  cd $CI_ZOWE_ROOT_DIR/scripts/configure
-  if [ ! -f "$CI_ZOWE_CONFIG_FILE" ]; then
+  if [ -f "$CI_ZOWE_ROOT_DIR/scripts/configure/$CI_ZOWE_CONFIG_FILE" ]; then
+    cd $CI_ZOWE_ROOT_DIR/scripts/configure
+  else
     echo "[${SCRIPT_NAME}][error] cannot find zowe-install.yaml."
     exit 1
   fi
