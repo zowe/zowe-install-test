@@ -32,7 +32,15 @@ CI_PWD=$(pwd)
 # is set to false for install yaml file
 cd $FULL_EXTRACTED_ZOWE_FOLDER/install
 CI_ZOWE_CONFIG_FILE=zowe-install.yaml
-echo "Current value of ${CI_ZOWE_CONFIG_FILE} verifyCertificatesOfServices:"
+if [ ! -f "$CI_ZOWE_CONFIG_FILE" ]; then
+  # this could be a SMP/e installation
+  cd $CI_ZOWE_ROOT_DIR/scripts/configure
+  if [ ! -f "$CI_ZOWE_CONFIG_FILE" ]; then
+    echo "[${SCRIPT_NAME}][error] cannot find zowe-install.yaml."
+    exit 1
+  fi
+fi
+echo "Current value of $(pwd)/${CI_ZOWE_CONFIG_FILE} verifyCertificatesOfServices:"
 cat "${CI_ZOWE_CONFIG_FILE}" | grep verifyCertificatesOfServices
 echo "Changing to false ..."
 cat "${CI_ZOWE_CONFIG_FILE}" | \

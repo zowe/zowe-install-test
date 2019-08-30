@@ -514,9 +514,12 @@ fi
 rm -fr ${CI_INSTALL_DIR}/extracted && mkdir -p ${CI_INSTALL_DIR}/extracted
 if [[ "$CI_IS_SMPE" = "yes" ]]; then
   cd $CI_INSTALL_DIR
+  # load SMP/e configs
   . smpe-install-config.sh
   # overwrite this value
   CI_ZOWE_ROOT_DIR="${SMPE_INSTALL_PATH_PREFIX}usr/lpp/zowe"
+
+  # install SMP/e package
   echo "[${SCRIPT_NAME}] installing $CI_ZOWE_PAX to $CI_ZOWE_ROOT_DIR ..."
   ./install-SMPE-PAX.sh \
     ${SMPE_INSTALL_HLQ_DSN} \
@@ -533,6 +536,51 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
     exit 1
   fi
   echo
+
+  FULL_EXTRACTED_ZOWE_FOLDER=$CI_INSTALL_DIR/extracted
+
+  # configure installation
+  echo "[${SCRIPT_NAME}] configure installation yaml ..."
+  cd $CI_ZOWE_ROOT_DIR/scripts/configure
+  cat "${CI_ZOWE_CONFIG_FILE}" | \
+    sed -e "/^install:/,\$s#prefix=.*\$#prefix=${CI_JOB_PREFIX}#" | \
+    sed -e "/^zowe-server-proclib:/,\$s#dsName=.*\$#dsName=${CI_PROCLIB_DS_NAME}#" | \
+    sed -e "/^zowe-server-proclib:/,\$s#memberName=.*\$#memberName=${CI_PROCLIB_MEMBER_NAME}#" | \
+    sed -e "/^api-mediation:/,\$s#catalogPort=.*\$#catalogPort=${CI_APIM_CATALOG_PORT}#" | \
+    sed -e "/^api-mediation:/,\$s#discoveryPort=.*\$#discoveryPort=${CI_APIM_DISCOVERY_PORT}#" | \
+    sed -e "/^api-mediation:/,\$s#gatewayPort=.*\$#gatewayPort=${CI_APIM_GATEWAY_PORT}#" | \
+    sed -e "/^api-mediation:/,\$s#externalCertificate=.*\$#externalCertificate=${CI_APIM_EXT_CERT}#" | \
+    sed -e "/^api-mediation:/,\$s#externalCertificateAlias=.*\$#externalCertificateAlias=${CI_APIM_EXT_CERT_ALIAS}#" | \
+    sed -e "/^api-mediation:/,\$s#externalCertificateAuthorities=.*\$#externalCertificateAuthorities=${CI_APIM_EXT_CERT_AUTH}#" | \
+    sed -e "/^api-mediation:/,\$s#verifyCertificatesOfServices=.*\$#verifyCertificatesOfServices=${CI_APIM_VERIFY_CERT}#" | \
+    sed -e "/^explorer-server:/,\$s#jobsPort=.*\$#jobsPort=${CI_EXPLORER_JOBS_PORT}#" | \
+    sed -e "/^explorer-server:/,\$s#dataSetsPort=.*\$#dataSetsPort=${CI_EXPLORER_DATASETS_PORT}#" | \
+    sed -e "/^explorer-ui:/,\$s#explorerJESUI=.*\$#explorerJESUI=${CI_EXPLORER_UI_JES_PORT}#" | \
+    sed -e "/^explorer-ui:/,\$s#explorerMVSUI=.*\$#explorerMVSUI=${CI_EXPLORER_UI_MVS_PORT}#" | \
+    sed -e "/^explorer-ui:/,\$s#explorerUSSUI=.*\$#explorerUSSUI=${CI_EXPLORER_UI_USS_PORT}#" | \
+    sed -e "/^zlux-server:/,\$s#httpsPort=.*\$#httpsPort=${CI_ZLUX_HTTPS_PORT}#" | \
+    sed -e "/^zlux-server:/,\$s#zssPort=.*\$#zssPort=${CI_ZLUX_ZSS_PORT}#" | \
+    sed -e "/^terminals:/,\$s#sshPort=.*\$#sshPort=${CI_TERMINALS_SSH_PORT}#" | \
+    sed -e "/^terminals:/,\$s#telnetPort=.*\$#telnetPort=${CI_TERMINALS_TELNET_PORT}#" > "${CI_ZOWE_CONFIG_FILE}.tmp"
+  mv "${CI_ZOWE_CONFIG_FILE}.tmp" "${CI_ZOWE_CONFIG_FILE}"
+  echo "[${SCRIPT_NAME}] current Zowe configuration is:"
+  cat "${CI_ZOWE_CONFIG_FILE}"
+
+  # run temp fixes
+  if [ "$CI_SKIP_TEMP_FIXES" != "yes" ]; then
+    cd $CI_INSTALL_DIR
+    RUN_SCRIPT=temp-fixes-before-install.sh
+    if [ -f "$RUN_SCRIPT" ]; then
+      run_script_with_timeout "${RUN_SCRIPT} ${CI_ZOWE_ROOT_DIR} ${FULL_EXTRACTED_ZOWE_FOLDER}" 1800
+      EXIT_CODE=$?
+      if [[ "$EXIT_CODE" != "0" ]]; then
+        echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
+        exit 1
+      fi
+    fi
+  fi
+
+  # configure Zowe
   cd ${CI_ZOWE_ROOT_DIR}/scripts
   echo "[${SCRIPT_NAME}] installation is done, start configuring ..."
   ./configure/zowe-configure.sh < /dev/null
@@ -541,6 +589,8 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
     exit 1
   fi
   echo
+
+  # install Cross Memory server
   echo "[${SCRIPT_NAME}] configuration is done, start installing xmem server ..."
   cd ${SMPE_INSTALL_PATH_PREFIX}usr/lpp/zowe/xmem-server
   ${CI_INSTALL_DIR}/install-xmem-server.sh
