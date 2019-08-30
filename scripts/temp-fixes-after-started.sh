@@ -106,13 +106,6 @@ function run_script_with_timeout {
 # Run after install verify script
 echo
 RUN_SCRIPT=zowe-verify.sh
-if [ ! -f "${CI_ZOWE_ROOT_DIR}/scripts/$RUN_SCRIPT" ]; then
-  # this could be a SMP/e installation
-  # this file encoding should have been resolved
-  . smpe-install-config.sh
-  # this is convenience build installation
-  CI_ZOWE_ROOT_DIR="${SMPE_INSTALL_PATH_PREFIX}/usr/lpp/zowe"
-fi
 if [ -f "${CI_ZOWE_ROOT_DIR}/scripts/$RUN_SCRIPT" ]; then
   cd "${CI_ZOWE_ROOT_DIR}/scripts"
   run_script_with_timeout "${RUN_SCRIPT}" 1800

@@ -22,6 +22,7 @@ export SMPE_INSTALL_HLQ_TZONE=ZOE.SMPE
 export SMPE_INSTALL_HLQ_DZONE=ZOE.SMPE
 export SMPE_INSTALL_REL_FILE_PREFIX=ZOE
 export SMPE_INSTALL_PATH_PREFIX=/tmp/
+export SMPE_INSTALL_PATH_DEFAULT=usr/lpp/zowe
 # this should list all known FMIDs we ever shipped separated by space, so the
 # uninstall script can uninstall any versions we ever installed.
 export SMPE_INSTALL_KNOWN_FMIDS=AZWE001

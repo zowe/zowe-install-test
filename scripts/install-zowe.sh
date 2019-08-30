@@ -517,7 +517,7 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   # load SMP/e configs
   . smpe-install-config.sh
   # overwrite this value
-  CI_ZOWE_ROOT_DIR="${SMPE_INSTALL_PATH_PREFIX}usr/lpp/zowe"
+  CI_ZOWE_ROOT_DIR="${SMPE_INSTALL_PATH_PREFIX}${SMPE_INSTALL_PATH_DEFAULT}"
 
   # install SMP/e package
   echo "[${SCRIPT_NAME}] installing $CI_ZOWE_PAX to $CI_ZOWE_ROOT_DIR ..."
@@ -592,7 +592,7 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
 
   # install Cross Memory server
   echo "[${SCRIPT_NAME}] configuration is done, start installing xmem server ..."
-  cd ${SMPE_INSTALL_PATH_PREFIX}usr/lpp/zowe/xmem-server
+  cd ${SMPE_INSTALL_PATH_PREFIX}${SMPE_INSTALL_PATH_DEFAULT}/xmem-server
   ${CI_INSTALL_DIR}/install-xmem-server.sh
   echo "[${SCRIPT_NAME}] all SMP/e install/config are done."
 else

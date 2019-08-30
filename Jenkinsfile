@@ -94,7 +94,7 @@ node('ibm-jenkins-slave-dind') {
     // >>>>>>>> parameters of installation config
     string(
       name: 'ZOWE_ROOT_DIR',
-      description: 'Zowe installation root directory',
+      description: 'Zowe installation root directory. This value has no effect for SMP/e installation.',
       defaultValue: '/zaas1/zowe',
       trim: true,
       required: true
@@ -369,6 +369,12 @@ node('ibm-jenkins-slave-dind') {
         artifactsForUploadAndInstallation.add(".tmp/${smpeFmid}.pax.Z")
         artifactsForUploadAndInstallation.add(".tmp/${smpeFmid}.readme.txt")
         zoweArtifact = "${smpeFmid}.pax.Z"
+
+        // overwrite ZOWE_ROOT_DIR for SMP/e package.
+        params.ZOWE_ROOT_DIR = sh(
+          script: ". scripts/smpe-install-config.sh && echo \"\$SMPE_INSTALL_PATH_PREFIX\$SMPE_INSTALL_PATH_DEFAULT\"",
+          returnStdout: true
+        ).trim()
       } else {
         pipeline.artifactory.download(
           specContent : """
