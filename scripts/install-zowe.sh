@@ -542,7 +542,7 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   fi
   echo
   echo "[${SCRIPT_NAME}] configuration is done, start installing xmem server ..."
-  cd ${smpePathPrefix}usr/lpp/zowe/xmem-server
+  cd ${SMPE_INSTALL_PATH_PREFIX}usr/lpp/zowe/xmem-server
   ${CI_INSTALL_DIR}/install-xmem-server.sh
   echo "[${SCRIPT_NAME}] all SMP/e install/config are done."
 else
