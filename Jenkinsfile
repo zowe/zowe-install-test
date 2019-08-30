@@ -34,6 +34,7 @@ node('ibm-jenkins-slave-dind') {
     "scripts/tsocmds.sh",
   ]
   def zoweArtifact = ''
+  def zoweRootDir = ''
 
   pipeline.admins.add("jackjia")
 
@@ -371,10 +372,11 @@ node('ibm-jenkins-slave-dind') {
         zoweArtifact = "${smpeFmid}.pax.Z"
 
         // overwrite ZOWE_ROOT_DIR for SMP/e package.
-        params.ZOWE_ROOT_DIR = sh(
+        zoweRootDir = sh(
           script: ". scripts/smpe-install-config.sh && echo \"\$SMPE_INSTALL_PATH_PREFIX\$SMPE_INSTALL_PATH_DEFAULT\"",
           returnStdout: true
         ).trim()
+        echo "ZOWE_ROOT_DIR is updated to ${zoweRootDir}"
       } else {
         pipeline.artifactory.download(
           specContent : """
@@ -397,6 +399,7 @@ node('ibm-jenkins-slave-dind') {
         )
         artifactsForUploadAndInstallation.add(".tmp/zowe.pax")
         zoweArtifact = 'zowe.pax'
+        zoweRootDir = params.ZOWE_ROOT_DIR
       }
     },
     timeout: [time: 20, unit: 'MINUTES']
@@ -438,7 +441,7 @@ EOF"""
           sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
 cd ${params.INSTALL_DIR}
 (iconv -f ISO8859-1 -t IBM-1047 install-zowe.sh > install-zowe.sh.new) && mv install-zowe.sh.new install-zowe.sh && chmod +x install-zowe.sh
-./install-zowe.sh --uninstall -n ${params.TEST_IMAGE_GUEST_SSH_HOST} -t ${params.ZOWE_ROOT_DIR} -i ${params.INSTALL_DIR}${skipTempFixes} --zfp ${params.ZOSMF_PORT}\
+./install-zowe.sh --uninstall -n ${params.TEST_IMAGE_GUEST_SSH_HOST} -t ${zoweRootDir} -i ${params.INSTALL_DIR}${skipTempFixes} --zfp ${params.ZOSMF_PORT}\
   --ds ${params.PROCLIB_DS} --dm ${params.PROCLIB_MEMBER} --jp ${params.ZOWE_JOB_PREFIX}\
   --acp ${params.ZOWE_API_MEDIATION_CATALOG_HTTP_PORT} --adp ${params.ZOWE_API_MEDIATION_DISCOVERY_HTTP_PORT} --agp ${params.ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT}\
   --ejp ${params.ZOWE_EXPLORER_JOBS_PORT} --edp ${params.ZOWE_EXPLORER_DATASETS_PORT}\
@@ -477,7 +480,7 @@ EOF"""
           // always exit 0 to ignore failures in zowe-verify.sh
           sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
 cd ${params.INSTALL_DIR} && \
-  temp-fixes-after-started.sh "${params.ZOWE_ROOT_DIR}" || { echo "[temp-fixes-after-started.sh] failed"; exit 0; }
+  temp-fixes-after-started.sh "${zoweRootDir}" || { echo "[temp-fixes-after-started.sh] failed"; exit 0; }
 echo "[temp-fixes-after-started.sh] succeeds" && exit 0
 EOF"""
         }
@@ -520,7 +523,7 @@ EOF"""
             usernameVariable: 'USERNAME'
           )
         ]) {
-          sh """ZOWE_ROOT_DIR=${params.ZOWE_ROOT_DIR} \
+          sh """ZOWE_ROOT_DIR=${zoweRootDir} \
 SSH_HOST=${params.TEST_IMAGE_GUEST_SSH_HOST} \
 SSH_PORT=${params.TEST_IMAGE_GUEST_SSH_PORT} \
 SSH_USER=${USERNAME} \
