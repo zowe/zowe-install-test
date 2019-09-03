@@ -19,10 +19,8 @@
 ################################################################################
 
 SCRIPT_NAME=$(basename "$0")
-CI_ZOWE_ROOT_DIR=$1
-FULL_EXTRACTED_ZOWE_FOLDER=$2
+FULL_EXTRACTED_ZOWE_FOLDER=$1
 echo "[${SCRIPT_NAME}] started ..."
-echo "[${SCRIPT_NAME}]    CI_ZOWE_ROOT_DIR           : $CI_ZOWE_ROOT_DIR"
 echo "[${SCRIPT_NAME}]    FULL_EXTRACTED_ZOWE_FOLDER : $FULL_EXTRACTED_ZOWE_FOLDER"
 CI_PWD=$(pwd)
 

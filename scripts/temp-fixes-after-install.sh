@@ -19,20 +19,21 @@
 ################################################################################
 
 SCRIPT_NAME=$(basename "$0")
-CI_ZOWE_ROOT_DIR=$1
-CI_HOSTNAME=$2
-CI_ZOWE_DS_MEMBER=$3
+CI_HOSTNAME=$1
 echo "[${SCRIPT_NAME}] started ..."
-echo "[${SCRIPT_NAME}]    CI_ZOWE_ROOT_DIR           : $CI_ZOWE_ROOT_DIR"
+if [ -z "${CIZT_ZOWE_ROOT_DIR}" ]; then
+  echo "[${SCRIPT_NAME}][error] cannot find \$CIZT_ZOWE_ROOT_DIR"
+  exit 1
+fi
 echo "[${SCRIPT_NAME}]    CI_HOSTNAME                : $CI_HOSTNAME"
-echo "[${SCRIPT_NAME}]    CI_ZOWE_DS_MEMBER          : $CI_ZOWE_DS_MEMBER"
+echo "[${SCRIPT_NAME}]    CIZT_ZOWE_ROOT_DIR         : $CIZT_ZOWE_ROOT_DIR"
 
 ################################################################################
 # Error when starting explore-server:
 # [ERROR ] CWPKI0033E: The keystore located at safkeyringhybrid:///IZUKeyring.IZUDFLT did not load because of the following error: Errors encountered loading keyring. Keyring could not be loaded as a JCECCARACFKS or JCERACFKS keystore.
 echo
-echo "[${SCRIPT_NAME}] change ${CI_ZOWE_DS_MEMBER} RACF user ..."
-(exec sh -c "tsocmd \"RDEFINE STARTED ${CI_ZOWE_DS_MEMBER}.* UACC(NONE) STDATA(USER(IZUSVR) GROUP(IZUADMIN) PRIVILEGED(NO) TRUSTED(NO) TRACE(YES))\"")
+echo "[${SCRIPT_NAME}] change ${CIZT_PROCLIB_MEMBER} RACF user ..."
+(exec sh -c "tsocmd \"RDEFINE STARTED ${CIZT_PROCLIB_MEMBER}.* UACC(NONE) STDATA(USER(IZUSVR) GROUP(IZUADMIN) PRIVILEGED(NO) TRUSTED(NO) TRACE(YES))\"")
 (exec sh -c "tsocmd \"SETROPTS RACLIST(STARTED) REFRESH\"")
 echo
 
@@ -43,47 +44,47 @@ echo
 # FIXME: su doesn't work well here
 # echo
 # echo "[${SCRIPT_NAME}] import z/OSMF certificates which requires superuser permission ..."
-# (exec sh -c "cd ${CI_ZOWE_ROOT_DIR}/api-mediation && su && export PATH=\$ZOWE_JAVA_HOME/bin:\$PATH && scripts/apiml_cm.sh --action trust-zosmf --zosmf-keyring IZUKeyring.IZUDFLT --zosmf-userid IZUSVR")
+# (exec sh -c "cd ${CIZT_ZOWE_ROOT_DIR}/api-mediation && su && export PATH=\$ZOWE_JAVA_HOME/bin:\$PATH && scripts/apiml_cm.sh --action trust-zosmf --zosmf-keyring IZUKeyring.IZUDFLT --zosmf-userid IZUSVR")
 # echo
 
 ################################################################################
 # explorer JES/MVS/USS has internal host name, convert to public domain
-echo
-ZDNT_HOSTNAME=S0W1.DAL-EBIS.IHOST.COM
-echo "[${SCRIPT_NAME}] checking hostname ${ZDNT_HOSTNAME} in explorer-* ..."
-FILES_TO_UPDATE="api_catalog jes_explorer mvs_explorer uss_explorer"
-for one in $FILES_TO_UPDATE; do
-  ZDNT_FILE=$CI_ZOWE_ROOT_DIR/${one}/web/index.html
-  echo "[${SCRIPT_NAME}]   - checking $ZDNT_FILE ..."
-  if [ -f "$ZDNT_FILE" ]; then
-    HAS_WRONG_HOSTNAME=$(grep $ZDNT_HOSTNAME $ZDNT_FILE)
-    if [ -n "$HAS_WRONG_HOSTNAME" ]; then
-      sed "s#//${ZDNT_HOSTNAME}:\([0-9]\+\)/#//${CI_HOSTNAME}:\1/#" $ZDNT_FILE > index.html.tmp
-      mv index.html.tmp $ZDNT_FILE
-      echo "[${SCRIPT_NAME}]     - updated."
+if [ -n "${CIZT_ZDNT_HOSTNAME}" ]; then
+  echo "[${SCRIPT_NAME}] checking hostname ${CIZT_ZDNT_HOSTNAME} in explorer-* ..."
+  FILES_TO_UPDATE="api_catalog jes_explorer mvs_explorer uss_explorer"
+  for one in $FILES_TO_UPDATE; do
+    ZDNT_FILE=$CIZT_ZOWE_ROOT_DIR/${one}/web/index.html
+    echo "[${SCRIPT_NAME}]   - checking $ZDNT_FILE ..."
+    if [ -f "$ZDNT_FILE" ]; then
+      HAS_WRONG_HOSTNAME=$(grep $CIZT_ZDNT_HOSTNAME $ZDNT_FILE)
+      if [ -n "$HAS_WRONG_HOSTNAME" ]; then
+        sed "s#//${CIZT_ZDNT_HOSTNAME}:\([0-9]\+\)/#//${CI_HOSTNAME}:\1/#" $ZDNT_FILE > index.html.tmp
+        mv index.html.tmp $ZDNT_FILE
+        echo "[${SCRIPT_NAME}]     - updated."
+      else
+        echo "[${SCRIPT_NAME}]     - no need to update."
+      fi
     else
-      echo "[${SCRIPT_NAME}]     - no need to update."
+      echo "[${SCRIPT_NAME}]     - doesn't exist."
     fi
-  else
-    echo "[${SCRIPT_NAME}]     - doesn't exist."
-  fi
 
-  ZDNT_FILE=$CI_ZOWE_ROOT_DIR/${one}/server/configs/config.json
-  echo "[${SCRIPT_NAME}]   - checking $ZDNT_FILE ..."
-  if [ -f "$ZDNT_FILE" ]; then
-    HAS_WRONG_HOSTNAME=$(grep $ZDNT_HOSTNAME $ZDNT_FILE)
-    if [ -n "$HAS_WRONG_HOSTNAME" ]; then
-      sed "s#//${ZDNT_HOSTNAME}:#//${CI_HOSTNAME}:#" $ZDNT_FILE > config.json.tmp
-      mv config.json.tmp $ZDNT_FILE
-      echo "[${SCRIPT_NAME}]     - updated."
+    ZDNT_FILE=$CIZT_ZOWE_ROOT_DIR/${one}/server/configs/config.json
+    echo "[${SCRIPT_NAME}]   - checking $ZDNT_FILE ..."
+    if [ -f "$ZDNT_FILE" ]; then
+      HAS_WRONG_HOSTNAME=$(grep $CIZT_ZDNT_HOSTNAME $ZDNT_FILE)
+      if [ -n "$HAS_WRONG_HOSTNAME" ]; then
+        sed "s#//${CIZT_ZDNT_HOSTNAME}:#//${CI_HOSTNAME}:#" $ZDNT_FILE > config.json.tmp
+        mv config.json.tmp $ZDNT_FILE
+        echo "[${SCRIPT_NAME}]     - updated."
+      else
+        echo "[${SCRIPT_NAME}]     - no need to update."
+      fi
     else
-      echo "[${SCRIPT_NAME}]     - no need to update."
+      echo "[${SCRIPT_NAME}]     - doesn't exist."
     fi
-  else
-    echo "[${SCRIPT_NAME}]     - doesn't exist."
-  fi
-done
-echo
+  done
+  echo
+fi
 
 ################################################################################
 echo

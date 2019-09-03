@@ -19,65 +19,12 @@
 ################################################################################
 # constants
 SCRIPT_NAME=$(basename "$0")
-DEFAULT_CI_ZOSMF_PORT=10443
-DEFAULT_CI_ZOWE_ROOT_DIR=/ZOWE/staging/zowe
-DEFAULT_CI_INSTALL_DIR=/ZOWE/zowe-installs
-DEFAULT_CI_APIM_CATALOG_PORT=7552
-DEFAULT_CI_APIM_DISCOVERY_PORT=7553
-DEFAULT_CI_APIM_GATEWAY_PORT=7554
-DEFAULT_CI_APIM_EXT_CERT=
-DEFAULT_CI_APIM_EXT_CERT_ALIAS=
-DEFAULT_CI_APIM_EXT_CERT_AUTH=
-DEFAULT_CI_APIM_VERIFY_CERT=true
-DEFAULT_CI_EXPLORER_JOBS_PORT=8545
-DEFAULT_CI_EXPLORER_DATASETS_PORT=8547
-DEFAULT_CI_EXPLORER_UI_JES_PORT=8546
-DEFAULT_CI_EXPLORER_UI_MVS_PORT=8548
-DEFAULT_CI_EXPLORER_UI_USS_PORT=8550
-DEFAULT_CI_ZLUX_HTTPS_PORT=8544
-DEFAULT_CI_ZLUX_ZSS_PORT=8542
-DEFAULT_CI_TERMINALS_SSH_PORT=22
-DEFAULT_CI_TERMINALS_TELNET_PORT=23
-DEFAULT_CI_PROCLIB_DS_NAME=auto
-DEFAULT_CI_PROCLIB_MEMBER_NAME=ZOWESVR
-DEFAULT_CI_JOB_PREFIX=ZOWE
 CI_ZOWE_CONFIG_FILE=zowe-install.yaml
 CI_ZSS_CONFIG_FILE=zowe-install-apf-server.yaml
 CI_ZOWE_PAX=
 CI_SKIP_TEMP_FIXES=no
 CI_UNINSTALL=no
 CI_HOSTNAME=
-CI_ZOSMF_PORT=$DEFAULT_CI_ZOSMF_PORT
-CI_ZOWE_ROOT_DIR=$DEFAULT_CI_ZOWE_ROOT_DIR
-CI_INSTALL_DIR=$DEFAULT_CI_INSTALL_DIR
-CI_APIM_CATALOG_PORT=$DEFAULT_CI_APIM_CATALOG_PORT
-CI_APIM_DISCOVERY_PORT=$DEFAULT_CI_APIM_DISCOVERY_PORT
-CI_APIM_GATEWAY_PORT=$DEFAULT_CI_APIM_GATEWAY_PORT
-CI_APIM_EXT_CERT=$DEFAULT_CI_APIM_EXT_CERT
-CI_APIM_EXT_CERT_ALIAS=$DEFAULT_CI_APIM_EXT_CERT_ALIAS
-CI_APIM_EXT_CERT_AUTH=$DEFAULT_CI_APIM_EXT_CERT_AUTH
-CI_APIM_VERIFY_CERT=$DEFAULT_CI_APIM_VERIFY_CERT
-CI_EXPLORER_JOBS_PORT=$DEFAULT_CI_EXPLORER_JOBS_PORT
-CI_EXPLORER_DATASETS_PORT=$DEFAULT_CI_EXPLORER_DATASETS_PORT
-CI_EXPLORER_UI_JES_PORT=$DEFAULT_CI_EXPLORER_UI_JES_PORT
-CI_EXPLORER_UI_MVS_PORT=$DEFAULT_CI_EXPLORER_UI_MVS_PORT
-CI_EXPLORER_UI_USS_PORT=$DEFAULT_CI_EXPLORER_UI_USS_PORT
-CI_ZLUX_HTTPS_PORT=$DEFAULT_CI_ZLUX_HTTPS_PORT
-CI_ZLUX_ZSS_PORT=$DEFAULT_CI_ZLUX_ZSS_PORT
-CI_TERMINALS_SSH_PORT=$DEFAULT_CI_TERMINALS_SSH_PORT
-CI_TERMINALS_TELNET_PORT=$DEFAULT_CI_TERMINALS_TELNET_PORT
-CI_PROCLIB_DS_NAME=$DEFAULT_CI_PROCLIB_DS_NAME
-CI_PROCLIB_MEMBER_NAME=$DEFAULT_CI_PROCLIB_MEMBER_NAME
-CI_JOB_PREFIX=$DEFAULT_CI_JOB_PREFIX
-
-# FIXME: these values should be configurable, now it's hardcoded for zD&T
-CI_ZSS_PROCLIB_DS_NAME=VENDOR.PROCLIB
-CI_ZSS_PARMLIB_DS_NAME=ZOWEAD3.PARMLIB
-CI_ZSS_LOADLIB_DS_NAME=ZOWEAD3.LINKLIB
-CI_ZSS_ZOWE_USER=IZUSVR
-CI_ZSS_STC_USER_ID=9010
-CI_ZSS_STC_GROUP=IZUADMIN
-CI_ZSS_STC_USER=IZUSVR
 
 # allow to exit by ctrl+c
 function finish {
@@ -218,50 +165,6 @@ function usage {
   echo "  -u|--uninstall                  If uninstall Zowe first."
   echo "                                  Optional, default is no."
   echo "  -n|--hostname                   The server public domain/IP."
-  echo "  --zfp|--zosmf-port              z/OSMF port for testing."
-  echo "                                  Optional, default is $DEFAULT_CI_ZOSMF_PORT."
-  echo "  -t|--target-dir                 Installation target folder."
-  echo "                                  Optional, default is $DEFAULT_CI_ZOWE_ROOT_DIR."
-  echo "  -i|--install-dir                Installation working folder."
-  echo "                                  Optional, default is $DEFAULT_CI_INSTALL_DIR."
-  echo "  --acp|--apim-catalog-port       catalogPort for api-mediation."
-  echo "                                  Optional, default is $DEFAULT_CI_APIM_CATALOG_PORT."
-  echo "  --adp|--apim-discovery-port     discoveryPort for api-mediation."
-  echo "                                  Optional, default is $DEFAULT_CI_APIM_DISCOVERY_PORT."
-  echo "  --agp|--apim-gateway-port       gatewayPort for api-mediation."
-  echo "                                  Optional, default is $DEFAULT_CI_APIM_GATEWAY_PORT."
-  echo "  --ac|--apim-cert               externalCertificate for api-mediation."
-  echo "                                  Optional, default is $DEFAULT_CI_APIM_EXT_CERT."
-  echo "  --acl|--apim-cert-alias         externalCertificateAlias for api-mediation."
-  echo "                                  Optional, default is $DEFAULT_CI_APIM_EXT_CERT_ALIAS."
-  echo "  --aca|--apim-ca                 externalCertificateAuthorities for api-mediation."
-  echo "                                  Optional, default is $DEFAULT_CI_APIM_EXT_CERT_AUTH."
-  echo "  --avc|--apim-verify-cert        verifyCertificatesOfServices for api-mediation."
-  echo "                                  Optional, default is $DEFAULT_CI_APIM_VERIFY_CERT."
-  echo "  --ejp|--explorer-jobs-port      jobsPort for explorer-server."
-  echo "                                  Optional, default is $DEFAULT_CI_EXPLORER_JOBS_PORT."
-  echo "  --edp|--explorer-datasets-port  dataSetsPort for explorer-server."
-  echo "                                  Optional, default is $DEFAULT_CI_EXPLORER_DATASETS_PORT."
-  echo "  --ujp|--explorer-ui-jes-port    explorerJESUI for explorer-ui."
-  echo "                                  Optional, default is $DEFAULT_CI_EXPLORER_UI_JES_PORT."
-  echo "  --ump|--explorer-ui-mvs-port    explorerMVSUI for explorer-ui."
-  echo "                                  Optional, default is $DEFAULT_CI_EXPLORER_UI_MVS_PORT."
-  echo "  --uup|--explorer-ui-uss-port    explorerUSSUI for explorer-ui."
-  echo "                                  Optional, default is $DEFAULT_CI_EXPLORER_UI_USS_PORT."
-  echo "  --zp|--zlux-https-port         httpsPort for zlux-server."
-  echo "                                  Optional, default is $DEFAULT_CI_ZLUX_HTTPS_PORT."
-  echo "  --zsp|--zlux-zss-port           zssPort for zlux-server."
-  echo "                                  Optional, default is $DEFAULT_CI_ZLUX_ZSS_PORT."
-  echo "  --tsp|--term-ssh-port           sshPort for MVD terminals."
-  echo "                                  Optional, default is $DEFAULT_CI_TERMINALS_SSH_PORT."
-  echo "  --ttp|--term-telnet-port        telnetPort for MVD terminals."
-  echo "                                  Optional, default is $DEFAULT_CI_TERMINALS_TELNET_PORT."
-  echo "  --ds|--proc-ds                 dsName for PROCLIB."
-  echo "                                  Optional, default is $DEFAULT_CI_PROCLIB_DS_NAME."
-  echo "  --dm|--proc-member             memberName for PROCLIB."
-  echo "                                  Optional, default is $DEFAULT_CI_PROCLIB_MEMBER_NAME."
-  echo "  --jp|--job-prefix              job name prefix."
-  echo "                                  Optional, default is $DEFAULT_CI_JOB_PREFIX."
   echo
 }
 
@@ -288,116 +191,6 @@ while [ $# -gt 0 ]; do
       shift # past argument
       shift # past value
       ;;
-    --zfp|--zosmf-port)
-      CI_ZOSMF_PORT="$2"
-      shift # past argument
-      shift # past value
-      ;;
-    -t|--target-dir)
-      CI_ZOWE_ROOT_DIR="$2"
-      shift # past argument
-      shift # past value
-      ;;
-    -i|--install-dir)
-      CI_INSTALL_DIR="$2"
-      shift # past argument
-      shift # past value
-      ;;
-    --acp|--apim-catalog-port)
-      CI_APIM_CATALOG_PORT="$2"
-      shift # past argument
-      shift # past value
-      ;;
-    --adp|--apim-discovery-port)
-      CI_APIM_DISCOVERY_PORT="$2"
-      shift # past argument
-      shift # past value
-      ;;
-    --agp|--apim-gateway-port)
-      CI_APIM_GATEWAY_PORT="$2"
-      shift # past argument
-      shift # past value
-      ;;
-    --ac|--apim-cert)
-      CI_APIM_EXT_CERT="$2"
-      shift # past argument
-      shift # past value
-      ;;
-    --acl|--apim-cert-alias)
-      CI_APIM_EXT_CERT_ALIAS="$2"
-      shift # past argument
-      shift # past value
-      ;;
-    --aca|--apim-ca)
-      CI_APIM_EXT_CERT_AUTH="$2"
-      shift # past argument
-      shift # past value
-      ;;
-    --avc|--apim-verify-cert)
-      CI_APIM_VERIFY_CERT="$2"
-      shift # past argument
-      shift # past value
-      ;;
-    --ejp|--explorer-jobs-port)
-      CI_EXPLORER_JOBS_PORT="$2"
-      shift # past argument
-      shift # past value
-      ;;
-    --edp|--explorer-datasets-port)
-      CI_EXPLORER_DATASETS_PORT="$2"
-      shift # past argument
-      shift # past value
-      ;;
-    --ujp|--explorer-ui-jes-port)
-      CI_EXPLORER_UI_JES_PORT="$2"
-      shift # past argument
-      shift # past value
-      ;;
-    --ump|--explorer-ui-mvs-port)
-      CI_EXPLORER_UI_MVS_PORT="$2"
-      shift # past argument
-      shift # past value
-      ;;
-    --uup|--explorer-ui-uss-port)
-      CI_EXPLORER_UI_USS_PORT="$2"
-      shift # past argument
-      shift # past value
-      ;;
-    --zp|--zlux-https-port)
-      CI_ZLUX_HTTPS_PORT="$2"
-      shift # past argument
-      shift # past value
-      ;;
-    --zsp|--zlux-zss-port)
-      CI_ZLUX_ZSS_PORT="$2"
-      shift # past argument
-      shift # past value
-      ;;
-    --tsp|--term-ssh-port)
-      CI_TERMINALS_SSH_PORT="$2"
-      shift # past argument
-      shift # past value
-      ;;
-    --ttp|--term-telnet-port)
-      CI_TERMINALS_TELNET_PORT="$2"
-      shift # past argument
-      shift # past value
-      ;;
-    --ds|--proc-ds)
-      CI_PROCLIB_DS_NAME="$2"
-      shift # past argument
-      shift # past value
-      ;;
-    --dm|--proc-member)
-      CI_PROCLIB_MEMBER_NAME="$2"
-      shift # past argument
-      shift # past value
-      ;;
-    --jp|--job-prefix)
-      CI_JOB_PREFIX="$2"
-      shift # past argument
-      shift # past value
-      ;;
     *)    # unknown option
       if [ ! "$1" = "${1#-}" ]; then
         echo "[${SCRIPT_NAME}][error] invalid option: $1" >&2
@@ -414,6 +207,12 @@ CI_ZOWE_PAX=$1
 
 ################################################################################
 # essential validations
+if [ ! -f install-config.sh ]; then
+  echo "[${SCRIPT_NAME}][error] cannot find install-config.sh"
+  exit 1
+fi
+ensure_script_encoding install-config.sh
+. install-config.sh
 if [ -z "$CI_ZOWE_PAX" ]; then
   echo "[${SCRIPT_NAME}][error] package is required."
   exit 1
@@ -427,7 +226,7 @@ if [ -z "$CI_HOSTNAME" ]; then
   exit 1
 fi
 # convert encoding if those files uploaded
-cd $CI_INSTALL_DIR
+cd $CIZT_INSTALL_DIR
 if [ -f "temp-fixes-after-install.sh" ]; then
   ensure_script_encoding temp-fixes-after-install.sh
 fi
@@ -449,42 +248,42 @@ echo "[${SCRIPT_NAME}] installation script started ..."
 echo "[${SCRIPT_NAME}]   - package file        : $CI_ZOWE_PAX"
 echo "[${SCRIPT_NAME}]   - skip temp files     : $CI_SKIP_TEMP_FIXES"
 echo "[${SCRIPT_NAME}]   - uninstall previous  : $CI_UNINSTALL"
-echo "[${SCRIPT_NAME}]   - z/OSMF port         : $CI_ZOSMF_PORT"
-echo "[${SCRIPT_NAME}]   - temporary folder    : $CI_INSTALL_DIR"
+echo "[${SCRIPT_NAME}]   - z/OSMF port         : $CIZT_ZOSMF_PORT"
+echo "[${SCRIPT_NAME}]   - temporary folder    : $CIZT_INSTALL_DIR"
 echo "[${SCRIPT_NAME}]   - install             :"
-echo "[${SCRIPT_NAME}]     - rootDir           : $CI_ZOWE_ROOT_DIR"
-echo "[${SCRIPT_NAME}]     - prefix            : $CI_JOB_PREFIX"
+echo "[${SCRIPT_NAME}]     - rootDir           : $CIZT_ZOWE_ROOT_DIR"
+echo "[${SCRIPT_NAME}]     - prefix            : $CIZT_ZOWE_JOB_PREFIX"
 echo "[${SCRIPT_NAME}]   - zowe-server-proclib :"
-echo "[${SCRIPT_NAME}]     - dsName            : $CI_PROCLIB_DS_NAME"
-echo "[${SCRIPT_NAME}]     - memberName        : $CI_PROCLIB_MEMBER_NAME"
+echo "[${SCRIPT_NAME}]     - dsName            : $CIZT_PROCLIB_DS"
+echo "[${SCRIPT_NAME}]     - memberName        : $CIZT_PROCLIB_MEMBER"
 echo "[${SCRIPT_NAME}]   - api-mediation       :"
-echo "[${SCRIPT_NAME}]     - catalogPort       : $CI_APIM_CATALOG_PORT"
-echo "[${SCRIPT_NAME}]     - discoveryPort     : $CI_APIM_DISCOVERY_PORT"
-echo "[${SCRIPT_NAME}]     - gatewayPort       : $CI_APIM_GATEWAY_PORT"
-echo "[${SCRIPT_NAME}]     - externalCertificate            : $CI_APIM_EXT_CERT"
-echo "[${SCRIPT_NAME}]     - externalCertificateAlias       : $CI_APIM_EXT_CERT_ALIAS"
-echo "[${SCRIPT_NAME}]     - externalCertificateAuthorities : $CI_APIM_EXT_CERT_AUTH"
-echo "[${SCRIPT_NAME}]     - verifyCertificatesOfServices   : $CI_APIM_VERIFY_CERT"
+echo "[${SCRIPT_NAME}]     - catalogPort       : $CIZT_ZOWE_API_MEDIATION_CATALOG_HTTP_PORT"
+echo "[${SCRIPT_NAME}]     - discoveryPort     : $CIZT_ZOWE_API_MEDIATION_DISCOVERY_HTTP_PORT"
+echo "[${SCRIPT_NAME}]     - gatewayPort       : $CIZT_ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT"
+echo "[${SCRIPT_NAME}]     - externalCertificate            : $CIZT_ZOWE_API_MEDIATION_EXT_CERT"
+echo "[${SCRIPT_NAME}]     - externalCertificateAlias       : $CIZT_ZOWE_API_MEDIATION_EXT_CERT_ALIAS"
+echo "[${SCRIPT_NAME}]     - externalCertificateAuthorities : $CIZT_ZOWE_API_MEDIATION_EXT_CERT_AUTH"
+echo "[${SCRIPT_NAME}]     - verifyCertificatesOfServices   : $CIZT_ZOWE_API_MEDIATION_VERIFY_CERT"
 echo "[${SCRIPT_NAME}]   - explorer-server     :"
-echo "[${SCRIPT_NAME}]     - jobsPort          : $CI_EXPLORER_JOBS_PORT"
-echo "[${SCRIPT_NAME}]     - dataSetsPort      : $CI_EXPLORER_DATASETS_PORT"
+echo "[${SCRIPT_NAME}]     - jobsPort          : $CIZT_ZOWE_EXPLORER_JOBS_PORT"
+echo "[${SCRIPT_NAME}]     - dataSetsPort      : $CIZT_ZOWE_EXPLORER_DATASETS_PORT"
 echo "[${SCRIPT_NAME}]   - explorer-ui         :"
-echo "[${SCRIPT_NAME}]     - explorerJESUI     : $CI_EXPLORER_UI_JES_PORT"
-echo "[${SCRIPT_NAME}]     - explorerMVSUI     : $CI_EXPLORER_UI_MVS_PORT"
-echo "[${SCRIPT_NAME}]     - explorerUSSUI     : $CI_EXPLORER_UI_USS_PORT"
+echo "[${SCRIPT_NAME}]     - explorerJESUI     : $CIZT_ZOWE_EXPLORER_UI_JES_PORT"
+echo "[${SCRIPT_NAME}]     - explorerMVSUI     : $CIZT_ZOWE_EXPLORER_UI_MVS_PORT"
+echo "[${SCRIPT_NAME}]     - explorerUSSUI     : $CIZT_ZOWE_EXPLORER_UI_USS_PORT"
 echo "[${SCRIPT_NAME}]   - zlux-server         :"
-echo "[${SCRIPT_NAME}]     - httpsPort         : $CI_ZLUX_HTTPS_PORT"
-echo "[${SCRIPT_NAME}]     - zssPort           : $CI_ZLUX_ZSS_PORT"
+echo "[${SCRIPT_NAME}]     - httpsPort         : $CIZT_ZOWE_ZLUX_HTTPS_PORT"
+echo "[${SCRIPT_NAME}]     - zssPort           : $CIZT_ZOWE_ZLUX_ZSS_PORT"
 echo "[${SCRIPT_NAME}]   - terminals           :"
-echo "[${SCRIPT_NAME}]     - sshPort           : $CI_TERMINALS_SSH_PORT"
-echo "[${SCRIPT_NAME}]     - telnetPort        : $CI_TERMINALS_TELNET_PORT"
+echo "[${SCRIPT_NAME}]     - sshPort           : $CIZT_ZOWE_MVD_SSH_PORT"
+echo "[${SCRIPT_NAME}]     - telnetPort        : $CIZT_ZOWE_MVD_TELNET_PORT"
 echo
 
 if [[ "$CI_UNINSTALL" = "yes" ]]; then
-  cd $CI_INSTALL_DIR
+  cd $CIZT_INSTALL_DIR
   RUN_SCRIPT=uninstall-zowe.sh
   if [ -f "$RUN_SCRIPT" ]; then
-    run_script_with_timeout "${RUN_SCRIPT} -i ${CI_INSTALL_DIR} -t ${CI_ZOWE_ROOT_DIR} -m ${CI_PROCLIB_MEMBER_NAME}" 300
+    run_script_with_timeout "${RUN_SCRIPT}" 300
     EXIT_CODE=$?
     if [[ "$EXIT_CODE" != "0" ]]; then
       echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
@@ -494,9 +293,9 @@ if [[ "$CI_UNINSTALL" = "yes" ]]; then
 fi
 
 # extract Zowe
-echo "[${SCRIPT_NAME}] extracting $CI_ZOWE_PAX to $CI_INSTALL_DIR/extracted ..."
-mkdir -p $CI_INSTALL_DIR/extracted
-cd $CI_INSTALL_DIR/extracted
+echo "[${SCRIPT_NAME}] extracting $CI_ZOWE_PAX to $CIZT_INSTALL_DIR/extracted ..."
+mkdir -p $CIZT_INSTALL_DIR/extracted
+cd $CIZT_INSTALL_DIR/extracted
 rm -fr *
 pax -ppx -rf $CI_ZOWE_PAX
 EXIT_CODE=$?
@@ -511,60 +310,60 @@ echo
 # check extracted folder
 # - old version will have several folders like files, install, licenses, scripts, etc
 # - new version will only have one folder of zowe-{version}
-FULL_EXTRACTED_ZOWE_FOLDER=$CI_INSTALL_DIR/extracted
-EXTRACTED_FILES=$(ls -1 $CI_INSTALL_DIR/extracted | wc -l | awk '{print $1}')
+FULL_EXTRACTED_ZOWE_FOLDER=$CIZT_INSTALL_DIR/extracted
+EXTRACTED_FILES=$(ls -1 $CIZT_INSTALL_DIR/extracted | wc -l | awk '{print $1}')
 HAS_EXTRA_ZOWE_FOLDER=0
 if [ "$EXTRACTED_FILES" = "1" ]; then
   HAS_EXTRA_ZOWE_FOLDER=1
-  EXTRACTED_ZOWE_FOLDER=$(ls -1 $CI_INSTALL_DIR/extracted)
-  FULL_EXTRACTED_ZOWE_FOLDER=$CI_INSTALL_DIR/extracted/$EXTRACTED_ZOWE_FOLDER
+  EXTRACTED_ZOWE_FOLDER=$(ls -1 $CIZT_INSTALL_DIR/extracted)
+  FULL_EXTRACTED_ZOWE_FOLDER=$CIZT_INSTALL_DIR/extracted/$EXTRACTED_ZOWE_FOLDER
 fi
 
 # configure installation
 echo "[${SCRIPT_NAME}] configure installation yaml ..."
 cd $FULL_EXTRACTED_ZOWE_FOLDER/install
 cat "${CI_ZOWE_CONFIG_FILE}" | \
-  sed -e "/^install:/,\$s#rootDir=.*\$#rootDir=${CI_ZOWE_ROOT_DIR}#" | \
-  sed -e "/^install:/,\$s#prefix=.*\$#prefix=${CI_JOB_PREFIX}#" | \
-  sed -e "/^zowe-server-proclib:/,\$s#dsName=.*\$#dsName=${CI_PROCLIB_DS_NAME}#" | \
-  sed -e "/^zowe-server-proclib:/,\$s#memberName=.*\$#memberName=${CI_PROCLIB_MEMBER_NAME}#" | \
-  sed -e "/^api-mediation:/,\$s#catalogPort=.*\$#catalogPort=${CI_APIM_CATALOG_PORT}#" | \
-  sed -e "/^api-mediation:/,\$s#discoveryPort=.*\$#discoveryPort=${CI_APIM_DISCOVERY_PORT}#" | \
-  sed -e "/^api-mediation:/,\$s#gatewayPort=.*\$#gatewayPort=${CI_APIM_GATEWAY_PORT}#" | \
-  sed -e "/^api-mediation:/,\$s#externalCertificate=.*\$#externalCertificate=${CI_APIM_EXT_CERT}#" | \
-  sed -e "/^api-mediation:/,\$s#externalCertificateAlias=.*\$#externalCertificateAlias=${CI_APIM_EXT_CERT_ALIAS}#" | \
-  sed -e "/^api-mediation:/,\$s#externalCertificateAuthorities=.*\$#externalCertificateAuthorities=${CI_APIM_EXT_CERT_AUTH}#" | \
-  sed -e "/^api-mediation:/,\$s#verifyCertificatesOfServices=.*\$#verifyCertificatesOfServices=${CI_APIM_VERIFY_CERT}#" | \
-  sed -e "/^explorer-server:/,\$s#jobsPort=.*\$#jobsPort=${CI_EXPLORER_JOBS_PORT}#" | \
-  sed -e "/^explorer-server:/,\$s#dataSetsPort=.*\$#dataSetsPort=${CI_EXPLORER_DATASETS_PORT}#" | \
-  sed -e "/^explorer-ui:/,\$s#explorerJESUI=.*\$#explorerJESUI=${CI_EXPLORER_UI_JES_PORT}#" | \
-  sed -e "/^explorer-ui:/,\$s#explorerMVSUI=.*\$#explorerMVSUI=${CI_EXPLORER_UI_MVS_PORT}#" | \
-  sed -e "/^explorer-ui:/,\$s#explorerUSSUI=.*\$#explorerUSSUI=${CI_EXPLORER_UI_USS_PORT}#" | \
-  sed -e "/^zlux-server:/,\$s#httpsPort=.*\$#httpsPort=${CI_ZLUX_HTTPS_PORT}#" | \
-  sed -e "/^zlux-server:/,\$s#zssPort=.*\$#zssPort=${CI_ZLUX_ZSS_PORT}#" | \
-  sed -e "/^terminals:/,\$s#sshPort=.*\$#sshPort=${CI_TERMINALS_SSH_PORT}#" | \
-  sed -e "/^terminals:/,\$s#telnetPort=.*\$#telnetPort=${CI_TERMINALS_TELNET_PORT}#" > "${CI_ZOWE_CONFIG_FILE}.tmp"
+  sed -e "/^install:/,\$s#rootDir=.*\$#rootDir=${CIZT_ZOWE_ROOT_DIR}#" | \
+  sed -e "/^install:/,\$s#prefix=.*\$#prefix=${CIZT_ZOWE_JOB_PREFIX}#" | \
+  sed -e "/^zowe-server-proclib:/,\$s#dsName=.*\$#dsName=${CIZT_PROCLIB_DS}#" | \
+  sed -e "/^zowe-server-proclib:/,\$s#memberName=.*\$#memberName=${CIZT_PROCLIB_MEMBER}#" | \
+  sed -e "/^api-mediation:/,\$s#catalogPort=.*\$#catalogPort=${CIZT_ZOWE_API_MEDIATION_CATALOG_HTTP_PORT}#" | \
+  sed -e "/^api-mediation:/,\$s#discoveryPort=.*\$#discoveryPort=${CIZT_ZOWE_API_MEDIATION_DISCOVERY_HTTP_PORT}#" | \
+  sed -e "/^api-mediation:/,\$s#gatewayPort=.*\$#gatewayPort=${CIZT_ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT}#" | \
+  sed -e "/^api-mediation:/,\$s#externalCertificate=.*\$#externalCertificate=${CIZT_ZOWE_API_MEDIATION_EXT_CERT}#" | \
+  sed -e "/^api-mediation:/,\$s#externalCertificateAlias=.*\$#externalCertificateAlias=${CIZT_ZOWE_API_MEDIATION_EXT_CERT_ALIAS}#" | \
+  sed -e "/^api-mediation:/,\$s#externalCertificateAuthorities=.*\$#externalCertificateAuthorities=${CIZT_ZOWE_API_MEDIATION_EXT_CERT_AUTH}#" | \
+  sed -e "/^api-mediation:/,\$s#verifyCertificatesOfServices=.*\$#verifyCertificatesOfServices=${CIZT_ZOWE_API_MEDIATION_VERIFY_CERT}#" | \
+  sed -e "/^explorer-server:/,\$s#jobsPort=.*\$#jobsPort=${CIZT_ZOWE_EXPLORER_JOBS_PORT}#" | \
+  sed -e "/^explorer-server:/,\$s#dataSetsPort=.*\$#dataSetsPort=${CIZT_ZOWE_EXPLORER_DATASETS_PORT}#" | \
+  sed -e "/^explorer-ui:/,\$s#explorerJESUI=.*\$#explorerJESUI=${CIZT_ZOWE_EXPLORER_UI_JES_PORT}#" | \
+  sed -e "/^explorer-ui:/,\$s#explorerMVSUI=.*\$#explorerMVSUI=${CIZT_ZOWE_EXPLORER_UI_MVS_PORT}#" | \
+  sed -e "/^explorer-ui:/,\$s#explorerUSSUI=.*\$#explorerUSSUI=${CIZT_ZOWE_EXPLORER_UI_USS_PORT}#" | \
+  sed -e "/^zlux-server:/,\$s#httpsPort=.*\$#httpsPort=${CIZT_ZOWE_ZLUX_HTTPS_PORT}#" | \
+  sed -e "/^zlux-server:/,\$s#zssPort=.*\$#zssPort=${CIZT_ZOWE_ZLUX_ZSS_PORT}#" | \
+  sed -e "/^terminals:/,\$s#sshPort=.*\$#sshPort=${CIZT_ZOWE_MVD_SSH_PORT}#" | \
+  sed -e "/^terminals:/,\$s#telnetPort=.*\$#telnetPort=${CIZT_ZOWE_MVD_TELNET_PORT}#" > "${CI_ZOWE_CONFIG_FILE}.tmp"
 mv "${CI_ZOWE_CONFIG_FILE}.tmp" "${CI_ZOWE_CONFIG_FILE}"
 echo "[${SCRIPT_NAME}] current Zowe configuration is:"
 cat "${CI_ZOWE_CONFIG_FILE}"
 cat "${CI_ZSS_CONFIG_FILE}" | \
-  sed -e "/^install:/,\$s#proclib=.*\$#proclib=${CI_ZSS_PROCLIB_DS_NAME}#" | \
-  sed -e "/^install:/,\$s#parmlib=.*\$#parmlib=${CI_ZSS_PARMLIB_DS_NAME}#" | \
-  sed -e "/^install:/,\$s#loadlib=.*\$#loadlib=${CI_ZSS_LOADLIB_DS_NAME}#" | \
-  sed -e "/^users:/,\$s#zoweUser=.*\$#zoweUser=${CI_ZSS_ZOWE_USER}#" | \
-  sed -e "/^users:/,\$s#stcUserUid=.*\$#stcUserUid=${CI_ZSS_STC_USER_ID}#" | \
-  sed -e "/^users:/,\$s#stcGroup=.*\$#stcGroup=${CI_ZSS_STC_GROUP}#" | \
-  sed -e "/^users:/,\$s#stcUser=.*\$#stcUser=${CI_ZSS_STC_USER}#" > "${CI_ZSS_CONFIG_FILE}.tmp"
+  sed -e "/^install:/,\$s#proclib=.*\$#proclib=${CIZT_ZSS_PROCLIB_DS_NAME}#" | \
+  sed -e "/^install:/,\$s#parmlib=.*\$#parmlib=${CIZT_ZSS_PARMLIB_DS_NAME}#" | \
+  sed -e "/^install:/,\$s#loadlib=.*\$#loadlib=${CIZT_ZSS_LOADLIB_DS_NAME}#" | \
+  sed -e "/^users:/,\$s#zoweUser=.*\$#zoweUser=${CIZT_ZSS_ZOWE_USER}#" | \
+  sed -e "/^users:/,\$s#stcUserUid=.*\$#stcUserUid=${CIZT_ZSS_STC_USER_ID}#" | \
+  sed -e "/^users:/,\$s#stcGroup=.*\$#stcGroup=${CIZT_ZSS_STC_GROUP}#" | \
+  sed -e "/^users:/,\$s#stcUser=.*\$#stcUser=${CIZT_ZSS_STC_USER}#" > "${CI_ZSS_CONFIG_FILE}.tmp"
 mv "${CI_ZSS_CONFIG_FILE}.tmp" "${CI_ZSS_CONFIG_FILE}"
 echo "[${SCRIPT_NAME}] current ZSS configuration is:"
 cat "${CI_ZSS_CONFIG_FILE}"
 
 # run temp fixes
 if [ "$CI_SKIP_TEMP_FIXES" != "yes" ]; then
-  cd $CI_INSTALL_DIR
+  cd $CIZT_INSTALL_DIR
   RUN_SCRIPT=temp-fixes-before-install.sh
   if [ -f "$RUN_SCRIPT" ]; then
-    run_script_with_timeout "${RUN_SCRIPT} ${CI_ZOWE_ROOT_DIR} ${FULL_EXTRACTED_ZOWE_FOLDER}" 1800
+    run_script_with_timeout "${RUN_SCRIPT} ${FULL_EXTRACTED_ZOWE_FOLDER}" 1800
     EXIT_CODE=$?
     if [[ "$EXIT_CODE" != "0" ]]; then
       echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
@@ -614,7 +413,7 @@ if [[ "$EXIT_CODE" != "0" ]]; then
   echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
   echo "[${SCRIPT_NAME}][error] here is log file >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
   cat $FULL_EXTRACTED_ZOWE_FOLDER/log/* || true
-  cat $CI_ZOWE_ROOT_DIR/configure_log/* || true
+  cat $CIZT_ZOWE_ROOT_DIR/configure_log/* || true
   echo "[${SCRIPT_NAME}][error] log end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
   echo
   exit 1
@@ -622,7 +421,7 @@ else
   echo "[${SCRIPT_NAME}] ${RUN_SCRIPT} succeeds."
   echo "[${SCRIPT_NAME}] here is log file >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
   cat $FULL_EXTRACTED_ZOWE_FOLDER/log/* || true
-  cat $CI_ZOWE_ROOT_DIR/configure_log/* || true
+  cat $CIZT_ZOWE_ROOT_DIR/configure_log/* || true
   echo "[${SCRIPT_NAME}] log end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
   echo
 fi
@@ -630,10 +429,10 @@ echo
 
 # run temp fixes
 if [ "$CI_SKIP_TEMP_FIXES" != "yes" ]; then
-  cd $CI_INSTALL_DIR
+  cd $CIZT_INSTALL_DIR
   RUN_SCRIPT=temp-fixes-after-install.sh
   if [ -f "$RUN_SCRIPT" ]; then
-    run_script_with_timeout "${RUN_SCRIPT} ${CI_ZOWE_ROOT_DIR} ${CI_HOSTNAME} ${CI_PROCLIB_MEMBER_NAME}" 1800
+    run_script_with_timeout "${RUN_SCRIPT} ${CI_HOSTNAME}" 1800
     EXIT_CODE=$?
     if [[ "$EXIT_CODE" != "0" ]]; then
       echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
@@ -644,11 +443,11 @@ fi
 
 # start apf server
 echo "[${SCRIPT_NAME}] start ZWESIS01 ..."
-(exec "$CI_ZOWE_ROOT_DIR/scripts/internal/opercmd" "S ZWESIS01")
+(exec "$CIZT_ZOWE_ROOT_DIR/scripts/internal/opercmd" "S ZWESIS01")
 
 # start zowe
 echo "[${SCRIPT_NAME}] start Zowe ..."
-cd $CI_ZOWE_ROOT_DIR/scripts
+cd $CIZT_ZOWE_ROOT_DIR/scripts
 RUN_SCRIPT=zowe-start.sh
 (exec sh -c $RUN_SCRIPT)
 EXIT_CODE=$?
