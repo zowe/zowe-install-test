@@ -22,13 +22,12 @@ SCRIPT_NAME=$(basename "$0")
 DEFAULT_CI_ZOWE_ROOT_DIR=/ZOWE/staging/zowe
 DEFAULT_CI_INSTALL_DIR=/ZOWE/zowe-installs
 DEFAULT_CI_ZOWE_DS_MEMBER=ZOWESVR
-DEFAULT_CI_ZOWE_JOB_NAME=ZOWESV1
+KNOWN_ZOWE_JOB_NAMES=ZOWESVR ZOWESV1 ZOWE1SV
 CI_ZOWE_ROOT_DIR=$DEFAULT_CI_ZOWE_ROOT_DIR
 CI_INSTALL_DIR=$DEFAULT_CI_INSTALL_DIR
 PROFILE=~/.profile
 ZOWE_PROFILE=~/.zowe_profile
 CI_ZOWE_DS_MEMBER=$DEFAULT_CI_ZOWE_DS_MEMBER
-CI_ZOWE_JOB_NAME=$DEFAULT_CI_ZOWE_JOB_NAME
 # FIXME: these are hardcoded
 CI_XMEM_PROCLIB_MEMBER=ZWESIS01
 CI_XMEM_PARMLIB=ZOWEAD3.PARMLIB
@@ -136,7 +135,6 @@ function usage {
   echo "  -i  Zowe install working folder. Optional, default is $DEFAULT_CI_INSTALL_DIR."
   echo "  -t  Zowe target folder. Optional, default is $DEFAULT_CI_ZOWE_ROOT_DIR."
   echo "  -m  Zowe PROCLIB data set member name. Optional, default is $DEFAULT_CI_ZOWE_DS_MEMBER."
-  echo "  -j  Zowe job name. Optional, default is $DEFAULT_CI_ZOWE_JOB_NAME."
   echo
 }
 while getopts ":hi:t:m:j:" opt; do
@@ -153,9 +151,6 @@ while getopts ":hi:t:m:j:" opt; do
       ;;
     m)
       CI_ZOWE_DS_MEMBER=$OPTARG
-      ;;
-    j)
-      CI_ZOWE_JOB_NAME=$OPTARG
       ;;
     \?)
       echo "[${SCRIPT_NAME}][error] invalid option: -$OPTARG" >&2
@@ -194,12 +189,15 @@ echo "[${SCRIPT_NAME}] stopping Zowe ..."
 if [ -f "${CI_ZOWE_ROOT_DIR}/scripts/zowe-stop.sh" ]; then
   (exec "${CI_ZOWE_ROOT_DIR}/scripts/zowe-stop.sh")
 elif [ -f "${CI_INSTALL_DIR}/opercmd" ]; then
-  # stop zowe before 1.4.0
-  (exec "${CI_INSTALL_DIR}/opercmd" "C ${CI_ZOWE_DS_MEMBER}")
-  # stop zowe after 1.4.0
-  (exec "${CI_INSTALL_DIR}/opercmd" "C ${CI_ZOWE_JOB_NAME}")
+  # job name before 1.4.0: ZOWESVR
+  # job name after 1.4.0: ZOWESV1
+  # job name preparing for 1.5.0: ZOWE1SV
+  for ZOWE_JOB_NANE in $KNOWN_ZOWE_JOB_NAMES; do
+    echo "[${SCRIPT_NAME}] - ${ZOWE_JOB_NANE}"
+    (exec "${CI_INSTALL_DIR}/opercmd" "C ${ZOWE_JOB_NANE}")
+  done
 else
-  echo "[${SCRIPT_NAME}][WARN] - cannot find opercmd, please make sure ${CI_ZOWE_JOB_NAME} is stopped."
+  echo "[${SCRIPT_NAME}][WARN] - cannot find opercmd, please make sure ${CI_ZOWE_DS_MEMBER} is stopped."
 fi
 echo
 
