@@ -407,13 +407,14 @@ echo "[${SCRIPT_NAME}] start Zowe installation ..."
 cd $FULL_EXTRACTED_ZOWE_FOLDER/install
 # FIXME: zowe-install.sh should exit by itself, not depends on timeout
 RUN_SCRIPT=zowe-install.sh
-run_script_with_timeout $RUN_SCRIPT 1800
+run_script_with_timeout $RUN_SCRIPT 3600
 EXIT_CODE=$?
 if [[ "$EXIT_CODE" != "0" ]]; then
   echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
   echo "[${SCRIPT_NAME}][error] here is log file >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
   cat $FULL_EXTRACTED_ZOWE_FOLDER/log/* || true
   cat $CIZT_ZOWE_ROOT_DIR/configure_log/* || true
+  cat $CIZT_ZOWE_ROOT_DIR/scripts/configure/log/* || true
   echo "[${SCRIPT_NAME}][error] log end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
   echo
   exit 1
@@ -422,6 +423,7 @@ else
   echo "[${SCRIPT_NAME}] here is log file >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
   cat $FULL_EXTRACTED_ZOWE_FOLDER/log/* || true
   cat $CIZT_ZOWE_ROOT_DIR/configure_log/* || true
+  cat $CIZT_ZOWE_ROOT_DIR/scripts/configure/log/* || true
   echo "[${SCRIPT_NAME}] log end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
   echo
 fi
