@@ -60,7 +60,9 @@ describe('test api mediation layer zosmf api', function() {
         });
 
         expect(res).to.have.property('status');
-        expect(res.status).to.equal(200);
+        // before APIML 1.1.7, the auth endpoint will return 200
+        // after APIML 1.1.7, the auth endpoint will return 204
+        expect(res.status).to.be.oneOf([200, 204]);
         expect(res.headers).to.be.an('object');
         expect(res.headers).to.have.property('set-cookie');
         expect(res.data).to.be.empty;
@@ -107,6 +109,7 @@ describe('test api mediation layer zosmf api', function() {
       url: '/api/v1/zosmf/info',
       headers: {
         Cookie: `${APIML_AUTH_COOKIE}=${cookies[APIML_AUTH_COOKIE].value}`,
+        'X-CSRF-ZOSMF-HEADER': '*'
       },
     };
     debug('request', req);
