@@ -176,7 +176,8 @@ echo
 echo "[${SCRIPT_NAME}] stopping Zowe ..."
 if [ -f "${CIZT_ZOWE_ROOT_DIR}/scripts/zowe-stop.sh" ]; then
   (exec "${CIZT_ZOWE_ROOT_DIR}/scripts/zowe-stop.sh")
-elif [ -f "${CIZT_INSTALL_DIR}/opercmd" ]; then
+fi
+if [ -f "${CIZT_INSTALL_DIR}/opercmd" ]; then
   # job name before 1.4.0: ZOWESVR
   # job name after 1.4.0: ZOWESV1
   # job name preparing for 1.5.0: ZOWE1SV
