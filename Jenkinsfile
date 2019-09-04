@@ -301,8 +301,8 @@ node('ibm-jenkins-slave-dind') {
         def allPuts = artifactsForUploadAndInstallation.collect {
           "put ${it}"
         }.join("\n")
-        sh """SSHPASS=${PASSWORD} sshpass -e sftp -o BatchMode=no -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -b - -P ${params.TEST_IMAGE_GUEST_SSH_PORT} ${USERNAME}@${params.TEST_IMAGE_GUEST_SSH_HOST} << EOF
-cd ${params.INSTALL_DIR}
+        sh """SSHPASS=${PASSWORD} sshpass -e sftp -o BatchMode=no -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -b - -P ${SSH_PORT} ${USERNAME}@${SSH_HOST} << EOF
+cd ${installDir}
 ${allPuts}
 EOF"""
 
