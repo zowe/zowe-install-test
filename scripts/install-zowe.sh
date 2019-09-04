@@ -19,9 +19,7 @@
 ################################################################################
 # constants
 SCRIPT_NAME=$(basename "$0")
-SCRIPT_PWD=$(cd $(dirname "$0") && pwd)
 CI_ZOWE_CONFIG_FILE=zowe-install.yaml
-CI_ZSS_CONFIG_FILE=zowe-install-apf-server.yaml
 CI_ZOWE_PAX=
 CI_SKIP_TEMP_FIXES=no
 CI_UNINSTALL=no
@@ -399,23 +397,8 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   echo
 
   # update xmem installation config file
-  echo "[${SCRIPT_NAME}] Zowe configuration is done, start configuring xmem server ..."
+  echo "[${SCRIPT_NAME}] Zowe configuration is done, start installing xmem server ..."
   cd ${SMPE_INSTALL_PATH_PREFIX}${SMPE_INSTALL_PATH_DEFAULT}/xmem-server
-  cat "${CI_ZSS_CONFIG_FILE}" | \
-    sed -e "/^install:/,\$s#proclib=.*\$#proclib=${CIZT_ZSS_PROCLIB_DS_NAME}#" | \
-    sed -e "/^install:/,\$s#parmlib=.*\$#parmlib=${CIZT_ZSS_PARMLIB_DS_NAME}#" | \
-    sed -e "/^install:/,\$s#loadlib=.*\$#loadlib=${CIZT_ZSS_LOADLIB_DS_NAME}#" | \
-    sed -e "/^users:/,\$s#zoweUser=.*\$#zoweUser=${CIZT_ZSS_ZOWE_USER}#" | \
-    sed -e "/^users:/,\$s#stcUserUid=.*\$#stcUserUid=${CIZT_ZSS_STC_USER_ID}#" | \
-    sed -e "/^users:/,\$s#stcGroup=.*\$#stcGroup=${CIZT_ZSS_STC_GROUP}#" | \
-    sed -e "/^users:/,\$s#stcUser=.*\$#stcUser=${CIZT_ZSS_STC_USER}#" > "${CI_ZSS_CONFIG_FILE}.tmp"
-  mv "${CI_ZSS_CONFIG_FILE}.tmp" "${CI_ZSS_CONFIG_FILE}"
-  echo "[${SCRIPT_NAME}] current ZSS configuration is:"
-  cat "${CI_ZSS_CONFIG_FILE}"
-  echo
-
-  # install Cross Memory server
-  echo "[${SCRIPT_NAME}] Cross-Memory server configuration is done, start installing xmem server ..."
   ${CIZT_INSTALL_DIR}/install-xmem-server.sh
   echo "[${SCRIPT_NAME}] all SMP/e install/config are done."
   echo
@@ -474,20 +457,6 @@ else
   cat "${CI_ZOWE_CONFIG_FILE}"
   echo
 
-  # update xmem installation config file
-  cat "${CI_ZSS_CONFIG_FILE}" | \
-    sed -e "/^install:/,\$s#proclib=.*\$#proclib=${CIZT_ZSS_PROCLIB_DS_NAME}#" | \
-    sed -e "/^install:/,\$s#parmlib=.*\$#parmlib=${CIZT_ZSS_PARMLIB_DS_NAME}#" | \
-    sed -e "/^install:/,\$s#loadlib=.*\$#loadlib=${CIZT_ZSS_LOADLIB_DS_NAME}#" | \
-    sed -e "/^users:/,\$s#zoweUser=.*\$#zoweUser=${CIZT_ZSS_ZOWE_USER}#" | \
-    sed -e "/^users:/,\$s#stcUserUid=.*\$#stcUserUid=${CIZT_ZSS_STC_USER_ID}#" | \
-    sed -e "/^users:/,\$s#stcGroup=.*\$#stcGroup=${CIZT_ZSS_STC_GROUP}#" | \
-    sed -e "/^users:/,\$s#stcUser=.*\$#stcUser=${CIZT_ZSS_STC_USER}#" > "${CI_ZSS_CONFIG_FILE}.tmp"
-  mv "${CI_ZSS_CONFIG_FILE}.tmp" "${CI_ZSS_CONFIG_FILE}"
-  echo "[${SCRIPT_NAME}] current ZSS configuration is:"
-  cat "${CI_ZSS_CONFIG_FILE}"
-  echo
-
   # run temp fixes
   if [ "$CI_SKIP_TEMP_FIXES" != "yes" ]; then
     cd $CIZT_INSTALL_DIR
@@ -517,7 +486,7 @@ else
 
   # configure and install cross memory server
   cd $FULL_EXTRACTED_ZOWE_FOLDER/install
-  ${SCRIPT_PWD}/install-xmem-server.sh
+  ${CIZT_INSTALL_DIR}/install-xmem-server.sh
   echo
 
   # start Zowe installation

@@ -20,17 +20,19 @@
 ################################################################################
 # constants
 SCRIPT_NAME=$(basename "$0")
+SCRIPT_PWD=$(cd $(dirname "$0") && pwd)
 CI_ZSS_CONFIG_FILE=zowe-install-apf-server.yaml
 
-# FIXME: these values should be configurable, now it's hardcoded for zD&T
-CI_ZSS_PROCLIB_DS_NAME=USER.Z23B.PROCLIB
-CI_ZSS_PARMLIB_DS_NAME=IZUSVR.PARMLIB
-CI_ZSS_LOADLIB_DS_NAME=IZUSVR.LOADLIB
-CI_ZSS_ZOWE_USER=IZUSVR
-CI_ZSS_STC_USER_ID=990010
-CI_ZSS_STC_GROUP=IZUADMIN
-CI_ZSS_STC_USER=IZUSVR
-
+# load install config variables
+if [ ! -f "${SCRIPT_PWD}/install-config.sh" ]; then
+  echo "[${SCRIPT_NAME}][error] cannot find install-config.sh"
+  exit 1
+fi
+. "${SCRIPT_PWD}/install-config.sh"
+if [ -z "${CIZT_ZOWE_ROOT_DIR}" ]; then
+  echo "[${SCRIPT_NAME}][error] cannot find \$CIZT_ZOWE_ROOT_DIR"
+  exit 1
+fi
 if [ ! -f "${CI_ZSS_CONFIG_FILE}" ]; then
   echo "[${SCRIPT_NAME}][error] cannot find ${CI_ZSS_CONFIG_FILE} in $(pwd)."
   echo
@@ -126,15 +128,15 @@ function run_script_with_timeout {
 }
 
 # configure installation
-echo "[${SCRIPT_NAME}] configure installation yaml ..."
+echo "[${SCRIPT_NAME}] configure cross-memory server installation yaml ..."
 cat "${CI_ZSS_CONFIG_FILE}" | \
-  sed -e "/^install:/,\$s#proclib=.*\$#proclib=${CI_ZSS_PROCLIB_DS_NAME}#" | \
-  sed -e "/^install:/,\$s#parmlib=.*\$#parmlib=${CI_ZSS_PARMLIB_DS_NAME}#" | \
-  sed -e "/^install:/,\$s#loadlib=.*\$#loadlib=${CI_ZSS_LOADLIB_DS_NAME}#" | \
-  sed -e "/^users:/,\$s#zoweUser=.*\$#zoweUser=${CI_ZSS_ZOWE_USER}#" | \
-  sed -e "/^users:/,\$s#stcUserUid=.*\$#stcUserUid=${CI_ZSS_STC_USER_ID}#" | \
-  sed -e "/^users:/,\$s#stcGroup=.*\$#stcGroup=${CI_ZSS_STC_GROUP}#" | \
-  sed -e "/^users:/,\$s#stcUser=.*\$#stcUser=${CI_ZSS_STC_USER}#" > "${CI_ZSS_CONFIG_FILE}.tmp"
+  sed -e "/^install:/,\$s#proclib=.*\$#proclib=${CIZT_ZSS_PROCLIB_DS_NAME}#" | \
+  sed -e "/^install:/,\$s#parmlib=.*\$#parmlib=${CIZT_ZSS_PARMLIB_DS_NAME}#" | \
+  sed -e "/^install:/,\$s#loadlib=.*\$#loadlib=${CIZT_ZSS_LOADLIB_DS_NAME}#" | \
+  sed -e "/^users:/,\$s#zoweUser=.*\$#zoweUser=${CIZT_ZSS_ZOWE_USER}#" | \
+  sed -e "/^users:/,\$s#stcUserUid=.*\$#stcUserUid=${CIZT_ZSS_STC_USER_ID}#" | \
+  sed -e "/^users:/,\$s#stcGroup=.*\$#stcGroup=${CIZT_ZSS_STC_GROUP}#" | \
+  sed -e "/^users:/,\$s#stcUser=.*\$#stcUser=${CIZT_ZSS_STC_USER}#" > "${CI_ZSS_CONFIG_FILE}.tmp"
 mv "${CI_ZSS_CONFIG_FILE}.tmp" "${CI_ZSS_CONFIG_FILE}"
 echo "[${SCRIPT_NAME}] current ZSS configuration is:"
 cat "${CI_ZSS_CONFIG_FILE}"
