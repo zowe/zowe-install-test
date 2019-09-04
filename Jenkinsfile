@@ -175,7 +175,7 @@ node('ibm-jenkins-slave-dind') {
         sh """
 echo "[scripts/install-config.sh] before updating ..."
 cat scripts/install-config.sh
-sed -i '' -e 's#CIZT_ZOWE_ROOT_DIR=.*\$#CIZT_ZOWE_ROOT_DIR=${zoweRootDir}#' scripts/install-config.sh
+sed -e 's#CIZT_ZOWE_ROOT_DIR=.*\$#CIZT_ZOWE_ROOT_DIR=${zoweRootDir}#' scripts/install-config.sh
 echo "[scripts/install-config.sh] after updated ..."
 cat scripts/install-config.sh
 """
