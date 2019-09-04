@@ -17,13 +17,16 @@
 ################################################################################
 
 SCRIPT_NAME=$(basename "$0")
-CI_ZOWE_ROOT_DIR=$1
+CI_TEST_IMAGE_GUEST_SSH_HOST=$1
 CI_USERNAME=$2
 CI_PASSWORD=$3
-CI_TEST_IMAGE_GUEST_SSH_HOST=$4
-CI_ZOWE_ZLUX_HTTPS_PORT=$5
 echo "[${SCRIPT_NAME}] started ..."
-echo "[${SCRIPT_NAME}]    CI_ZOWE_ROOT_DIR           : $CI_ZOWE_ROOT_DIR"
+if [ ! -f install-config.sh ]; then
+  echo "[${SCRIPT_NAME}][error] cannot find install-config.sh"
+  exit 1
+fi
+. install-config.sh
+echo "[${SCRIPT_NAME}]    CIZT_ZOWE_ROOT_DIR           : $CIZT_ZOWE_ROOT_DIR"
 
 ################################################################################
 # Kill process and all children processes
@@ -109,7 +112,7 @@ function run_script_with_timeout {
 ################################################################################
 # Run after install verify script
 echo
-cd "${CI_ZOWE_ROOT_DIR}/scripts"
+cd "${CIZT_ZOWE_ROOT_DIR}/scripts"
 RUN_SCRIPT=zowe-verify.sh
 if [ -f "$RUN_SCRIPT" ]; then
   run_script_with_timeout "${RUN_SCRIPT}" 1800
@@ -129,7 +132,7 @@ echo
 curl -d "{\"username\":\"${CI_USERNAME}\",\"password\":\"${CI_PASSWORD}\"}" \
      -H 'Content-Type: application/json' \
      -X POST -k -i \
-     https://${CI_TEST_IMAGE_GUEST_SSH_HOST}:${CI_ZOWE_ZLUX_HTTPS_PORT}/auth
+     https://${CI_TEST_IMAGE_GUEST_SSH_HOST}:${CIZT_ZOWE_ZLUX_HTTPS_PORT}/auth
 
 ################################################################################
 echo
