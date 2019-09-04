@@ -145,10 +145,6 @@ node('ibm-jenkins-slave-dind') {
         error "Cannot find installation config file [${params.TARGET_SERVER}]"
       }
       sh "cp scripts/${configFile} scripts/install-config.sh"
-      zoweRootDir = sh(
-        script: ". scripts/install-config.sh && echo \$CIZT_ZOWE_ROOT_DIR",
-        returnStdout: true
-      ).trim()
       installDir = sh(
         script: ". scripts/install-config.sh && echo \$CIZT_INSTALL_DIR",
         returnStdout: true
@@ -165,6 +161,26 @@ node('ibm-jenkins-slave-dind') {
         error "Cannot find target server information"
       }
       echo "Credentials to target server: ${testImageGuestSshHostPort} and ${testImageGuestSshCredential}."
+
+      zoweRootDir = sh(
+        script: ". scripts/install-config.sh && echo \$CIZT_ZOWE_ROOT_DIR",
+        returnStdout: true
+      ).trim()
+      if (params.IS_SMPE_PACKAGE) {
+        // overwrite CIZT_ZOWE_ROOT_DIR for SMP/e package.
+        zoweRootDir = sh(
+          script: ". scripts/smpe-install-config.sh && echo \"\$SMPE_INSTALL_PATH_PREFIX\$SMPE_INSTALL_PATH_DEFAULT\"",
+          returnStdout: true
+        ).trim()
+        sh """
+echo "[scripts/install-config.sh] before updating ..."
+cat scripts/install-config.sh
+sed -i '' -e 's#CIZT_ZOWE_ROOT_DIR=.*\$#CIZT_ZOWE_ROOT_DIR=${zoweRootDir}#' scripts/install-config.sh
+echo "[scripts/install-config.sh] after updated ..."
+cat scripts/install-config.sh
+"""
+        echo "CIZT_ZOWE_ROOT_DIR is updated to ${zoweRootDir}"
+      }
     }
   )
 
@@ -238,20 +254,6 @@ node('ibm-jenkins-slave-dind') {
         artifactsForUploadAndInstallation.add(".tmp/${smpeFmid}.pax.Z")
         artifactsForUploadAndInstallation.add(".tmp/${smpeFmid}.readme.txt")
         zoweArtifact = "${smpeFmid}.pax.Z"
-
-        // overwrite CIZT_ZOWE_ROOT_DIR for SMP/e package.
-        zoweRootDir = sh(
-          script: ". scripts/smpe-install-config.sh && echo \"\$SMPE_INSTALL_PATH_PREFIX\$SMPE_INSTALL_PATH_DEFAULT\"",
-          returnStdout: true
-        ).trim()
-        sh """
-echo "[scripts/install-config.sh] before updating ..."
-cat scripts/install-config.sh
-sed -i '' -e "s#CIZT_ZOWE_ROOT_DIR=.*\\\$#CIZT_ZOWE_ROOT_DIR=${zoweRootDir}#" scripts/install-config.sh
-echo "[scripts/install-config.sh] after updated ..."
-cat scripts/install-config.sh
-"""
-        echo "CIZT_ZOWE_ROOT_DIR is updated to ${zoweRootDir}"
       } else {
         pipeline.artifactory.download(
           specContent : """
