@@ -26,7 +26,6 @@ node('ibm-jenkins-slave-dind') {
     "scripts/install-zowe.sh",
     "scripts/install-config.sh",
     "scripts/install-xmem-server.sh",
-    "scripts/smpe-install-config.sh",
     "scripts/uninstall-zowe.sh",
     "scripts/install-SMPE-PAX.sh",
     "scripts/uninstall-SMPE-PAX.sh",
@@ -169,7 +168,7 @@ node('ibm-jenkins-slave-dind') {
       if (params.IS_SMPE_PACKAGE) {
         // overwrite CIZT_ZOWE_ROOT_DIR for SMP/e package.
         zoweRootDir = sh(
-          script: ". scripts/smpe-install-config.sh && echo \"\$SMPE_INSTALL_PATH_PREFIX\$SMPE_INSTALL_PATH_DEFAULT\"",
+          script: ". scripts/install-config.sh && echo \"\$CIZT_SMPE_PATH_PREFIX\$CIZT_SMPE_PATH_DEFAULT\"",
           returnStdout: true
         ).trim()
         sh """

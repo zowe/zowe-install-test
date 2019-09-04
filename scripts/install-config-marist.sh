@@ -64,3 +64,12 @@ export CIZT_TEST_IMAGE_GUEST_SSH_HOSTPORT=ssh-marist-server-zzow01-hostport
 export CIZT_TEST_IMAGE_GUEST_SSH_CREDENTIAL=ssh-marist-server-zzow01
 # zD&T host name should be converted
 export CIZT_ZDNT_HOSTNAME=
+
+# SMP/e installation parameters
+export CIZT_SMPE_HLQ_DSN=ZOE
+export CIZT_SMPE_HLQ_CSI=ZOE.SMPE
+export CIZT_SMPE_HLQ_TZONE=ZOE.SMPE
+export CIZT_SMPE_HLQ_DZONE=ZOE.SMPE
+export CIZT_SMPE_REL_FILE_PREFIX=ZOE
+export CIZT_SMPE_PATH_PREFIX=/ZOWE/staging/
+export CIZT_SMPE_PATH_DEFAULT=usr/lpp/zowe

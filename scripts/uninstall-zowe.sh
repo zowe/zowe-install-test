@@ -19,7 +19,12 @@
 ################################################################################
 # constants
 SCRIPT_NAME=$(basename "$0")
+SCRIPT_PWD=$(cd $(dirname "$0") && pwd)
+# this should list all known Zowe job names we ever shipped separated by space
 KNOWN_ZOWE_JOB_NAMES="ZOWESVR ZOWESV1 ZOWE1SV"
+# this should list all known FMIDs we ever shipped separated by space, so the
+# uninstall script can uninstall any versions we ever installed.
+KNOWN_SMPE_FMIDS=AZWE001
 PROFILE=~/.profile
 ZOWE_PROFILE=~/.zowe_profile
 
@@ -98,6 +103,16 @@ done
 
 ################################################################################
 # essential validations
+# load install config variables
+if [ ! -f "${SCRIPT_PWD}/install-config.sh" ]; then
+  echo "[${SCRIPT_NAME}][error] cannot find install-config.sh"
+  exit 1
+fi
+. "${SCRIPT_PWD}/install-config.sh"
+if [ -z "${CIZT_ZOWE_ROOT_DIR}" ]; then
+  echo "[${SCRIPT_NAME}][error] cannot find \$CIZT_ZOWE_ROOT_DIR"
+  exit 1
+fi
 if [ -f "opercmd" ]; then
   ensure_script_encoding opercmd "parse var command opercmd"
 fi
@@ -106,9 +121,6 @@ if [ -f "tsocmd.sh" ]; then
 fi
 if [ -f "tsocmds.sh" ]; then
   ensure_script_encoding tsocmds.sh
-fi
-if [ -f "smpe-install-config.sh" ]; then
-  ensure_script_encoding smpe-install-config.sh
 fi
 if [ -f "uninstall-SMPE-PAX.sh" ]; then
   ensure_script_encoding uninstall-SMPE-PAX.sh
@@ -316,19 +328,18 @@ echo
 ################################################################################
 # uninstall SMP/e installation
 echo "[${SCRIPT_NAME}] uninstalling SMP/e installation ..."
-. smpe-install-config.sh
-for FMID in $SMPE_INSTALL_KNOWN_FMIDS; do
+for FMID in $KNOWN_SMPE_FMIDS; do
   echo "[${SCRIPT_NAME}] - ${FMID}"
   ./uninstall-SMPE-PAX.sh \
-    ${SMPE_INSTALL_HLQ_DSN} \
-    ${SMPE_INSTALL_HLQ_CSI} \
-    ${SMPE_INSTALL_HLQ_TZONE} \
-    ${SMPE_INSTALL_HLQ_DZONE} \
-    ${SMPE_INSTALL_PATH_PREFIX} \
+    ${CIZT_SMPE_HLQ_DSN} \
+    ${CIZT_SMPE_HLQ_CSI} \
+    ${CIZT_SMPE_HLQ_TZONE} \
+    ${CIZT_SMPE_HLQ_DZONE} \
+    ${CIZT_SMPE_PATH_PREFIX} \
     ${CIZT_INSTALL_DIR} \
     ${CIZT_INSTALL_DIR}/extracted \
     ${FMID} \
-    ${SMPE_INSTALL_REL_FILE_PREFIX}
+    ${CIZT_SMPE_REL_FILE_PREFIX}
 done
 echo
 

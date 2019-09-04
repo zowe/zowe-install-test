@@ -260,9 +260,6 @@ fi
 if [ -f "install-xmem-server.sh" ]; then
   ensure_script_encoding install-xmem-server.sh
 fi
-if [ -f "smpe-install-config.sh" ]; then
-  ensure_script_encoding smpe-install-config.sh
-fi
 if [ -f "opercmd" ]; then
   ensure_script_encoding opercmd "parse var command opercmd"
 fi
@@ -321,21 +318,18 @@ fi
 rm -fr ${CIZT_INSTALL_DIR}/extracted && mkdir -p ${CIZT_INSTALL_DIR}/extracted
 if [[ "$CI_IS_SMPE" = "yes" ]]; then
   cd $CIZT_INSTALL_DIR
-  # load SMP/e configs
-  . smpe-install-config.sh
-
   # install SMP/e package
   echo "[${SCRIPT_NAME}] installing $CI_ZOWE_PAX to $CIZT_ZOWE_ROOT_DIR ..."
   ./install-SMPE-PAX.sh \
-    ${SMPE_INSTALL_HLQ_DSN} \
-    ${SMPE_INSTALL_HLQ_CSI} \
-    ${SMPE_INSTALL_HLQ_TZONE} \
-    ${SMPE_INSTALL_HLQ_DZONE} \
-    ${SMPE_INSTALL_PATH_PREFIX} \
+    ${CIZT_SMPE_HLQ_DSN} \
+    ${CIZT_SMPE_HLQ_CSI} \
+    ${CIZT_SMPE_HLQ_TZONE} \
+    ${CIZT_SMPE_HLQ_DZONE} \
+    ${CIZT_SMPE_PATH_PREFIX} \
     ${CIZT_INSTALL_DIR} \
     ${CIZT_INSTALL_DIR}/extracted \
     ${CI_SMPE_FMID} \
-    ${SMPE_INSTALL_REL_FILE_PREFIX}
+    ${CIZT_SMPE_REL_FILE_PREFIX}
   if [ ! -d "${CIZT_ZOWE_ROOT_DIR}/scripts" ]; then
     echo "[${SCRIPT_NAME}][error] installation is not successfully, ${CIZT_ZOWE_ROOT_DIR}/scripts doesn't exist."
     exit 1
@@ -398,7 +392,7 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
 
   # update xmem installation config file
   echo "[${SCRIPT_NAME}] Zowe configuration is done, start installing xmem server ..."
-  cd ${SMPE_INSTALL_PATH_PREFIX}${SMPE_INSTALL_PATH_DEFAULT}/xmem-server
+  cd ${CIZT_SMPE_PATH_PREFIX}${CIZT_SMPE_PATH_DEFAULT}/xmem-server
   ${CIZT_INSTALL_DIR}/install-xmem-server.sh
   echo "[${SCRIPT_NAME}] all SMP/e install/config are done."
   echo

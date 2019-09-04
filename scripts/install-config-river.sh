@@ -64,3 +64,12 @@ export CIZT_TEST_IMAGE_GUEST_SSH_HOSTPORT=ssh-river-original-hostport
 export CIZT_TEST_IMAGE_GUEST_SSH_CREDENTIAL=ssh-zdt-test-image-guest
 # zD&T host name should be converted
 export CIZT_ZDNT_HOSTNAME=S0W1.DAL-EBIS.IHOST.COM
+
+# SMP/e installation parameters
+export CIZT_SMPE_HLQ_DSN=ZOE
+export CIZT_SMPE_HLQ_CSI=ZOE.SMPE
+export CIZT_SMPE_HLQ_TZONE=ZOE.SMPE
+export CIZT_SMPE_HLQ_DZONE=ZOE.SMPE
+export CIZT_SMPE_REL_FILE_PREFIX=ZOE
+export CIZT_SMPE_PATH_PREFIX=/zaas1/zowe/
+export CIZT_SMPE_PATH_DEFAULT=usr/lpp/zowe
