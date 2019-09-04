@@ -21,6 +21,7 @@
 SCRIPT_NAME=$(basename "$0")
 SCRIPT_PWD=$(cd $(dirname "$0") && pwd)
 CI_ZOWE_CONFIG_FILE=zowe-install.yaml
+CI_ZSS_CONFIG_FILE=zowe-install-apf-server.yaml
 CI_ZOWE_PAX=
 CI_SKIP_TEMP_FIXES=no
 CI_UNINSTALL=no
