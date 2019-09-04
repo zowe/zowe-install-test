@@ -244,7 +244,7 @@ node('ibm-jenkins-slave-dind') {
           script: ". scripts/smpe-install-config.sh && echo \"\$SMPE_INSTALL_PATH_PREFIX\$SMPE_INSTALL_PATH_DEFAULT\"",
           returnStdout: true
         ).trim()
-        sh "sed -i '' -e \"s#CIZT_ZOWE_ROOT_DIR=.*\\\$#CIZT_ZOWE_ROOT_DIR=${zoweRootDir}#\" scripts/install-config.sh"
+        sh "sed -i '' -e \"s#CIZT_ZOWE_ROOT_DIR=.*\\\\\$#CIZT_ZOWE_ROOT_DIR=${zoweRootDir}#\" scripts/install-config.sh"
         echo "CIZT_ZOWE_ROOT_DIR is updated to ${zoweRootDir}"
       } else {
         pipeline.artifactory.download(
