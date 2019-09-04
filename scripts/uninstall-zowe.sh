@@ -19,22 +19,9 @@
 ################################################################################
 # constants
 SCRIPT_NAME=$(basename "$0")
-DEFAULT_CI_ZOWE_ROOT_DIR=/zaas1/zowe
-DEFAULT_CI_INSTALL_DIR=/zaas1/zowe-install
-DEFAULT_CI_ZOWE_DS_MEMBER=ZOWESVR
-DEFAULT_CI_ZOWE_JOB_NAME=ZOWESV1
-CI_ZOWE_ROOT_DIR=$DEFAULT_CI_ZOWE_ROOT_DIR
-CI_INSTALL_DIR=$DEFAULT_CI_INSTALL_DIR
+KNOWN_ZOWE_JOB_NAMES="ZOWESVR ZOWESV1 ZOWE1SV"
 PROFILE=~/.profile
 ZOWE_PROFILE=~/.zowe_profile
-CI_ZOWE_DS_MEMBER=$DEFAULT_CI_ZOWE_DS_MEMBER
-CI_ZOWE_JOB_NAME=$DEFAULT_CI_ZOWE_JOB_NAME
-# FIXME: these are hardcoded
-CI_XMEM_PROCLIB_MEMBER=ZWESIS01
-CI_XMEM_PARMLIB=IZUSVR.PARMLIB
-CI_XMEM_PARMLIB_MEMBER=ZWESIP00
-CI_XMEM_LOADLIB=IZUSVR.LOADLIB
-CI_XMEM_LOADLIB_MEMBER=ZWESIS01
 
 # allow to exit by ctrl+c
 function finish {
@@ -90,29 +77,13 @@ function usage {
   echo
   echo "Options:"
   echo "  -h  Display this help message."
-  echo "  -i  Zowe install working folder. Optional, default is $DEFAULT_CI_INSTALL_DIR."
-  echo "  -t  Zowe target folder. Optional, default is $DEFAULT_CI_ZOWE_ROOT_DIR."
-  echo "  -m  Zowe PROCLIB data set member name. Optional, default is $DEFAULT_CI_ZOWE_DS_MEMBER."
-  echo "  -j  Zowe job name. Optional, default is $DEFAULT_CI_ZOWE_JOB_NAME."
   echo
 }
-while getopts ":hi:t:m:j:" opt; do
+while getopts ":h" opt; do
   case ${opt} in
     h)
       usage
       exit 0
-      ;;
-    i)
-      CI_INSTALL_DIR=$OPTARG
-      ;;
-    t)
-      CI_ZOWE_ROOT_DIR=$OPTARG
-      ;;
-    m)
-      CI_ZOWE_DS_MEMBER=$OPTARG
-      ;;
-    j)
-      CI_ZOWE_JOB_NAME=$OPTARG
       ;;
     \?)
       echo "[${SCRIPT_NAME}][error] invalid option: -$OPTARG" >&2
@@ -145,30 +116,37 @@ fi
 
 ################################################################################
 echo "[${SCRIPT_NAME}] uninstall script started ..."
-echo "[${SCRIPT_NAME}]   - Installation folder : $CI_INSTALL_DIR"
-echo "[${SCRIPT_NAME}]   - Zowe folder         : $CI_ZOWE_ROOT_DIR"
+echo "[${SCRIPT_NAME}]   - Installation folder : $CIZT_INSTALL_DIR"
+echo "[${SCRIPT_NAME}]   - Zowe folder         : $CIZT_ZOWE_ROOT_DIR"
 echo
 
+if [ ! -f "${CIZT_INSTALL_DIR}/opercmd" ]; then
+  echo "[${SCRIPT_NAME}][error] opercmd doesn't exist."
+  exit 1;
+fi
+
+################################################################################
 # stop ZWESIS01
 echo "[${SCRIPT_NAME}] stopping ZWESIS01 ..."
-if [ -f "${CI_INSTALL_DIR}/opercmd" ]; then
-  (exec "${CI_INSTALL_DIR}/opercmd" "P ${CI_XMEM_PROCLIB_MEMBER}")
-else
-  echo "[${SCRIPT_NAME}][WARN] - cannot find opercmd, please make sure ${CI_XMEM_PROCLIB_MEMBER} is stopped."
-fi
+(exec "${CIZT_INSTALL_DIR}/opercmd" "P ${CIZT_ZSS_PROCLIB_MEMBER}")
 echo
 
+################################################################################
 # stop Zowe
 echo "[${SCRIPT_NAME}] stopping Zowe ..."
-if [ -f "${CI_ZOWE_ROOT_DIR}/scripts/zowe-stop.sh" ]; then
-  (exec "${CI_ZOWE_ROOT_DIR}/scripts/zowe-stop.sh")
-elif [ -f "${CI_INSTALL_DIR}/opercmd" ]; then
-  # stop zowe before 1.4.0
-  (exec "${CI_INSTALL_DIR}/opercmd" "C ${CI_ZOWE_DS_MEMBER}")
-  # stop zowe after 1.4.0
-  (exec "${CI_INSTALL_DIR}/opercmd" "C ${CI_ZOWE_JOB_NAME}")
+if [ -f "${CIZT_ZOWE_ROOT_DIR}/scripts/zowe-stop.sh" ]; then
+  (exec "${CIZT_ZOWE_ROOT_DIR}/scripts/zowe-stop.sh")
+fi
+if [ -f "${CIZT_INSTALL_DIR}/opercmd" ]; then
+  # job name before 1.4.0: ZOWESVR
+  # job name after 1.4.0: ZOWESV1
+  # job name preparing for 1.5.0: ZOWE1SV
+  for ZOWE_JOB_NANE in $KNOWN_ZOWE_JOB_NAMES; do
+    echo "[${SCRIPT_NAME}] - ${ZOWE_JOB_NANE}"
+    (exec "${CIZT_INSTALL_DIR}/opercmd" "C ${ZOWE_JOB_NANE}")
+  done
 else
-  echo "[${SCRIPT_NAME}][WARN] - cannot find opercmd, please make sure ${CI_ZOWE_JOB_NAME} is stopped."
+  echo "[${SCRIPT_NAME}][WARN] - cannot find opercmd, please make sure ${CIZT_PROCLIB_MEMBER} is stopped."
 fi
 echo
 
@@ -180,18 +158,21 @@ tsocmd.sh 'RDELETE STARTED (ZOWESVR.*)'
 tsocmd.sh 'SETR RACLIST(STARTED) REFRESH'
 echo
 
+################################################################################
 # removing environment viarables from .profile
+touch "${PROFILE}"
 echo "[${SCRIPT_NAME}] cleaning $PROFILE ..."
 echo "[${SCRIPT_NAME}]   - before cleaning:"
 cat "${PROFILE}"
 echo "[${SCRIPT_NAME}]   -----------------"
 echo
-sed -E '/export +ZOWE_[^=]+=/d' "${PROFILE}" > "${PROFILE}.tmp" && mv "${PROFILE}.tmp" "${PROFILE}"
+sed -E '/export +ZOWE_[^=]+=/d' "${PROFILE}" > "${PROFILE}.tmp" && mv -f "${PROFILE}.tmp" "${PROFILE}"
 echo "[${SCRIPT_NAME}]   - after cleaning:"
 cat "${PROFILE}"
 echo "[${SCRIPT_NAME}]   -----------------"
 echo
 
+################################################################################
 # listing ZOWE_ environment variables
 echo "[${SCRIPT_NAME}] active ZOWE_* variables ..."
 ENV_VARS=$(env | grep ZOWE_ | awk -F= '{print $1}')
@@ -200,20 +181,18 @@ for one in $ENV_VARS; do
 done
 echo
 
+################################################################################
 # delete .zowe_profile
 echo "[${SCRIPT_NAME}] deleting $ZOWE_PROFILE ..."
 rm -fr "${ZOWE_PROFILE}"
 echo
 
+################################################################################
 # removing ZOWESVR
-echo "[${SCRIPT_NAME}] deleting ${CI_ZOWE_DS_MEMBER} PROC ..."
-if [ ! -f "${CI_INSTALL_DIR}/opercmd" ]; then
-  echo "[${SCRIPT_NAME}][error] opercmd doesn't exist."
-  exit 1;
-fi
+echo "[${SCRIPT_NAME}] deleting ${CIZT_PROCLIB_MEMBER} PROC ..."
 # listing all proclibs and members
 FOUND_ZOWESVR_AT=
-procs=$("${CI_INSTALL_DIR}/opercmd" '$d proclib' | grep 'DSNAME=.*\.PROCLIB' | sed 's/.*DSNAME=\(.*\)\.PROCLIB.*/\1.PROCLIB/')
+procs=$("${CIZT_INSTALL_DIR}/opercmd" '$d proclib' | grep 'DSNAME=.*\.PROCLIB' | sed 's/.*DSNAME=\(.*\)\.PROCLIB.*/\1.PROCLIB/')
 for proclib in $procs
 do
   echo "[${SCRIPT_NAME}] - finding in $proclib ..."
@@ -221,7 +200,7 @@ do
   for member in $members
   do
     echo "[${SCRIPT_NAME}]   - ${member}"
-    if [ "${member}" = "${CI_ZOWE_DS_MEMBER}" ]; then
+    if [ "${member}" = "${CIZT_PROCLIB_MEMBER}" ]; then
       FOUND_ZOWESVR_AT=$proclib
       break 2
     fi
@@ -229,91 +208,83 @@ do
 done
 # do we find ZOWESVR?
 if [ -z "$FOUND_ZOWESVR_AT" ]; then
-  echo "[${SCRIPT_NAME}][warn] cannot find ${CI_ZOWE_DS_MEMBER} in PROCLIBs, skipped."
+  echo "[${SCRIPT_NAME}][warn] cannot find ${CIZT_PROCLIB_MEMBER} in PROCLIBs, skipped."
 else
-  echo "[${SCRIPT_NAME}] found ${CI_ZOWE_DS_MEMBER} in ${FOUND_ZOWESVR_AT}, deleting ..."
-  tsocmd.sh DELETE "'${FOUND_ZOWESVR_AT}(${CI_ZOWE_DS_MEMBER})'"
+  echo "[${SCRIPT_NAME}] found ${CIZT_PROCLIB_MEMBER} in ${FOUND_ZOWESVR_AT}, deleting ..."
+  tsocmd.sh DELETE "'${FOUND_ZOWESVR_AT}(${CIZT_PROCLIB_MEMBER})'"
 fi
 echo
 
+################################################################################
 # delet APF settings for LOADLIB
-echo "[${SCRIPT_NAME}] deleting APF settings of ${CI_XMEM_LOADLIB}(${CI_XMEM_LOADLIB_MEMBER}) ..."
-XMEM_LOADLIB_VOLUME=$(${CI_INSTALL_DIR}/opercmd "D PROG,APF,DSNAME=${CI_XMEM_LOADLIB}" | grep -e "[0-9]\\+ \\+[a-z0-9A-Z]\\+ \\+${CI_XMEM_LOADLIB}" | awk "{print \$2}")
+echo "[${SCRIPT_NAME}] deleting APF settings of ${CIZT_ZSS_LOADLIB_DS_NAME}(${CIZT_ZSS_LOADLIB_MEMBER}) ..."
+XMEM_LOADLIB_VOLUME=$(${CIZT_INSTALL_DIR}/opercmd "D PROG,APF,DSNAME=${CIZT_ZSS_LOADLIB_DS_NAME}" | grep -e "[0-9]\\+ \\+[a-z0-9A-Z]\\+ \\+${CIZT_ZSS_LOADLIB_DS_NAME}" | awk "{print \$2}")
 if [ -z "$XMEM_LOADLIB_VOLUME" ]; then
-  echo "[${SCRIPT_NAME}][warn] cannot find volume of ${CI_XMEM_LOADLIB}, skipped."
+  echo "[${SCRIPT_NAME}][warn] cannot find volume of ${CIZT_ZSS_LOADLIB_DS_NAME}, skipped."
 else
-  echo "[${SCRIPT_NAME}] found volume of ${CI_XMEM_LOADLIB} is ${XMEM_LOADLIB_VOLUME}, deleting APF settings ..."
+  echo "[${SCRIPT_NAME}] found volume of ${CIZT_ZSS_LOADLIB_DS_NAME} is ${XMEM_LOADLIB_VOLUME}, deleting APF settings ..."
   if [ "$XMEM_LOADLIB_VOLUME" = "SMS" ]; then
-    ${CI_INSTALL_DIR}/opercmd "SETPROG APF,DELETE,DSNAME=${CI_XMEM_LOADLIB},${XMEM_LOADLIB_VOLUME}"
+    (exec "${CIZT_INSTALL_DIR}/opercmd" "SETPROG APF,DELETE,DSNAME=${CIZT_ZSS_LOADLIB_DS_NAME},${XMEM_LOADLIB_VOLUME}")
   else
-    ${CI_INSTALL_DIR}/opercmd "SETPROG APF,DELETE,DSNAME=${CI_XMEM_LOADLIB},VOLUME=${XMEM_LOADLIB_VOLUME}"
+    (exec "${CIZT_INSTALL_DIR}/opercmd" "SETPROG APF,DELETE,DSNAME=${CIZT_ZSS_LOADLIB_DS_NAME},VOLUME=${XMEM_LOADLIB_VOLUME}")
   fi
 fi
 echo
 
+################################################################################
 # removing xmem LOADLIB(ZWESIS01)
-echo "[${SCRIPT_NAME}] deleting ${CI_XMEM_LOADLIB}(${CI_XMEM_LOADLIB_MEMBER}) ..."
-if [ ! -f "${CI_INSTALL_DIR}/opercmd" ]; then
-  echo "[${SCRIPT_NAME}][error] opercmd doesn't exist."
-  exit 1;
-fi
+echo "[${SCRIPT_NAME}] deleting ${CIZT_ZSS_LOADLIB_DS_NAME}(${CIZT_ZSS_LOADLIB_MEMBER}) ..."
 # listing all proclibs and members
 FOUND_DS_MEMBER_AT=
-echo "[${SCRIPT_NAME}] - finding in ${CI_XMEM_LOADLIB} ..."
-members=$(tsocmd.sh listds "'${CI_XMEM_LOADLIB}'" members | sed -e '1,/--MEMBERS--/d')
+echo "[${SCRIPT_NAME}] - finding in ${CIZT_ZSS_LOADLIB_DS_NAME} ..."
+members=$(tsocmd.sh listds "'${CIZT_ZSS_LOADLIB_DS_NAME}'" members | sed -e '1,/--MEMBERS--/d')
 for member in $members
 do
   echo "[${SCRIPT_NAME}]   - ${member}"
-  if [ "${member}" = "${CI_XMEM_LOADLIB_MEMBER}" ]; then
-    FOUND_DS_MEMBER_AT=$CI_XMEM_LOADLIB
+  if [ "${member}" = "${CIZT_ZSS_LOADLIB_MEMBER}" ]; then
+    FOUND_DS_MEMBER_AT=$CIZT_ZSS_LOADLIB_DS_NAME
     break 2
   fi
 done
-# do we find CI_XMEM_LOADLIB_MEMBER?
+# do we find CIZT_ZSS_LOADLIB_MEMBER?
 if [ -z "$FOUND_DS_MEMBER_AT" ]; then
-  echo "[${SCRIPT_NAME}][warn] cannot find ${CI_XMEM_LOADLIB_MEMBER} in ${CI_XMEM_LOADLIB}, skipped."
+  echo "[${SCRIPT_NAME}][warn] cannot find ${CIZT_ZSS_LOADLIB_MEMBER} in ${CIZT_ZSS_LOADLIB_DS_NAME}, skipped."
 else
-  echo "[${SCRIPT_NAME}] found ${CI_XMEM_LOADLIB_MEMBER} in ${FOUND_DS_MEMBER_AT}, deleting ..."
-  tsocmd.sh DELETE "'${FOUND_DS_MEMBER_AT}(${CI_XMEM_LOADLIB_MEMBER})'"
+  echo "[${SCRIPT_NAME}] found ${CIZT_ZSS_LOADLIB_MEMBER} in ${FOUND_DS_MEMBER_AT}, deleting ..."
+  tsocmd.sh DELETE "'${FOUND_DS_MEMBER_AT}(${CIZT_ZSS_LOADLIB_MEMBER})'"
 fi
 echo
 
+################################################################################
 # removing xmem PARMLIB(ZWESIP00)
-echo "[${SCRIPT_NAME}] deleting ${CI_XMEM_PARMLIB}(${CI_XMEM_PARMLIB_MEMBER}) ..."
-if [ ! -f "${CI_INSTALL_DIR}/opercmd" ]; then
-  echo "[${SCRIPT_NAME}][error] opercmd doesn't exist."
-  exit 1;
-fi
+echo "[${SCRIPT_NAME}] deleting ${CIZT_ZSS_PARMLIB_DS_NAME}(${CIZT_ZSS_PARMLIB_MEMBER}) ..."
 # listing all proclibs and members
 FOUND_DS_MEMBER_AT=
-echo "[${SCRIPT_NAME}] - finding in ${CI_XMEM_PARMLIB} ..."
-members=$(tsocmd.sh listds "'${CI_XMEM_PARMLIB}'" members | sed -e '1,/--MEMBERS--/d')
+echo "[${SCRIPT_NAME}] - finding in ${CIZT_ZSS_PARMLIB_DS_NAME} ..."
+members=$(tsocmd.sh listds "'${CIZT_ZSS_PARMLIB_DS_NAME}'" members | sed -e '1,/--MEMBERS--/d')
 for member in $members
 do
   echo "[${SCRIPT_NAME}]   - ${member}"
-  if [ "${member}" = "${CI_XMEM_PARMLIB_MEMBER}" ]; then
-    FOUND_DS_MEMBER_AT=$CI_XMEM_PARMLIB
+  if [ "${member}" = "${CIZT_ZSS_PARMLIB_MEMBER}" ]; then
+    FOUND_DS_MEMBER_AT=$CIZT_ZSS_PARMLIB_DS_NAME
     break 2
   fi
 done
-# do we find CI_XMEM_PARMLIB_MEMBER?
+# do we find CIZT_ZSS_PARMLIB_MEMBER?
 if [ -z "$FOUND_DS_MEMBER_AT" ]; then
-  echo "[${SCRIPT_NAME}][warn] cannot find ${CI_XMEM_PARMLIB_MEMBER} in ${CI_XMEM_PARMLIB}, skipped."
+  echo "[${SCRIPT_NAME}][warn] cannot find ${CIZT_ZSS_PARMLIB_MEMBER} in ${CIZT_ZSS_PARMLIB_DS_NAME}, skipped."
 else
-  echo "[${SCRIPT_NAME}] found ${CI_XMEM_PARMLIB_MEMBER} in ${FOUND_DS_MEMBER_AT}, deleting ..."
-  tsocmd.sh DELETE "'${FOUND_DS_MEMBER_AT}(${CI_XMEM_PARMLIB_MEMBER})'"
+  echo "[${SCRIPT_NAME}] found ${CIZT_ZSS_PARMLIB_MEMBER} in ${FOUND_DS_MEMBER_AT}, deleting ..."
+  tsocmd.sh DELETE "'${FOUND_DS_MEMBER_AT}(${CIZT_ZSS_PARMLIB_MEMBER})'"
 fi
 echo
 
+################################################################################
 # removing ZWESIS01
-echo "[${SCRIPT_NAME}] deleting ${CI_XMEM_PROCLIB_MEMBER} PROC ..."
-if [ ! -f "${CI_INSTALL_DIR}/opercmd" ]; then
-  echo "[${SCRIPT_NAME}][error] opercmd doesn't exist."
-  exit 1;
-fi
+echo "[${SCRIPT_NAME}] deleting ${CIZT_ZSS_PROCLIB_MEMBER} PROC ..."
 # listing all proclibs and members
 FOUND_ZWESIS01_AT=
-procs=$("${CI_INSTALL_DIR}/opercmd" '$d proclib' | grep 'DSNAME=.*\.PROCLIB' | sed 's/.*DSNAME=\(.*\)\.PROCLIB.*/\1.PROCLIB/')
+procs=$("${CIZT_INSTALL_DIR}/opercmd" '$d proclib' | grep 'DSNAME=.*\.PROCLIB' | sed 's/.*DSNAME=\(.*\)\.PROCLIB.*/\1.PROCLIB/')
 for proclib in $procs
 do
   echo "[${SCRIPT_NAME}] - finding in $proclib ..."
@@ -321,7 +292,7 @@ do
   for member in $members
   do
     echo "[${SCRIPT_NAME}]   - ${member}"
-    if [ "${member}" = "${CI_XMEM_PROCLIB_MEMBER}" ]; then
+    if [ "${member}" = "${CIZT_ZSS_PROCLIB_MEMBER}" ]; then
       FOUND_ZWESIS01_AT=$proclib
       break 2
     fi
@@ -329,16 +300,17 @@ do
 done
 # do we find ZWESIS01?
 if [ -z "$FOUND_ZWESIS01_AT" ]; then
-  echo "[${SCRIPT_NAME}][warn] cannot find ${CI_XMEM_PROCLIB_MEMBER} in PROCLIBs, skipped."
+  echo "[${SCRIPT_NAME}][warn] cannot find ${CIZT_ZSS_PROCLIB_MEMBER} in PROCLIBs, skipped."
 else
-  echo "[${SCRIPT_NAME}] found ${CI_XMEM_PROCLIB_MEMBER} in ${FOUND_ZWESIS01_AT}, deleting ..."
-  tsocmd.sh DELETE "'${FOUND_ZWESIS01_AT}(${CI_XMEM_PROCLIB_MEMBER})'"
+  echo "[${SCRIPT_NAME}] found ${CIZT_ZSS_PROCLIB_MEMBER} in ${FOUND_ZWESIS01_AT}, deleting ..."
+  tsocmd.sh DELETE "'${FOUND_ZWESIS01_AT}(${CIZT_ZSS_PROCLIB_MEMBER})'"
 fi
 echo
 
+################################################################################
 # removing folder
 echo "[${SCRIPT_NAME}] removing installation folder ..."
-rm -fr $CI_ZOWE_ROOT_DIR || true
+rm -fr $CIZT_ZOWE_ROOT_DIR || true
 echo
 
 ################################################################################
@@ -353,8 +325,8 @@ for FMID in $SMPE_INSTALL_KNOWN_FMIDS; do
     ${SMPE_INSTALL_HLQ_TZONE} \
     ${SMPE_INSTALL_HLQ_DZONE} \
     ${SMPE_INSTALL_PATH_PREFIX} \
-    ${CI_INSTALL_DIR} \
-    ${CI_INSTALL_DIR}/extracted \
+    ${CIZT_INSTALL_DIR} \
+    ${CIZT_INSTALL_DIR}/extracted \
     ${FMID} \
     ${SMPE_INSTALL_REL_FILE_PREFIX}
 done

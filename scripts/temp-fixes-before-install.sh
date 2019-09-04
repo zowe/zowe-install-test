@@ -19,40 +19,9 @@
 ################################################################################
 
 SCRIPT_NAME=$(basename "$0")
-CI_ZOWE_ROOT_DIR=$1
-FULL_EXTRACTED_ZOWE_FOLDER=$2
+FULL_EXTRACTED_ZOWE_FOLDER=$1
 echo "[${SCRIPT_NAME}] started ..."
-echo "[${SCRIPT_NAME}]    CI_ZOWE_ROOT_DIR           : $CI_ZOWE_ROOT_DIR"
 echo "[${SCRIPT_NAME}]    FULL_EXTRACTED_ZOWE_FOLDER : $FULL_EXTRACTED_ZOWE_FOLDER"
-CI_PWD=$(pwd)
-
-################################################################################
-# import z/OSMF cert fail due to permission error, so we need to make sure
-#    verifyCertificatesOfServices
-# is set to false for install yaml file
-CI_ZOWE_CONFIG_FILE=zowe-install.yaml
-if [ -f "$FULL_EXTRACTED_ZOWE_FOLDER/install/$CI_ZOWE_CONFIG_FILE" ]; then
-  # this is convenience build installation
-  cd $FULL_EXTRACTED_ZOWE_FOLDER/install
-else
-  # this could be a SMP/e installation
-  if [ -f "$CI_ZOWE_ROOT_DIR/scripts/configure/$CI_ZOWE_CONFIG_FILE" ]; then
-    cd $CI_ZOWE_ROOT_DIR/scripts/configure
-  else
-    echo "[${SCRIPT_NAME}][error] cannot find zowe-install.yaml."
-    exit 1
-  fi
-fi
-echo "Current value of $(pwd)/${CI_ZOWE_CONFIG_FILE} verifyCertificatesOfServices:"
-cat "${CI_ZOWE_CONFIG_FILE}" | grep verifyCertificatesOfServices
-echo "Changing to false ..."
-cat "${CI_ZOWE_CONFIG_FILE}" | \
-  sed -e "/^api-mediation:/,\$s#verifyCertificatesOfServices=.*\$#verifyCertificatesOfServices=false#" \
-  > "${CI_ZOWE_CONFIG_FILE}.tmp"
-mv "${CI_ZOWE_CONFIG_FILE}.tmp" "${CI_ZOWE_CONFIG_FILE}"
-echo
-
-cd $CI_PWD
 
 ################################################################################
 echo
