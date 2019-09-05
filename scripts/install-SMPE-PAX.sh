@@ -129,8 +129,10 @@ EndOfList
 $tsodir/tsocmds.sh /tmp/tso.$$.cmd
 rm /tmp/tso.$$.cmd 
 
-chmod -R 777 ${pathprefix}usr
-rm -fR ${pathprefix}usr # because target is ${pathprefix}usr/lpp/zowe
+if [ -d "${pathprefix}usr" ]; then
+  chmod -R 777 ${pathprefix}usr
+  rm -fR ${pathprefix}usr # because target is ${pathprefix}usr/lpp/zowe
+}
 
 function runJob {
 
@@ -249,22 +251,15 @@ sed -n '/\/\/GIMUNZIP /,$p' $zfs_path/readme.EBCDIC.jcl > $zfs_path/gimunzip.jcl
 #     s+&FMID\.+${FMID}+; \
 #     s+@PREFIX@+${PREFIX}+" \
 #     $zfs_path/gimunzip.jcl0 > $zfs_path/gimunzip.jcl1
-sed "\
-    s+@zfs_path@+${zfs_path}+; \
-    s+&FMID\.+${FMID}+; \
-    s+@PREFIX@+${PREFIX}+; \
-    /<GIMUNZIP>/ a\\
-    <TEMPDS volume=\"$volser\"> </TEMPDS> " \
-    $zfs_path/gimunzip.jcl0 > $zfs_path/gimunzip.jcl1    
-
-# Now also insert 'volume=' after 'archid'
-# (drop this for now)
-    # /archid=/ a\\
-    # \ \ \ \ \ \ \ \ \ volume=\"$volser\"" \
-
-
-
-
+sed \
+  -e "s+@zfs_path@+${zfs_path}+" \
+  -e "s+&FMID\.+${FMID}+" \
+  -e "s+@PREFIX@+${PREFIX}+" \
+  -e "/<GIMUNZIP>/ a\\
+  <TEMPDS volume=\"$volser\"></TEMPDS>"\
+  -e "/archid=/ a\\
+  \ \ \ \ \ \ \ \ \ volume=\"$volser\""\
+  $zfs_path/gimunzip.jcl0 > $zfs_path/gimunzip.jcl1
 
 # make the directory to hold the runtimes
 mkdir -p ${pathprefix}usr/lpp/zowe/SMPE
@@ -277,6 +272,11 @@ sed '1 i\
 cd $zfs_path    # extract pax file and create work files here
 echo; echo $SCRIPT un-PAX SMP/E file to $zfs_path
 pax -rvf $download_path/$FMID.pax.Z
+
+# show JCL for debugging purpose
+echo $SCRIPT ====================== gimunzip.jcl start ======================
+cat $zfs_path/gimunzip.jcl
+echo $SCRIPT ====================== gimunzip.jcl end ========================
 
 # Run the GIMUNZIP job
 runJob $zfs_path/gimunzip.jcl
