@@ -142,6 +142,11 @@ function runJob {
     echo $SCRIPT jclname=$jclname #jobname=$jobname
     ls -l $jclname
 
+    # show JCL for debugging purpose
+    echo $SCRIPT ====================== content start ======================
+    cat $jclname
+    echo $SCRIPT ====================== content end ========================
+
     # submit the job using the USS submit command
     submit $jclname > /tmp/submit.job.$$.out
     if [[ $? -ne 0 ]]
@@ -251,15 +256,20 @@ sed -n '/\/\/GIMUNZIP /,$p' $zfs_path/readme.EBCDIC.jcl > $zfs_path/gimunzip.jcl
 #     s+&FMID\.+${FMID}+; \
 #     s+@PREFIX@+${PREFIX}+" \
 #     $zfs_path/gimunzip.jcl0 > $zfs_path/gimunzip.jcl1
+CUSTOMIZED_VAR=CIZT_SMPE_VOLSER_GIMUNZIP
+eval CUSTOMIZED_VOLSER=\$$CUSTOMIZED_VAR
+if [ -n "$CUSTOMIZED_VOLSER" ]; then
+  CUSTOMIZED_VOLSER="$volser"
+fi
 sed \
-  -e "s+@zfs_path@+${zfs_path}+" \
-  -e "s+&FMID\.+${FMID}+" \
-  -e "s+@PREFIX@+${PREFIX}+" \
-  -e "/<GIMUNZIP>/ a\\
-  <TEMPDS volume=\"$volser\"></TEMPDS>"\
-  -e "/archid=/ a\\
-  \ \ \ \ \ \ \ \ \ volume=\"$volser\""\
-  $zfs_path/gimunzip.jcl0 > $zfs_path/gimunzip.jcl1
+    -e "s+@zfs_path@+${zfs_path}+" \
+    -e "s+&FMID\.+${FMID}+" \
+    -e "s+@PREFIX@+${PREFIX}+" \
+    -e "/<GIMUNZIP>/ a\\
+    <TEMPDS volume=\"$CUSTOMIZED_VOLSER\"></TEMPDS>"\
+    -e "/archid=/ a\\
+    \ \ \ \ \ \ \ \ \ volume=\"$CUSTOMIZED_VOLSER\""\
+    $zfs_path/gimunzip.jcl0 > $zfs_path/gimunzip.jcl1
 
 # make the directory to hold the runtimes
 mkdir -p ${pathprefix}usr/lpp/zowe/SMPE
@@ -272,11 +282,6 @@ sed '1 i\
 cd $zfs_path    # extract pax file and create work files here
 echo; echo $SCRIPT un-PAX SMP/E file to $zfs_path
 pax -rvf $download_path/$FMID.pax.Z
-
-# show JCL for debugging purpose
-echo $SCRIPT ====================== gimunzip.jcl start ======================
-cat $zfs_path/gimunzip.jcl
-echo $SCRIPT ====================== gimunzip.jcl end ========================
 
 # Run the GIMUNZIP job
 runJob $zfs_path/gimunzip.jcl
@@ -300,7 +305,14 @@ for smpejob in \
 do
     # $tsodir/tsocmd.sh oput "  '${PREFIX}.ZOWE.${FMID}.F1($smpejob)' '$smpejob.jcl0' "
     cp "//'${PREFIX}.ZOWE.${FMID}.F1($smpejob)'" $zfs_path/$smpejob.jcl0
-    
+
+    # we can customized which volume to use for each job
+    CUSTOMIZED_VAR="CIZT_SMPE_VOLSER_$smpejob"
+    eval CUSTOMIZED_VOLSER=\$$CUSTOMIZED_VAR
+    if [ -n "$CUSTOMIZED_VOLSER" ]; then
+        CUSTOMIZED_VOLSER="$volser"
+    fi
+
 	# sed "s/#hlq/$PREFIX/" $smpejob.jcl0 > $smpejob.jcl1
     # sed -f smpejob.sed $smpejob.jcl1 > $smpejob.jcl
 
@@ -310,8 +322,8 @@ do
 
     sed "\
         s/#csihlq/${csihlq}/; \
-        s/#csivol/$volser/; \
-        s/#dvol/$volser/; \
+        s/#csivol/$CUSTOMIZED_VOLSER/; \
+        s/#dvol/$CUSTOMIZED_VOLSER/; \
         s/#tzone/TZONE/; \
         s/#dzone/DZONE/; \
         s/#hlq/${PREFIX}/; \

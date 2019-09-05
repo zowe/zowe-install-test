@@ -74,3 +74,10 @@ export CIZT_SMPE_REL_FILE_PREFIX=ZOWEAD3
 export CIZT_SMPE_PATH_PREFIX=/ZOWE/staging/
 export CIZT_SMPE_PATH_DEFAULT=usr/lpp/zowe
 export CIZT_SMPE_VOLSER=VPWRKD
+# first 3 jobs put data sets in these volume
+export CIZT_SMPE_VOLSER_GIMUNZIP=VPWRKA
+export CIZT_SMPE_VOLSER_ZWE1SMPE=VPWRKA
+export CIZT_SMPE_VOLSER_ZWE2RCVE=VPWRKA
+# next 3 jobs put data sets in these volume
+export CIZT_SMPE_VOLSER_ZWE3ALOC=VPWRKB
+export CIZT_SMPE_VOLSER_ZWE6DDEF=VPWRKB
