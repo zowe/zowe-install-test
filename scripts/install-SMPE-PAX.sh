@@ -132,7 +132,7 @@ rm /tmp/tso.$$.cmd
 if [ -d "${pathprefix}usr" ]; then
   chmod -R 777 ${pathprefix}usr
   rm -fR ${pathprefix}usr # because target is ${pathprefix}usr/lpp/zowe
-}
+fi
 
 function runJob {
 
