@@ -236,6 +236,7 @@ if [ $? -eq 0 ]; then
     exit 1
   fi
 fi
+export CI_IS_SMPE=$CI_IS_SMPE
 if [ -z "$CI_HOSTNAME" ]; then
   echo "[${SCRIPT_NAME}][error] server hostname/IP is required."
   exit 1

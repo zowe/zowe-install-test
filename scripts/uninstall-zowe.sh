@@ -321,7 +321,7 @@ echo
 
 ################################################################################
 # removing folder
-echo "[${SCRIPT_NAME}] removing installation folder ..."
+echo "[${SCRIPT_NAME}] removing installation folder $CIZT_ZOWE_ROOT_DIR ..."
 (echo rm -fr $CIZT_ZOWE_ROOT_DIR | su) || true
 echo
 
