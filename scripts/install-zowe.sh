@@ -340,6 +340,20 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
 
   FULL_EXTRACTED_ZOWE_FOLDER=$CIZT_INSTALL_DIR/extracted
 
+  # run temp fixes
+  if [ "$CI_SKIP_TEMP_FIXES" != "yes" ]; then
+    cd $CIZT_INSTALL_DIR
+    RUN_SCRIPT=temp-fixes-before-install.sh
+    if [ -f "$RUN_SCRIPT" ]; then
+      run_script_with_timeout "${RUN_SCRIPT} ${FULL_EXTRACTED_ZOWE_FOLDER}" 1800
+      EXIT_CODE=$?
+      if [[ "$EXIT_CODE" != "0" ]]; then
+        echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
+        exit 1
+      fi
+    fi
+  fi
+
   # configure installation
   echo "[${SCRIPT_NAME}] configure installation yaml ..."
   cd $CIZT_ZOWE_ROOT_DIR/scripts/configure
@@ -367,20 +381,6 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   mv "${CI_ZOWE_CONFIG_FILE}.tmp" "${CI_ZOWE_CONFIG_FILE}"
   echo "[${SCRIPT_NAME}] current Zowe configuration is:"
   cat "${CI_ZOWE_CONFIG_FILE}"
-
-  # run temp fixes
-  if [ "$CI_SKIP_TEMP_FIXES" != "yes" ]; then
-    cd $CIZT_INSTALL_DIR
-    RUN_SCRIPT=temp-fixes-before-install.sh
-    if [ -f "$RUN_SCRIPT" ]; then
-      run_script_with_timeout "${RUN_SCRIPT} ${FULL_EXTRACTED_ZOWE_FOLDER}" 1800
-      EXIT_CODE=$?
-      if [[ "$EXIT_CODE" != "0" ]]; then
-        echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
-        exit 1
-      fi
-    fi
-  fi
 
   # configure Zowe
   cd ${CIZT_ZOWE_ROOT_DIR}/scripts
