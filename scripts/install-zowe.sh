@@ -329,7 +329,8 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
     ${CIZT_INSTALL_DIR} \
     ${CIZT_INSTALL_DIR}/extracted \
     ${CI_SMPE_FMID} \
-    ${CIZT_SMPE_REL_FILE_PREFIX}
+    ${CIZT_SMPE_REL_FILE_PREFIX} \
+    ${CIZT_SMPE_VOLSER}
   if [ ! -d "${CIZT_ZOWE_ROOT_DIR}/scripts" ]; then
     echo "[${SCRIPT_NAME}][error] installation is not successfully, ${CIZT_ZOWE_ROOT_DIR}/scripts doesn't exist."
     exit 1
