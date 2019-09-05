@@ -11,6 +11,11 @@ SCRIPT_DIR="$(dirname $0)"
 SCRIPT="$(basename $0)"
 # echo script $SCRIPT started from $SCRIPT_DIR
 
+# allow to customize /tmp folder
+if [ -z "${CIZT_TMP}" ]; then
+  CIZT_TMP=/tmp
+fi
+
 if [[ $# -ne 1 ]]
 then
 echo $SCRIPT Usage: $SCRIPT commands.txt
@@ -45,7 +50,7 @@ function runJob {
     # echo; echo $SCRIPT jclname=$jclname #jobname=$jobname
 
     # submit the job using the USS submit command
-    submit $jclname > /tmp/submit.job.$$.out
+    submit $jclname > $CIZT_TMP/submit.job.$$.out
     if [[ $? -ne 0 ]]
     then
         echo; echo $SCRIPT ERROR: submit JCL $jclname failed
@@ -53,9 +58,9 @@ function runJob {
     fi
 
     # capture JOBID of submitted job
-    jobid=`cat /tmp/submit.job.$$.out \
+    jobid=`cat $CIZT_TMP/submit.job.$$.out \
         | sed "s/.*JOB JOB\([0-9]*\) submitted.*/\1/"`
-    rm /tmp/submit.job.$$.out 2> /dev/null 
+    rm $CIZT_TMP/submit.job.$$.out 2> /dev/null 
 
     # echo; echo $SCRIPT JOBID=$jobid
 
@@ -65,10 +70,10 @@ function runJob {
     do
         sleep $secs
     
-        $operdir/opercmd "\$DJ${jobid},CC" > /tmp/dj.$$.cc
+        $operdir/opercmd "\$DJ${jobid},CC" > $CIZT_TMP/dj.$$.cc
             # $DJ gives ...
             # ... $HASP890 JOB(JOB1)      CC=(COMPLETED,RC=0)
-        grep CC= /tmp/dj.$$.cc > /dev/null
+        grep CC= $CIZT_TMP/dj.$$.cc > /dev/null
         if [[ $? -eq 0 ]]
         then
             jobdone=1
@@ -83,20 +88,20 @@ function runJob {
         : # echo; echo $SCRIPT job JOB$jobid completed
     fi
 
-    jobname=`sed -n 's/.*JOB(\([^ ]*\)).*/\1/p' /tmp/dj.$$.cc`
+    jobname=`sed -n 's/.*JOB(\([^ ]*\)).*/\1/p' $CIZT_TMP/dj.$$.cc`
     # echo $SCRIPT jobname $jobname
     
-    $operdir/opercmd "\$DJ${jobid},CC" > /tmp/dj.$$.cc
-    grep RC= /tmp/dj.$$.cc > /dev/null
+    $operdir/opercmd "\$DJ${jobid},CC" > $CIZT_TMP/dj.$$.cc
+    grep RC= $CIZT_TMP/dj.$$.cc > /dev/null
     if [[ $? -ne 0 ]]
     then
         echo $SCRIPT ERROR: no return code for jobid $jobid
         return 3
     fi
     
-    # rc=`sed -n 's/.*RC=\([0-9]*\))/\1/p' /tmp/dj.$$.cc`
+    # rc=`sed -n 's/.*RC=\([0-9]*\))/\1/p' $CIZT_TMP/dj.$$.cc`
     # # echo; echo $SCRIPT return code for JOB$jobid is $rc
-    # rm /tmp/dj.$$.cc 2> /dev/null 
+    # rm $CIZT_TMP/dj.$$.cc 2> /dev/null 
     # if [[ $rc -gt 4 ]]
     # then
     #     echo $SCRIPT ERROR: job "$jobname(JOB$jobid)" failed, RC=$rc 
@@ -105,7 +110,7 @@ function runJob {
     # echo; echo $SCRIPT function runJob ended
 }
 
-cat > /tmp/runtso1.$$.jcl <<EndOfJCL1
+cat > $CIZT_TMP/runtso1.$$.jcl <<EndOfJCL1
 //RUNTSOCM JOB 1,REGION=0M
 //*
 //RUNTSO  EXEC PGM=IKJEFT01
@@ -115,7 +120,7 @@ cat > /tmp/runtso1.$$.jcl <<EndOfJCL1
 //SYSTSIN  DD  *
 EndOfJCL1
 
-cat > /tmp/runtso2.$$.jcl <<EndOfJCL2
+cat > $CIZT_TMP/runtso2.$$.jcl <<EndOfJCL2
 //*
 //COPYOUT EXEC PGM=IEBGENER
 //SYSUT1   DD  DSN=&&CMDOUT,DISP=(SHR,DELETE)
@@ -130,29 +135,29 @@ cat > /tmp/runtso2.$$.jcl <<EndOfJCL2
 //
 EndOfJCL2
 
-sed "s+tsoCommandOut+/tmp/tso.cmd.$$.out+" /tmp/runtso2.$$.jcl > /tmp/runtso2.e.$$.jcl
-rm /tmp/runtso2.$$.jcl
+sed "s+tsoCommandOut+$CIZT_TMP/tso.cmd.$$.out+" $CIZT_TMP/runtso2.$$.jcl > $CIZT_TMP/runtso2.e.$$.jcl
+rm $CIZT_TMP/runtso2.$$.jcl
 
 # build JCL deck
-cat /tmp/runtso1.$$.jcl $tsoCommandsFile /tmp/runtso2.e.$$.jcl > /tmp/tsocmd.$$.jcl
-rm  /tmp/runtso1.$$.jcl /tmp/runtso2.e.$$.jcl 2> /dev/null
+cat $CIZT_TMP/runtso1.$$.jcl $tsoCommandsFile $CIZT_TMP/runtso2.e.$$.jcl > $CIZT_TMP/tsocmd.$$.jcl
+rm  $CIZT_TMP/runtso1.$$.jcl $CIZT_TMP/runtso2.e.$$.jcl 2> /dev/null
 
-runJob /tmp/tsocmd.$$.jcl
+runJob $CIZT_TMP/tsocmd.$$.jcl
 # if [[ $? -eq 0 ]]
 # then
 #     echo; echo $SCRIPT TSO commands output written to `pwd`/tso.out
 # fi
 
-rm /tmp/tsocmd.$$.jcl 2> /dev/null
+rm $CIZT_TMP/tsocmd.$$.jcl 2> /dev/null
 
-if [[ ! -r /tmp/tso.cmd.$$.out ]]
+if [[ ! -r $CIZT_TMP/tso.cmd.$$.out ]]
 then
-    # echo $SCRIPT ERROR: file /tmp/tso.cmd.$$.out not readable
+    # echo $SCRIPT ERROR: file $CIZT_TMP/tso.cmd.$$.out not readable
     exit 1
 else
-    cat /tmp/tso.cmd.$$.out
+    cat $CIZT_TMP/tso.cmd.$$.out
 fi 
 
-rm /tmp/tso.cmd.$$.out 2> /dev/null     # tidy up
+rm $CIZT_TMP/tso.cmd.$$.out 2> /dev/null     # tidy up
 
 # echo; echo script $SCRIPT ended from $SCRIPT_DIR

@@ -21,6 +21,7 @@ set +x
 ################################################################################
 # constants
 export CIZT_TARGET_SERVER=river
+export CIZT_TMP=/zaas1
 # directories
 export CIZT_ZOWE_ROOT_DIR=/zaas1/zowe
 export CIZT_INSTALL_DIR=/zaas1/zowe-install

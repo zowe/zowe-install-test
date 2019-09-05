@@ -15,6 +15,11 @@ SCRIPT_DIR=`pwd`
 SCRIPT="$(basename $0)"
 echo script $SCRIPT started from $SCRIPT_DIR
 
+# allow to customize /tmp folder
+if [ -z "${CIZT_TMP}" ]; then
+  CIZT_TMP=/tmp
+fi
+
 if [[ $# -ne 10 ]]   # until script is called with 10 parms
 then
 echo; echo $SCRIPT Usage:
@@ -96,7 +101,7 @@ README=readme.txt                   # the filename of the FMID.readme-v.m.r-smpe
 
 # In case previous run failed,
 # delete the datasets that this script creates
-cat > /tmp/tso.$$.cmd <<EndOfList
+cat > $CIZT_TMP/tso.$$.cmd <<EndOfList
 delete ('${hlq}.${FMID}.F1')
 delete ('${hlq}.${FMID}.F2')
 delete ('${hlq}.${FMID}.F3')
@@ -126,8 +131,8 @@ free all
 EndOfList
 
 # execute the multiple TSO commands
-$tsodir/tsocmds.sh /tmp/tso.$$.cmd
-rm /tmp/tso.$$.cmd 
+$tsodir/tsocmds.sh $CIZT_TMP/tso.$$.cmd
+rm $CIZT_TMP/tso.$$.cmd 
 
 if [ -d "${pathprefix}usr" ]; then
   chmod -R 777 ${pathprefix}usr
@@ -148,7 +153,7 @@ function runJob {
     echo $SCRIPT ====================== content end ========================
 
     # submit the job using the USS submit command
-    submit $jclname > /tmp/submit.job.$$.out
+    submit $jclname > $CIZT_TMP/submit.job.$$.out
     if [[ $? -ne 0 ]]
     then
         echo $SCRIPT ERROR: submit JCL $jclname failed
@@ -158,9 +163,9 @@ function runJob {
     fi
 
     # capture JOBID of submitted job
-    jobid=`cat /tmp/submit.job.$$.out \
+    jobid=`cat $CIZT_TMP/submit.job.$$.out \
         | sed "s/.*JOB JOB\([0-9]*\) submitted.*/\1/"`
-    rm /tmp/submit.job.$$.out 2> /dev/null 
+    rm $CIZT_TMP/submit.job.$$.out 2> /dev/null 
 
     # echo; echo $SCRIPT JOBID=$jobid
 
@@ -169,15 +174,15 @@ function runJob {
     for secs in 1 5 10 30 100 300 500
     do
         sleep $secs
-        $operdir/opercmd "\$DJ${jobid},CC" > /tmp/dj.$$.cc
+        $operdir/opercmd "\$DJ${jobid},CC" > $CIZT_TMP/dj.$$.cc
             # $DJ gives ...
             # ... $HASP890 JOB(JOB1)      CC=(COMPLETED,RC=0)  <-- accept this value
             # ... $HASP890 JOB(GIMUNZIP)  CC=()  <-- reject this value
         
-        grep "$HASP890 JOB(.*)  CC=(.*)" /tmp/dj.$$.cc > /dev/null
+        grep "$HASP890 JOB(.*)  CC=(.*)" $CIZT_TMP/dj.$$.cc > /dev/null
         if [[ $? -eq 0 ]]
         then
-            jobname=`sed -n "s/.*$HASP890 JOB(\(.*\))  CC=(.*).*/\1/p" /tmp/dj.$$.cc`
+            jobname=`sed -n "s/.*$HASP890 JOB(\(.*\))  CC=(.*).*/\1/p" $CIZT_TMP/dj.$$.cc`
             if [[ ! -n "$jobname" ]]
             then
                 jobname=empty
@@ -187,7 +192,7 @@ function runJob {
         fi
         echo $SCRIPT INFO: Checking for completion of jobname $jobname jobid $jobid
         
-        grep "CC=(..*)" /tmp/dj.$$.cc > /dev/null   # ensure CC() is not empty
+        grep "CC=(..*)" $CIZT_TMP/dj.$$.cc > /dev/null   # ensure CC() is not empty
         if [[ $? -eq 0 ]]
         then
             jobdone=1
@@ -202,20 +207,20 @@ function runJob {
         : # echo; echo $SCRIPT job JOB$jobid completed
     fi
 
-    jobname=`sed -n 's/.*JOB(\([^ ]*\)).*/\1/p' /tmp/dj.$$.cc`
+    jobname=`sed -n 's/.*JOB(\([^ ]*\)).*/\1/p' $CIZT_TMP/dj.$$.cc`
     # echo $SCRIPT jobname $jobname
     
-    $operdir/opercmd "\$DJ${jobid},CC" > /tmp/dj.$$.cc
-    grep RC= /tmp/dj.$$.cc > /dev/null
+    $operdir/opercmd "\$DJ${jobid},CC" > $CIZT_TMP/dj.$$.cc
+    grep RC= $CIZT_TMP/dj.$$.cc > /dev/null
     if [[ $? -ne 0 ]]
     then
         echo $SCRIPT ERROR: no return code for jobid $jobid
         return 3
     fi
     
-    rc=`sed -n 's/.*RC=\([0-9]*\))/\1/p' /tmp/dj.$$.cc`
+    rc=`sed -n 's/.*RC=\([0-9]*\))/\1/p' $CIZT_TMP/dj.$$.cc`
     # echo; echo $SCRIPT return code for JOB$jobid is $rc
-    rm /tmp/dj.$$.cc 2> /dev/null 
+    rm $CIZT_TMP/dj.$$.cc 2> /dev/null 
     if [[ $rc -gt 4 ]]
     then
         echo $SCRIPT ERROR: job "$jobname(JOB$jobid)" failed, RC=$rc 
@@ -375,7 +380,7 @@ do
 done
 
 # TBD:  do this even if we quit early
-rm /tmp/$$.submit.job.out
-rm /tmp/$$.dj.cc
+rm $CIZT_TMP/$$.submit.job.out
+rm $CIZT_TMP/$$.dj.cc
 
 echo script $SCRIPT ended from $SCRIPT_DIR

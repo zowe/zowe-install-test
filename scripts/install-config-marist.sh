@@ -21,6 +21,7 @@ set +x
 ################################################################################
 # constants
 export CIZT_TARGET_SERVER=marist
+export CIZT_TMP=/ZOWE/tmp
 # directories
 export CIZT_ZOWE_ROOT_DIR=/ZOWE/staging/zowe
 export CIZT_INSTALL_DIR=/ZOWE/zowe-installs
