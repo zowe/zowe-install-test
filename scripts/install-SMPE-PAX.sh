@@ -258,7 +258,7 @@ sed -n '/\/\/GIMUNZIP /,$p' $zfs_path/readme.EBCDIC.jcl > $zfs_path/gimunzip.jcl
 #     $zfs_path/gimunzip.jcl0 > $zfs_path/gimunzip.jcl1
 CUSTOMIZED_VAR=CIZT_SMPE_VOLSER_GIMUNZIP
 eval CUSTOMIZED_VOLSER=\$$CUSTOMIZED_VAR
-if [ -n "$CUSTOMIZED_VOLSER" ]; then
+if [ -z "$CUSTOMIZED_VOLSER" ]; then
   CUSTOMIZED_VOLSER="$volser"
 fi
 sed \
@@ -309,7 +309,7 @@ do
     # we can customized which volume to use for each job
     CUSTOMIZED_VAR="CIZT_SMPE_VOLSER_$smpejob"
     eval CUSTOMIZED_VOLSER=\$$CUSTOMIZED_VAR
-    if [ -n "$CUSTOMIZED_VOLSER" ]; then
+    if [ -z "$CUSTOMIZED_VOLSER" ]; then
         CUSTOMIZED_VOLSER="$volser"
     fi
 
