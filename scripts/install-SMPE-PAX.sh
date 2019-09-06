@@ -179,10 +179,10 @@ function runJob {
             # ... $HASP890 JOB(JOB1)      CC=(COMPLETED,RC=0)  <-- accept this value
             # ... $HASP890 JOB(GIMUNZIP)  CC=()  <-- reject this value
         
-        grep "$HASP890 JOB(.*)  CC=(.*)" $CIZT_TMP/dj.$$.cc > /dev/null
+        grep "$HASP890 JOB(.*) *CC=(.*)" $CIZT_TMP/dj.$$.cc > /dev/null
         if [[ $? -eq 0 ]]
         then
-            jobname=`sed -n "s/.*$HASP890 JOB(\(.*\))  CC=(.*).*/\1/p" $CIZT_TMP/dj.$$.cc`
+            jobname=`sed -n "s/.*$HASP890 JOB(\(.*\)) *CC=(.*).*/\1/p" $CIZT_TMP/dj.$$.cc`
             if [[ ! -n "$jobname" ]]
             then
                 jobname=empty
@@ -201,20 +201,26 @@ function runJob {
     done
     if [[ $jobdone -eq 0 ]]
     then
-        echo $SCRIPT ERROR: job ${jobid} not run in time
+        echo $SCRIPT ERROR: job ${jobid} (PID=$$) not run in time
+        echo $SCRIPT DISPLAY JOB output was:
+        cat $CIZT_TMP/dj.$$.cc
+        rm $CIZT_TMP/dj.$$.cc 2> /dev/null 
         return 2
     else
         : # echo; echo $SCRIPT job JOB$jobid completed
     fi
 
-    jobname=`sed -n 's/.*JOB(\([^ ]*\)).*/\1/p' $CIZT_TMP/dj.$$.cc`
+    # jobname=`sed -n 's/.*JOB(\([^ ]*\)).*/\1/p' $CIZT_TMP/dj.$$.cc`
     # echo $SCRIPT jobname $jobname
     
-    $operdir/opercmd "\$DJ${jobid},CC" > $CIZT_TMP/dj.$$.cc
+    # $operdir/opercmd "\$DJ${jobid},CC" > $CIZT_TMP/dj.$$.cc
     grep RC= $CIZT_TMP/dj.$$.cc > /dev/null
     if [[ $? -ne 0 ]]
     then
-        echo $SCRIPT ERROR: no return code for jobid $jobid
+        echo $SCRIPT ERROR: no return code for jobid $jobid (PID=$$)
+        echo $SCRIPT DISPLAY JOB output was:
+        cat $CIZT_TMP/dj.$$.cc
+        rm $CIZT_TMP/dj.$$.cc 2> /dev/null 
         return 3
     fi
     
