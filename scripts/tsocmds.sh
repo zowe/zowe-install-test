@@ -82,7 +82,7 @@ function runJob {
     done
     if [[ $jobdone -eq 0 ]]
     then
-        echo $SCRIPT ERROR: job ${jobid} (PID=$$) not run in time
+        echo $SCRIPT ERROR: job ${jobid} PID=$$ not run in time
         echo $SCRIPT DISPLAY JOB output was:
         cat $CIZT_TMP/dj.$$.cc
         rm $CIZT_TMP/dj.$$.cc 2> /dev/null
@@ -98,7 +98,7 @@ function runJob {
     grep RC= $CIZT_TMP/dj.$$.cc > /dev/null
     if [[ $? -ne 0 ]]
     then
-        echo $SCRIPT ERROR: no return code for jobid $jobid (PID=$$)
+        echo $SCRIPT ERROR: no return code for jobid $jobid PID=$$
         echo $SCRIPT DISPLAY JOB output was:
         cat $CIZT_TMP/dj.$$.cc
         rm $CIZT_TMP/dj.$$.cc 2> /dev/null
