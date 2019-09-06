@@ -57,8 +57,17 @@ echo $SCRIPT    zfs_path=$7
 echo $SCRIPT    FMID=$8
 echo $SCRIPT    PREFIX=$9
 
-chmod -R 777 ${pathprefix}usr
-rm -fR ${pathprefix}usr # because target is ${pathprefix}usr/lpp/zowe
+if [ -d "${pathprefix}usr/lpp/zowe" ]; then
+  if [ "${pathprefix}" = "/" ]; then
+    # looks like an official location under /usr/lpp, only remove zowe
+    echo "$SCRIPT deleting ${pathprefix}usr/lpp/zowe ..."
+    (echo rm -fr "${pathprefix}usr/lpp/zowe" | su) || true
+  else
+    # testing folder, removing all
+    echo "$SCRIPT deleting ${pathprefix}usr ..."
+    (echo rm -fr "${pathprefix}usr" | su) || true
+  fi
+fi
 
 # delete the datasets that install-SMPE-PAX.sh script creates
 cat > tso.cmd <<EndOfList
