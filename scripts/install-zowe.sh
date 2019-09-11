@@ -443,9 +443,11 @@ if [ "$CI_SKIP_TEMP_FIXES" != "yes" ]; then
   fi
 fi
 
-# start apf server
+# start cross memory server
 echo "[${SCRIPT_NAME}] start ZWESIS01 ..."
 (exec "$CIZT_ZOWE_ROOT_DIR/scripts/internal/opercmd" "S ZWESIS01")
+sleep 10
+echo
 
 # start zowe
 echo "[${SCRIPT_NAME}] start Zowe ..."
