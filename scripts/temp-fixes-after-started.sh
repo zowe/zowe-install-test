@@ -129,10 +129,10 @@ echo
 ################################################################################
 # FIXME: zLux login may hang there which blocks UI test cases
 # try a login to the zlux auth api
-curl -d "{\"username\":\"${CI_USERNAME}\",\"password\":\"${CI_PASSWORD}\"}" \
-     -H 'Content-Type: application/json' \
-     -X POST -k -i \
-     https://${CI_TEST_IMAGE_GUEST_SSH_HOST}:${CIZT_ZOWE_ZLUX_HTTPS_PORT}/auth
+# curl -d "{\"username\":\"${CI_USERNAME}\",\"password\":\"${CI_PASSWORD}\"}" \
+#      -H 'Content-Type: application/json' \
+#      -X POST -k -i \
+#      https://${CI_TEST_IMAGE_GUEST_SSH_HOST}:${CIZT_ZOWE_ZLUX_HTTPS_PORT}/auth
 
 ################################################################################
 echo

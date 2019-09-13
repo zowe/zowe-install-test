@@ -129,7 +129,8 @@ fi
 ################################################################################
 echo "[${SCRIPT_NAME}] uninstall script started ..."
 echo "[${SCRIPT_NAME}]   - Installation folder : $CIZT_INSTALL_DIR"
-echo "[${SCRIPT_NAME}]   - Zowe folder         : $CIZT_ZOWE_ROOT_DIR"
+echo "[${SCRIPT_NAME}]   - Zowe Root folder    : $CIZT_ZOWE_ROOT_DIR"
+echo "[${SCRIPT_NAME}]   - Zowe User folder    : $CIZT_ZOWE_USER_DIR"
 echo
 
 if [ ! -f "${CIZT_INSTALL_DIR}/opercmd" ]; then
@@ -323,6 +324,8 @@ echo
 # removing folder
 echo "[${SCRIPT_NAME}] removing installation folder $CIZT_ZOWE_ROOT_DIR ..."
 (echo rm -fr $CIZT_ZOWE_ROOT_DIR | su) || true
+echo "[${SCRIPT_NAME}] removing user folder $CIZT_ZOWE_USER_DIR ..."
+(echo rm -fr $CIZT_ZOWE_USER_DIR | su) || true
 echo
 
 ################################################################################
@@ -344,6 +347,5 @@ done
 echo
 
 ################################################################################
-echo
 echo "[${SCRIPT_NAME}] done."
 exit 0

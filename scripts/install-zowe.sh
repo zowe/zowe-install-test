@@ -276,6 +276,7 @@ echo "[${SCRIPT_NAME}]   - z/OSMF port         : $CIZT_ZOSMF_PORT"
 echo "[${SCRIPT_NAME}]   - temporary folder    : $CIZT_INSTALL_DIR"
 echo "[${SCRIPT_NAME}]   - install             :"
 echo "[${SCRIPT_NAME}]     - rootDir           : $CIZT_ZOWE_ROOT_DIR"
+echo "[${SCRIPT_NAME}]     - userDir           : $CIZT_ZOWE_USER_DIR"
 echo "[${SCRIPT_NAME}]     - prefix            : $CIZT_ZOWE_JOB_PREFIX"
 echo "[${SCRIPT_NAME}]   - zowe-server-proclib :"
 echo "[${SCRIPT_NAME}]     - dsName            : $CIZT_PROCLIB_DS"
@@ -429,6 +430,7 @@ else
   cd $FULL_EXTRACTED_ZOWE_FOLDER/install
   cat "${CI_ZOWE_CONFIG_FILE}" | \
     sed -e "/^install:/,\$s#rootDir=.*\$#rootDir=${CIZT_ZOWE_ROOT_DIR}#" | \
+    sed -e "/^install:/,\$s#userDir=.*\$#userDir=${CIZT_ZOWE_USER_DIR}#" | \
     sed -e "/^install:/,\$s#prefix=.*\$#prefix=${CIZT_ZOWE_JOB_PREFIX}#" | \
     sed -e "/^zowe-server-proclib:/,\$s#dsName=.*\$#dsName=${CIZT_PROCLIB_DS}#" | \
     sed -e "/^zowe-server-proclib:/,\$s#memberName=.*\$#memberName=${CIZT_PROCLIB_MEMBER}#" | \
@@ -533,9 +535,11 @@ if [ "$CI_SKIP_TEMP_FIXES" != "yes" ]; then
   fi
 fi
 
-# start apf server
+# start cross memory server
 echo "[${SCRIPT_NAME}] start ZWESIS01 ..."
 (exec "$CIZT_ZOWE_ROOT_DIR/scripts/internal/opercmd" "S ZWESIS01")
+sleep 10
+echo
 
 # start zowe
 echo "[${SCRIPT_NAME}] start Zowe ..."
