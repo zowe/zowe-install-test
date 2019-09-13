@@ -22,6 +22,7 @@ set +x
 # constants
 # directories
 export CIZT_ZOWE_ROOT_DIR=/ZOWE/staging/zowe
+export CIZT_ZOWE_USER_DIR=/ZOWE/tmp/.zowe
 export CIZT_INSTALL_DIR=/ZOWE/zowe-installs
 # proclib / job name
 export CIZT_PROCLIB_DS=auto
