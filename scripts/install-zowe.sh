@@ -408,7 +408,7 @@ else
   if [[ "$EXIT_CODE" == "0" ]]; then
     echo "[${SCRIPT_NAME}] $CI_ZOWE_PAX extracted."
   else
-    echo "[${SCRIPT_NAME}][error] start Zowe failed."
+    echo "[${SCRIPT_NAME}][error] unpax Zowe failed."
     exit 1
   fi
   echo
