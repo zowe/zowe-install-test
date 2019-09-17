@@ -271,7 +271,7 @@ describe('test MVD login page', function() {
     // menu should exist
     const menu = await getElement(driver, 'rs-com-launchbar-menu');
     expect(menu).to.be.an('object');
-    const menuIcon = await getElement(menu, '.launchbar-icon');
+    const menuIcon = await getElement(menu, '.launchbar-menu-icon');
     expect(menuIcon).to.be.an('object');
 
     // popup menu

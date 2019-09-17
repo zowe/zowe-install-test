@@ -485,7 +485,7 @@ const launchApp = async(driver, appName) => {
 
   // find start icon
   const menu = await getElement(driver, 'rs-com-launchbar-menu');
-  const menuIcon = await getElement(menu, '.launchbar-icon');
+  const menuIcon = await getElement(menu, '.launchbar-menu-icon');
 
   // popup menu
   await menuIcon.click();
