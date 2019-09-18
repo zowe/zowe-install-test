@@ -20,7 +20,7 @@ set +x
 
 ################################################################################
 # constants
-export CIZT_TARGET_SERVER=river
+export CIZT_TARGET_SERVER=river-c3
 export CIZT_TMP=/zaas1
 # directories
 export CIZT_ZOWE_ROOT_DIR=/zaas1/zowe
@@ -62,7 +62,7 @@ export CIZT_ZSS_STC_GROUP=IZUADMIN
 export CIZT_ZSS_STC_USER=IZUSVR
 
 # The SSH hostname/port stored as credential used to connect to test z/OS server
-export CIZT_TEST_IMAGE_GUEST_SSH_HOSTPORT=ssh-river-original-hostport
+export CIZT_TEST_IMAGE_GUEST_SSH_HOSTPORT=ssh-river-c3-hostport
 # The SSH credential used to connect to test z/OS server
 export CIZT_TEST_IMAGE_GUEST_SSH_CREDENTIAL=ssh-zdt-test-image-guest
 # zD&T host name should be converted

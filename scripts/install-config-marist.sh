@@ -20,6 +20,8 @@ set +x
 
 ################################################################################
 # constants
+export CIZT_TARGET_SERVER=marist
+export CIZT_TMP=/ZOWE/tmp
 # directories
 export CIZT_ZOWE_ROOT_DIR=/ZOWE/staging/zowe
 export CIZT_ZOWE_USER_DIR=/ZOWE/tmp/.zowe
@@ -65,3 +67,13 @@ export CIZT_TEST_IMAGE_GUEST_SSH_HOSTPORT=ssh-marist-server-zzow01-hostport
 export CIZT_TEST_IMAGE_GUEST_SSH_CREDENTIAL=ssh-marist-server-zzow01
 # zD&T host name should be converted
 export CIZT_ZDNT_HOSTNAME=
+
+# SMP/e installation parameters
+export CIZT_SMPE_HLQ_DSN=ZOWEAD3
+export CIZT_SMPE_HLQ_CSI=ZOWEAD3.SMPE
+export CIZT_SMPE_HLQ_TZONE=ZOWEAD3.SMPE
+export CIZT_SMPE_HLQ_DZONE=ZOWEAD3.SMPE
+export CIZT_SMPE_REL_FILE_PREFIX=ZOWEAD3
+export CIZT_SMPE_PATH_PREFIX=/ZOWE/staging/
+export CIZT_SMPE_PATH_DEFAULT=usr/lpp/zowe
+export CIZT_SMPE_VOLSER=ZOWE02

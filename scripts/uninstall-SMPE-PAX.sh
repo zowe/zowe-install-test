@@ -57,33 +57,50 @@ echo $SCRIPT    zfs_path=$7
 echo $SCRIPT    FMID=$8
 echo $SCRIPT    PREFIX=$9
 
+if [ -d "${pathprefix}usr/lpp/zowe" ]; then
+  if [ "${pathprefix}" = "/" ]; then
+    # looks like an official location under /usr/lpp, only remove zowe
+    echo "$SCRIPT deleting ${pathprefix}usr/lpp/zowe ..."
+    (echo rm -fr "${pathprefix}usr/lpp/zowe" | su) || true
+  else
+    # testing folder, removing all
+    echo "$SCRIPT deleting ${pathprefix}usr ..."
+    (echo rm -fr "${pathprefix}usr" | su) || true
+  fi
+fi
+
 # delete the datasets that install-SMPE-PAX.sh script creates
-tsocmd "delete ('${hlq}.${FMID}.F1')"
-tsocmd "delete ('${hlq}.${FMID}.F2')"
-tsocmd "delete ('${hlq}.${FMID}.F3')"
-tsocmd "delete ('${hlq}.${FMID}.F4')"
-tsocmd "delete ('${hlq}.${FMID}.smpmcs')"
-tsocmd "delete ('${hlq}.ZOWE.${FMID}.F1')"
-tsocmd "delete ('${hlq}.ZOWE.${FMID}.F2')"
-tsocmd "delete ('${hlq}.ZOWE.${FMID}.F3')"
-tsocmd "delete ('${hlq}.ZOWE.${FMID}.F4')"
-tsocmd "delete ('${hlq}.ZOWE.${FMID}.smpmcs')"
-tsocmd "delete ('${hlq}.SMPE.CSI')"
-tsocmd "delete ('${hlq}.SMPE.SMPLOG')"
-tsocmd "delete ('${hlq}.SMPE.SMPLOGA')"
-tsocmd "delete ('${hlq}.SMPE.SMPLTS')"
-tsocmd "delete ('${hlq}.SMPE.SMPMTS')"
-tsocmd "delete ('${hlq}.SMPE.SMPPTS')"
-tsocmd "delete ('${hlq}.SMPE.SMPSCDS')"
-tsocmd "delete ('${hlq}.SMPE.SMPSTS')"
-tsocmd "delete ('${hlq}.SMPE.AZWEAUTH')"
-tsocmd "delete ('${hlq}.SMPE.AZWESAMP')"
-tsocmd "delete ('${hlq}.SMPE.AZWEZFS')"
-tsocmd "delete ('${hlq}.SMPE.SZWEAUTH')"
-tsocmd "delete ('${hlq}.SMPE.SZWESAMP')"
-tsocmd "delete ('${hlq}.install.jcl')"
-tsocmd "delete (TEST.jcl.*)"
-chmod -R 777 ${pathprefix}usr
-rm -fR ${pathprefix}usr # because target is ${pathprefix}usr/lpp/zowe
+cat > tso.cmd <<EndOfList
+delete ('${hlq}.${FMID}.F1')
+delete ('${hlq}.${FMID}.F2')
+delete ('${hlq}.${FMID}.F3')
+delete ('${hlq}.${FMID}.F4')
+delete ('${hlq}.${FMID}.smpmcs')
+delete ('${hlq}.ZOWE.${FMID}.F1')
+delete ('${hlq}.ZOWE.${FMID}.F2')
+delete ('${hlq}.ZOWE.${FMID}.F3')
+delete ('${hlq}.ZOWE.${FMID}.F4')
+delete ('${hlq}.ZOWE.${FMID}.smpmcs')
+delete ('${hlq}.SMPE.CSI')
+delete ('${hlq}.SMPE.SMPLOG')
+delete ('${hlq}.SMPE.SMPLOGA')
+delete ('${hlq}.SMPE.SMPLTS')
+delete ('${hlq}.SMPE.SMPMTS')
+delete ('${hlq}.SMPE.SMPPTS')
+delete ('${hlq}.SMPE.SMPSCDS')
+delete ('${hlq}.SMPE.SMPSTS')
+delete ('${hlq}.SMPE.AZWEAUTH')
+delete ('${hlq}.SMPE.AZWESAMP')
+delete ('${hlq}.SMPE.AZWEZFS')
+delete ('${hlq}.SMPE.SZWEAUTH')
+delete ('${hlq}.SMPE.SZWESAMP')
+delete ('${hlq}.install.jcl')
+delete (TEST.jcl.*)
+free all
+EndOfList
+
+# execute the multiple TSO commands
+tsocmds.sh tso.cmd
+rm tso.cmd 
 
 echo script $SCRIPT ended from $SCRIPT_DIR

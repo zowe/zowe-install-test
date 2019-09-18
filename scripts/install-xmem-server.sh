@@ -11,22 +11,40 @@
 ################################################################################
 
 ################################################################################
-# This script will fix known issues after Zowe is started
+# This script will install Zowe Cross Memory Server
 #
-# This script should be placed into target image zOSaaS layer to start.
+# This script should be run from the folder where zowe-install-apf-server.yaml
+# located.
 ################################################################################
 
+################################################################################
+# constants
 SCRIPT_NAME=$(basename "$0")
-CI_TEST_IMAGE_GUEST_SSH_HOST=$1
-CI_USERNAME=$2
-CI_PASSWORD=$3
-echo "[${SCRIPT_NAME}] started ..."
-if [ ! -f install-config.sh ]; then
+SCRIPT_PWD=$(cd $(dirname "$0") && pwd)
+CI_ZSS_CONFIG_FILE=zowe-install-apf-server.yaml
+
+# load install config variables
+if [ ! -f "${SCRIPT_PWD}/install-config.sh" ]; then
   echo "[${SCRIPT_NAME}][error] cannot find install-config.sh"
   exit 1
 fi
-. install-config.sh
-echo "[${SCRIPT_NAME}]    CIZT_ZOWE_ROOT_DIR           : $CIZT_ZOWE_ROOT_DIR"
+. "${SCRIPT_PWD}/install-config.sh"
+if [ -z "${CIZT_ZOWE_ROOT_DIR}" ]; then
+  echo "[${SCRIPT_NAME}][error] cannot find \$CIZT_ZOWE_ROOT_DIR"
+  exit 1
+fi
+if [ ! -f "${CI_ZSS_CONFIG_FILE}" ]; then
+  echo "[${SCRIPT_NAME}][error] cannot find ${CI_ZSS_CONFIG_FILE} in $(pwd)."
+  echo
+  exit 1
+fi
+
+# allow to exit by ctrl+c
+function finish {
+  echo "[${SCRIPT_NAME}] interrupted"
+  exit 1
+}
+trap finish SIGINT
 
 ################################################################################
 # Kill process and all children processes
@@ -109,30 +127,36 @@ function run_script_with_timeout {
   return $EXIT_CODE
 }
 
-################################################################################
-# Run after install verify script
-echo
-RUN_SCRIPT=zowe-verify.sh
-if [ -f "${CIZT_ZOWE_ROOT_DIR}/scripts/$RUN_SCRIPT" ]; then
-  cd "${CIZT_ZOWE_ROOT_DIR}/scripts"
-  run_script_with_timeout "${RUN_SCRIPT}" 1800
-  EXIT_CODE=$?
-  if [[ "$EXIT_CODE" != "0" ]]; then
-    echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed with exit code ${EXIT_CODE}."
-  else
-    echo "[${SCRIPT_NAME}] ${RUN_SCRIPT} finished successfully."
-  fi
+# configure installation
+echo "[${SCRIPT_NAME}] configure cross-memory server installation yaml ..."
+cat "${CI_ZSS_CONFIG_FILE}" | \
+  sed -e "/^install:/,\$s#proclib=.*\$#proclib=${CIZT_ZSS_PROCLIB_DS_NAME}#" | \
+  sed -e "/^install:/,\$s#parmlib=.*\$#parmlib=${CIZT_ZSS_PARMLIB_DS_NAME}#" | \
+  sed -e "/^install:/,\$s#loadlib=.*\$#loadlib=${CIZT_ZSS_LOADLIB_DS_NAME}#" | \
+  sed -e "/^users:/,\$s#zoweUser=.*\$#zoweUser=${CIZT_ZSS_ZOWE_USER}#" | \
+  sed -e "/^users:/,\$s#stcUserUid=.*\$#stcUserUid=${CIZT_ZSS_STC_USER_ID}#" | \
+  sed -e "/^users:/,\$s#stcGroup=.*\$#stcGroup=${CIZT_ZSS_STC_GROUP}#" | \
+  sed -e "/^users:/,\$s#stcUser=.*\$#stcUser=${CIZT_ZSS_STC_USER}#" > "${CI_ZSS_CONFIG_FILE}.tmp"
+mv "${CI_ZSS_CONFIG_FILE}.tmp" "${CI_ZSS_CONFIG_FILE}"
+echo "[${SCRIPT_NAME}] current ZSS configuration is:"
+cat "${CI_ZSS_CONFIG_FILE}"
+
+# start ZSS installation
+echo "[${SCRIPT_NAME}] start ZSS installation ..."
+# FIXME: zowe-install-apf-server.sh should exit by itself, not depends on timeout
+RUN_SCRIPT=zowe-install-apf-server.sh
+echo "[${SCRIPT_NAME}] calling $RUN_SCRIPT from directory $(pwd)"
+run_script_with_timeout $RUN_SCRIPT 1800
+EXIT_CODE=$?
+if [[ "$EXIT_CODE" != "0" ]]; then
+  echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
+  echo
+  exit 1
+else
+  echo "[${SCRIPT_NAME}] ${RUN_SCRIPT} succeeds."
+  echo
 fi
 echo
-
-
-################################################################################
-# FIXME: zLux login may hang there which blocks UI test cases
-# try a login to the zlux auth api
-# curl -d "{\"username\":\"${CI_USERNAME}\",\"password\":\"${CI_PASSWORD}\"}" \
-#      -H 'Content-Type: application/json' \
-#      -X POST -k -i \
-#      https://${CI_TEST_IMAGE_GUEST_SSH_HOST}:${CIZT_ZOWE_ZLUX_HTTPS_PORT}/auth
 
 ################################################################################
 echo
