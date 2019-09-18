@@ -10,7 +10,9 @@
 
 // default Zowe JES job name
 const ZOWE_JOB_NAME = (process.env.ZOWE_JOB_PREFIX || 'ZOWE') + '1SV';
+const ZOWE_XMEM_JOB_NAME = 'ZWESIS01';
 
 module.exports = {
   ZOWE_JOB_NAME,
+  ZOWE_XMEM_JOB_NAME,
 };
