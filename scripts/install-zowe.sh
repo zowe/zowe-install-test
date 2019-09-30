@@ -364,7 +364,7 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   fi
 
   # configure installation
-  echo "[${SCRIPT_NAME}] configure installation yaml ..."
+  echo "[${SCRIPT_NAME}] configure installation yaml 1 ..."
   cd $CIZT_ZOWE_ROOT_DIR/scripts/configure
   cat "${CI_ZOWE_CONFIG_FILE}" | \
     sed -e "/^install:/,\$s#rootDir=.*\$#rootDir=${CIZT_ZOWE_ROOT_DIR}#" | \
@@ -436,12 +436,13 @@ else
   fi
 
   # configure zowe installation
-  echo "[${SCRIPT_NAME}] configure installation yaml ..."
+  echo "[${SCRIPT_NAME}] configure installation yaml 2 ..."
   cd $FULL_EXTRACTED_ZOWE_FOLDER/install
   cat "${CI_ZOWE_CONFIG_FILE}" | \
     sed -e "/^install:/,\$s#rootDir=.*\$#rootDir=${CIZT_ZOWE_ROOT_DIR}#" | \
     sed -e "/^install:/,\$s#userDir=.*\$#userDir=${CIZT_ZOWE_USER_DIR}#" | \
     sed -e "/^install:/,\$s#prefix=.*\$#prefix=${CIZT_ZOWE_JOB_PREFIX}#" | \
+    sed -e "/^install:/,\$s#datasetPrefix=.*\$#datasetPrefix=${CIZT_SMPE_HLQ_DSN}#" | \
     sed -e "/^zowe-server-proclib:/,\$s#dsName=.*\$#dsName=${CIZT_PROCLIB_DS}#" | \
     sed -e "/^zowe-server-proclib:/,\$s#memberName=.*\$#memberName=${CIZT_PROCLIB_MEMBER}#" | \
     sed -e "/^api-mediation:/,\$s#catalogPort=.*\$#catalogPort=${CIZT_ZOWE_API_MEDIATION_CATALOG_HTTP_PORT}#" | \
