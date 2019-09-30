@@ -314,6 +314,8 @@ if [[ "$CI_UNINSTALL" = "yes" ]]; then
   cd $CIZT_INSTALL_DIR
   RUN_SCRIPT=uninstall-zowe.sh
   if [ -f "$RUN_SCRIPT" ]; then
+    echo head -1 $RUN_SCRIPT
+    head -1 $RUN_SCRIPT
     run_script_with_timeout "${RUN_SCRIPT}" 300
     EXIT_CODE=$?
     if [[ "$EXIT_CODE" != "0" ]]; then
