@@ -371,7 +371,7 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
     sed -e "/^install:/,\$s#rootDir=.*\$#rootDir=${CIZT_ZOWE_ROOT_DIR}#" | \
     sed -e "/^install:/,\$s#userDir=.*\$#userDir=${CIZT_ZOWE_USER_DIR}#" | \
     sed -e "/^install:/,\$s#prefix=.*\$#prefix=${CIZT_ZOWE_JOB_PREFIX}#" | \
-    sed -e "/^install:/,\$s#datasetPrefix=\{hlq\}#datasetPrefix=${CIZT_SMPE_HLQ_DSN}#" | \
+    sed -e "/^install:/,\$s#datasetPrefix={hlq}#datasetPrefix=${CIZT_SMPE_HLQ_DSN}#" | \
     sed -e "/^zowe-server-proclib:/,\$s#dsName=.*\$#dsName=${CIZT_PROCLIB_DS}#" | \
     sed -e "/^zowe-server-proclib:/,\$s#memberName=.*\$#memberName=${CIZT_PROCLIB_MEMBER}#" | \
     sed -e "/^api-mediation:/,\$s#catalogPort=.*\$#catalogPort=${CIZT_ZOWE_API_MEDIATION_CATALOG_HTTP_PORT}#" | \
@@ -444,7 +444,7 @@ else
     sed -e "/^install:/,\$s#rootDir=.*\$#rootDir=${CIZT_ZOWE_ROOT_DIR}#" | \
     sed -e "/^install:/,\$s#userDir=.*\$#userDir=${CIZT_ZOWE_USER_DIR}#" | \
     sed -e "/^install:/,\$s#prefix=.*\$#prefix=${CIZT_ZOWE_JOB_PREFIX}#" | \
-    sed -e "/^install:/,\$s#datasetPrefix=\{hlq\}#datasetPrefix=${CIZT_SMPE_HLQ_DSN}#" | \
+    sed -e "/^install:/,\$s#datasetPrefix={hlq}#datasetPrefix=${CIZT_SMPE_HLQ_DSN}#" | \
     sed -e "/^zowe-server-proclib:/,\$s#dsName=.*\$#dsName=${CIZT_PROCLIB_DS}#" | \
     sed -e "/^zowe-server-proclib:/,\$s#memberName=.*\$#memberName=${CIZT_PROCLIB_MEMBER}#" | \
     sed -e "/^api-mediation:/,\$s#catalogPort=.*\$#catalogPort=${CIZT_ZOWE_API_MEDIATION_CATALOG_HTTP_PORT}#" | \
