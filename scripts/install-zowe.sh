@@ -1,5 +1,5 @@
 #!/bin/sh
-
+set -x
 ################################################################################
 # This program and the accompanying materials are made available under the terms of the
 # Eclipse Public License v2.0 which accompanies this distribution, and is available at
@@ -364,13 +364,14 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   fi
 
   # configure installation
-  echo "[${SCRIPT_NAME}] configure installation yaml 1 ..."
+  echo "[${SCRIPT_NAME}] configure installation yaml (configure) ..."
   cd $CIZT_ZOWE_ROOT_DIR/scripts/configure
+  grep datasetPrefix ${CI_ZOWE_CONFIG_FILE}
   cat "${CI_ZOWE_CONFIG_FILE}" | \
     sed -e "/^install:/,\$s#rootDir=.*\$#rootDir=${CIZT_ZOWE_ROOT_DIR}#" | \
     sed -e "/^install:/,\$s#userDir=.*\$#userDir=${CIZT_ZOWE_USER_DIR}#" | \
     sed -e "/^install:/,\$s#prefix=.*\$#prefix=${CIZT_ZOWE_JOB_PREFIX}#" | \
-    sed -e "/^install:/,\$s#datasetPrefix=.*\$#datasetPrefix=${CIZT_SMPE_HLQ_DSN}#" | \
+    sed -e "/^install:/,\$s#datasetPrefix=\{hlq\}#datasetPrefix=${CIZT_SMPE_HLQ_DSN}#" | \
     sed -e "/^zowe-server-proclib:/,\$s#dsName=.*\$#dsName=${CIZT_PROCLIB_DS}#" | \
     sed -e "/^zowe-server-proclib:/,\$s#memberName=.*\$#memberName=${CIZT_PROCLIB_MEMBER}#" | \
     sed -e "/^api-mediation:/,\$s#catalogPort=.*\$#catalogPort=${CIZT_ZOWE_API_MEDIATION_CATALOG_HTTP_PORT}#" | \
@@ -436,13 +437,14 @@ else
   fi
 
   # configure zowe installation
-  echo "[${SCRIPT_NAME}] configure installation yaml 2 ..."
+  echo "[${SCRIPT_NAME}] configure installation yaml (install) ..."
   cd $FULL_EXTRACTED_ZOWE_FOLDER/install
+  grep datasetPrefix ${CI_ZOWE_CONFIG_FILE}
   cat "${CI_ZOWE_CONFIG_FILE}" | \
     sed -e "/^install:/,\$s#rootDir=.*\$#rootDir=${CIZT_ZOWE_ROOT_DIR}#" | \
     sed -e "/^install:/,\$s#userDir=.*\$#userDir=${CIZT_ZOWE_USER_DIR}#" | \
     sed -e "/^install:/,\$s#prefix=.*\$#prefix=${CIZT_ZOWE_JOB_PREFIX}#" | \
-    sed -e "/^install:/,\$s#datasetPrefix=.*\$#datasetPrefix=${CIZT_SMPE_HLQ_DSN}#" | \
+    sed -e "/^install:/,\$s#datasetPrefix=\{hlq\}#datasetPrefix=${CIZT_SMPE_HLQ_DSN}#" | \
     sed -e "/^zowe-server-proclib:/,\$s#dsName=.*\$#dsName=${CIZT_PROCLIB_DS}#" | \
     sed -e "/^zowe-server-proclib:/,\$s#memberName=.*\$#memberName=${CIZT_PROCLIB_MEMBER}#" | \
     sed -e "/^api-mediation:/,\$s#catalogPort=.*\$#catalogPort=${CIZT_ZOWE_API_MEDIATION_CATALOG_HTTP_PORT}#" | \
