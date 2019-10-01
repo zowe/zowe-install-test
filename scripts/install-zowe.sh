@@ -342,7 +342,7 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
     ${CIZT_SMPE_REL_FILE_PREFIX} \
     ${CIZT_SMPE_VOLSER}
   if [ ! -d "${CIZT_ZOWE_ROOT_DIR}/scripts" ]; then
-    echo "[${SCRIPT_NAME}][error] installation is not successfully, ${CIZT_ZOWE_ROOT_DIR}/scripts doesn't exist."
+    echo "[${SCRIPT_NAME}][error] installation is not successful, ${CIZT_ZOWE_ROOT_DIR}/scripts doesn't exist."
     exit 1
   fi
   echo
@@ -391,7 +391,7 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
     sed -e "/^terminals:/,\$s#sshPort=.*\$#sshPort=${CIZT_ZOWE_MVD_SSH_PORT}#" | \
     sed -e "/^terminals:/,\$s#telnetPort=.*\$#telnetPort=${CIZT_ZOWE_MVD_TELNET_PORT}#" > "${CI_ZOWE_CONFIG_FILE}.tmp"
   mv "${CI_ZOWE_CONFIG_FILE}.tmp" "${CI_ZOWE_CONFIG_FILE}"
-  echo "[${SCRIPT_NAME}] current Zowe configuration is:"
+  echo "[${SCRIPT_NAME}] current Zowe configuration (configure) is:"
   cat "${CI_ZOWE_CONFIG_FILE}"
 
   # configure Zowe
@@ -399,7 +399,7 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   echo "[${SCRIPT_NAME}] installation is done, start configuring ..."
   ./configure/zowe-configure.sh < /dev/null
   if [ ! -f "zowe-start.sh" ]; then
-    echo "[${SCRIPT_NAME}][error] installation is not successfully, cannot find zowe-start.sh."
+    echo "[${SCRIPT_NAME}][error] installation is not successful, cannot find zowe-start.sh."
     exit 1
   fi
   echo
@@ -464,7 +464,7 @@ else
     sed -e "/^terminals:/,\$s#sshPort=.*\$#sshPort=${CIZT_ZOWE_MVD_SSH_PORT}#" | \
     sed -e "/^terminals:/,\$s#telnetPort=.*\$#telnetPort=${CIZT_ZOWE_MVD_TELNET_PORT}#" > "${CI_ZOWE_CONFIG_FILE}.tmp"
   mv "${CI_ZOWE_CONFIG_FILE}.tmp" "${CI_ZOWE_CONFIG_FILE}"
-  echo "[${SCRIPT_NAME}] current Zowe configuration is:"
+  echo "[${SCRIPT_NAME}] current Zowe configuration (install) is:"
   cat "${CI_ZOWE_CONFIG_FILE}"
   echo
 
