@@ -117,11 +117,11 @@ function run_script_with_timeout {
   echo "################################################################################"
 
   TMP_LOG_FILE="$$-$RANDOM.log"
-  if [[ $SCRIPT_TO_RUN = zowe-install.sh ]]
-  then
-    SCRIPT_TO_RUN="zowe-install.sh -I"  # temporary change
-    echo "temporary change"
-  fi
+  # if [[ $SCRIPT_TO_RUN = zowe-install.sh ]]
+  # then
+  #   SCRIPT_TO_RUN="zowe-install.sh -I"  # temporary change
+  #   echo "temporary change"
+  # fi
 
   (exec sh -c "$SCRIPT_TO_RUN" > $TMP_LOG_FILE) & CMD_PID=$!
   echo "[run_script_with_timeout] '${SCRIPT_TO_RUN}' process ID is $CMD_PID"
