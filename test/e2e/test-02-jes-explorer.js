@@ -16,7 +16,6 @@ const testName = path.basename(__filename, path.extname(__filename));
 
 const { Key, until } = require('selenium-webdriver');
 
-const { ZOWE_JOB_NAME } = require('../constants');
 const {
   DEFAULT_PAGE_LOADING_TIMEOUT,
   DEFAULT_ELEMENT_CHECK_INTERVAL,
@@ -37,6 +36,7 @@ const {
 let driver;
 
 const APP_TO_TEST = 'JES Explorer';
+const JOB_TO_TEST = 'IZUSVR1';
 const JCL_TO_TEST = 'JESJCL';
 
 const MVD_EXPLORER_TREE_SECTION = '#tree-text-content';
@@ -107,7 +107,7 @@ describe(`test ${APP_TO_TEST}`, function() {
     appLaunched = true;
   });
 
-  it(`should be able to list IZU* jobs and should include ${ZOWE_JOB_NAME}`, async function() {
+  it(`should be able to list IZU* jobs and should include ${JOB_TO_TEST}`, async function() {
     if (!appLaunched) {
       this.skip();
     }
@@ -160,19 +160,9 @@ describe(`test ${APP_TO_TEST}`, function() {
         await input.sendKeys('IZU*');
       } else if (id.indexOf('-prefix-') > -1) {
         await input.clear();
-        await input.sendKeys('*');
+        await input.sendKeys('IZU*');
       }
     }
-    // find status dropdown
-    const filterStatusDropdown = await getElement(treeContent, '#filter-status-field button');
-    expect(filterStatusDropdown).to.be.an('object');
-    await filterStatusDropdown.click();
-    debug('filter form updated');
-    const filterStatusActive = await waitUntilElement(driver, '#status-ACTIVE');
-    expect(filterStatusActive).to.be.an('object');
-    await filterStatusActive.click();
-    // wait a little more until the dropdown disappeared
-    await driver.sleep(3 * 1000);
     // save screenshot
     await saveScreenshotWithIframeAppContext(this, driver, testName, 'reset-filter', APP_TO_TEST, MVD_IFRAME_APP_CONTENT);
     treeContent = await waitUntilElement(driver, MVD_EXPLORER_TREE_SECTION);
@@ -194,8 +184,8 @@ describe(`test ${APP_TO_TEST}`, function() {
               const label = await getElement(items[i], 'li .react-contextmenu-wrapper span.content-link span');
               if (label) {
                 const text = await label.getText();
-                // find active zowesvr job
-                if (text.indexOf(ZOWE_JOB_NAME) > -1 && text.indexOf('[ACTIVE]') > -1) {
+                // find active job
+                if (text.indexOf(JOB_TO_TEST) > -1 && text.indexOf('[ACTIVE]') > -1) {
                   findZoweJob = parseInt(i, 10);
                   break;
                 }
@@ -234,10 +224,10 @@ describe(`test ${APP_TO_TEST}`, function() {
     treeContent = await waitUntilElement(driver, MVD_EXPLORER_TREE_SECTION);
 
     expect(findZoweJob).to.be.above(-1);
-    debug(`found ${ZOWE_JOB_NAME} at ${findZoweJob}`);
+    debug(`found ${JOB_TO_TEST} at ${findZoweJob}`);
   });
 
-  it(`should be able to load content of ${ZOWE_JOB_NAME} ${JCL_TO_TEST}`, async function() {
+  it(`should be able to load content of ${JOB_TO_TEST} ${JCL_TO_TEST}`, async function() {
     if (!appLaunched || findZoweJob < 0) {
       this.skip();
     }
@@ -253,7 +243,7 @@ describe(`test ${APP_TO_TEST}`, function() {
     const expandButton = await getElement(zoweJob, 'li div.react-contextmenu-wrapper svg.node-icon');
     expect(expandButton).to.be.an('object');
     await expandButton.click();
-    debug(`${ZOWE_JOB_NAME} job expand icon is clicked`);
+    debug(`${JOB_TO_TEST} job expand icon is clicked`);
 
     // find the JESJCL
     let findZoweJclFile = -1;
@@ -305,7 +295,7 @@ describe(`test ${APP_TO_TEST}`, function() {
     const contentLink = await getElement(zoweJclFile, 'span.content-link');
     expect(contentLink).to.be.an('object');
     await contentLink.click();
-    debug(`Active ${ZOWE_JOB_NAME} ${JCL_TO_TEST} file content link is clicked`);
+    debug(`Active ${JOB_TO_TEST} ${JCL_TO_TEST} file content link is clicked`);
 
     // save screenshot
     await saveScreenshotWithIframeAppContext(this, driver, testName, 'jcl-loading', APP_TO_TEST, MVD_IFRAME_APP_CONTENT);
@@ -318,11 +308,11 @@ describe(`test ${APP_TO_TEST}`, function() {
           let isHeaderReady = false,
             isContentReady = false;
 
-          const header = await getElement(driver, '#content-viewer div div div span:nth-child(1)');
+          const header = await getElement(driver, '#content-viewer div div span div div div div:nth-child(1)');
           if (header) {
             const text = await header.getText();
 
-            if (text.indexOf(ZOWE_JOB_NAME) > -1 && text.indexOf(JCL_TO_TEST) > -1) {
+            if (text.indexOf(JCL_TO_TEST) > -1) {
               isHeaderReady = true;
             }
           }
@@ -360,7 +350,7 @@ describe(`test ${APP_TO_TEST}`, function() {
         expect(e).to.be.null;
       }
     }
-    debug(`Active ${ZOWE_JOB_NAME} ${JCL_TO_TEST} file content is loaded`);
+    debug(`Active ${JOB_TO_TEST} ${JCL_TO_TEST} file content is loaded`);
 
     // save screenshot
     await saveScreenshotWithIframeAppContext(this, driver, testName, 'jcl-loaded', APP_TO_TEST, MVD_IFRAME_APP_CONTENT);

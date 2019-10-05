@@ -19,22 +19,14 @@
 ################################################################################
 # constants
 SCRIPT_NAME=$(basename "$0")
-DEFAULT_CI_ZOWE_ROOT_DIR=/zaas1/zowe
-DEFAULT_CI_INSTALL_DIR=/zaas1/zowe-install
-DEFAULT_CI_ZOWE_DS_MEMBER=ZOWESVR
-DEFAULT_CI_ZOWE_JOB_NAME=ZOWESV1
-CI_ZOWE_ROOT_DIR=$DEFAULT_CI_ZOWE_ROOT_DIR
-CI_INSTALL_DIR=$DEFAULT_CI_INSTALL_DIR
+SCRIPT_PWD=$(cd $(dirname "$0") && pwd)
+# this should list all known Zowe job names we ever shipped separated by space
+KNOWN_ZOWE_JOB_NAMES="ZOWESVR ZOWESV1 ZOWE1SV"
+# this should list all known FMIDs we ever shipped separated by space, so the
+# uninstall script can uninstall any versions we ever installed.
+KNOWN_SMPE_FMIDS=AZWE001
 PROFILE=~/.profile
 ZOWE_PROFILE=~/.zowe_profile
-CI_ZOWE_DS_MEMBER=$DEFAULT_CI_ZOWE_DS_MEMBER
-CI_ZOWE_JOB_NAME=$DEFAULT_CI_ZOWE_JOB_NAME
-# FIXME: these are hardcoded
-CI_XMEM_PROCLIB_MEMBER=ZWESIS01
-CI_XMEM_PARMLIB=IZUSVR.PARMLIB
-CI_XMEM_PARMLIB_MEMBER=ZWESIP00
-CI_XMEM_LOADLIB=IZUSVR.LOADLIB
-CI_XMEM_LOADLIB_MEMBER=ZWESIS01
 
 # allow to exit by ctrl+c
 function finish {
@@ -44,84 +36,41 @@ function finish {
 trap finish SIGINT
 
 ################################################################################
-# Kill process and all children processes
-# 
-# Arguments:
-#   $1        Process ID
-################################################################################
-function kill_all_childen {
-  TO_KILL_PID=$1
-
-  ALL_CHILDREN=
-  CHILDREN=$TO_KILL_PID
-  while [ -n "$CHILDREN" ]; do
-    ALL_CHILDREN="$ALL_CHILDREN $CHILDREN"
-
-    SUB_CHILDREN=
-    for one in $CHILDREN; do
-      ONE_SUB_CHILDREN=$(ps -o pid,ppid | grep "[0-9]\+[ ]\+$one" | awk '{print $1}')
-      if [ -n "$ONE_SUB_CHILDREN" ]; then
-  SUB_CHILDREN="$SUB_CHILDREN $ONE_SUB_CHILDREN"
-      fi
-    done
-    CHILDREN=$SUB_CHILDREN
-  done
-  echo "[kill_all_childen] process $TO_KILL_PID has children: $ALL_CHILDREN, killing all."
-  kill -9 $ALL_CHILDREN || true
-}
-
-################################################################################
-# Run a script with a timeout
-# 
-# Arguments:
-#   $1        Script path
-#   $2        Timeout format supported by "sleep". Example:
-#             - 60      60 seconds
-#             - 2m      2 minutes
+# Check script encoding and make sure it's IBM-1047
 #
-# Returns:
-#   exit code
+# NOTE: This function will also add execution permission to the script.
+#
+# Arguments:
+#   $1        Scipt path
+#   $2        Sample text to validate the conversion
+#   $3        From encoding. Optional, default is ISO8859-1
+#   $4        To encoding. Optional, default is IBM-1047
 ################################################################################
-function run_script_with_timeout {
-  SCRIPT_TO_RUN=$1
-  TIMEOUT=$2
+function ensure_script_encoding {
+  SCRIPT_TO_CHECK=$1
+  SAMPLE_TEXT=$2
+  FROM_ENCODING=$3
+  TO_ENCODING=$4
 
-  echo
-  echo "################################################################################"
+  if [ -z "$SAMPLE_TEXT" ]; then
+    SAMPLE_TEXT="#!/"
+  fi
+  if [ -z "$FROM_ENCODING"]; then
+    FROM_ENCODING=ISO8859-1
+  fi
+  if [ -z "$TO_ENCODING"]; then
+    TO_ENCODING=IBM-1047
+  fi
 
-  TMP_LOG_FILE="$$-$RANDOM.log"
-  (exec sh -c "$SCRIPT_TO_RUN" > $TMP_LOG_FILE) & CMD_PID=$!
-  echo "[run_script_with_timeout] '${SCRIPT_TO_RUN}' process ID is $CMD_PID"
-  # start waiter process in background
-  (sleep $TIMEOUT && kill -9 $CMD_PID) & WAITER_PID=$!
-  # wait for process to exit
-  wait $CMD_PID
-  EXIT_CODE=$?
-
-  # check if waiter process is still there
-  WAITER_EXISTENCE=$(ps -o pid | grep $WAITER_PID)
-  if [ -n "$WAITER_EXISTENCE" ]; then
-    # waiter process is still there, process exit by itself
-    kill_all_childen $WAITER_PID
+  iconv -f $FROM_ENCODING -t $TO_ENCODING "${SCRIPT_TO_CHECK}" > "${SCRIPT_TO_CHECK}.new"
+  REQUIRE_THIS_CONVERT=$(cat "${SCRIPT_TO_CHECK}.new" | grep "${SAMPLE_TEXT}")
+  if [ -n "$REQUIRE_THIS_CONVERT" ]; then
+    mv "${SCRIPT_TO_CHECK}.new" "${SCRIPT_TO_CHECK}" && chmod +x "${SCRIPT_TO_CHECK}"
+    echo "[${SCRIPT_NAME}] - ${SCRIPT_TO_CHECK} encoding is adjusted."
   else
-    # waiter process is gone, means process if killed after timeout
-    EXIT_CODE=9999
+    rm "${SCRIPT_TO_CHECK}.new"
+    echo "[${SCRIPT_NAME}] - ${SCRIPT_TO_CHECK} encoding is NOT changed, failed to find pattern '${SAMPLE_TEXT}'."
   fi
-
-  echo "[run_script_with_timeout] '${SCRIPT_TO_RUN}' exit: $EXIT_CODE"
-
-  # show log if exists
-  if [ -f "$TMP_LOG_FILE" ]; then
-    if [ -s "$TMP_LOG_FILE" ]; then
-      echo "[run_script_with_timeout] stdout log >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-      cat $TMP_LOG_FILE || true
-      echo "[run_script_with_timeout] log end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
-    fi
-    rm $TMP_LOG_FILE
-  fi
-  echo
-
-  return $EXIT_CODE
 }
 
 ################################################################################
@@ -133,29 +82,13 @@ function usage {
   echo
   echo "Options:"
   echo "  -h  Display this help message."
-  echo "  -i  Zowe install working folder. Optional, default is $DEFAULT_CI_INSTALL_DIR."
-  echo "  -t  Zowe target folder. Optional, default is $DEFAULT_CI_ZOWE_ROOT_DIR."
-  echo "  -m  Zowe PROCLIB data set member name. Optional, default is $DEFAULT_CI_ZOWE_DS_MEMBER."
-  echo "  -j  Zowe job name. Optional, default is $DEFAULT_CI_ZOWE_JOB_NAME."
   echo
 }
-while getopts ":hi:t:m:j:" opt; do
+while getopts ":h" opt; do
   case ${opt} in
     h)
       usage
       exit 0
-      ;;
-    i)
-      CI_INSTALL_DIR=$OPTARG
-      ;;
-    t)
-      CI_ZOWE_ROOT_DIR=$OPTARG
-      ;;
-    m)
-      CI_ZOWE_DS_MEMBER=$OPTARG
-      ;;
-    j)
-      CI_ZOWE_JOB_NAME=$OPTARG
       ;;
     \?)
       echo "[${SCRIPT_NAME}][error] invalid option: -$OPTARG" >&2
@@ -170,56 +103,89 @@ done
 
 ################################################################################
 # essential validations
+# load install config variables
+if [ ! -f "${SCRIPT_PWD}/install-config.sh" ]; then
+  echo "[${SCRIPT_NAME}][error] cannot find install-config.sh"
+  exit 1
+fi
+. "${SCRIPT_PWD}/install-config.sh"
+if [ -z "${CIZT_ZOWE_ROOT_DIR}" ]; then
+  echo "[${SCRIPT_NAME}][error] cannot find \$CIZT_ZOWE_ROOT_DIR"
+  exit 1
+fi
+if [ -f "opercmd" ]; then
+  ensure_script_encoding opercmd "parse var command opercmd"
+fi
+if [ -f "tsocmd.sh" ]; then
+  ensure_script_encoding tsocmd.sh
+fi
+if [ -f "tsocmds.sh" ]; then
+  ensure_script_encoding tsocmds.sh
+fi
+if [ -f "uninstall-SMPE-PAX.sh" ]; then
+  ensure_script_encoding uninstall-SMPE-PAX.sh
+fi
 
 ################################################################################
 echo "[${SCRIPT_NAME}] uninstall script started ..."
-echo "[${SCRIPT_NAME}]   - Installation folder : $CI_INSTALL_DIR"
-echo "[${SCRIPT_NAME}]   - Zowe folder         : $CI_ZOWE_ROOT_DIR"
+echo "[${SCRIPT_NAME}]   - Installation folder : $CIZT_INSTALL_DIR"
+echo "[${SCRIPT_NAME}]   - Zowe Root folder    : $CIZT_ZOWE_ROOT_DIR"
+echo "[${SCRIPT_NAME}]   - Zowe User folder    : $CIZT_ZOWE_USER_DIR"
 echo
 
+if [ ! -f "${CIZT_INSTALL_DIR}/opercmd" ]; then
+  echo "[${SCRIPT_NAME}][error] opercmd doesn't exist."
+  exit 1;
+fi
+
+################################################################################
 # stop ZWESIS01
 echo "[${SCRIPT_NAME}] stopping ZWESIS01 ..."
-if [ -f "${CI_INSTALL_DIR}/opercmd" ]; then
-  (exec "${CI_INSTALL_DIR}/opercmd" "P ${CI_XMEM_PROCLIB_MEMBER}")
-else
-  echo "[${SCRIPT_NAME}][WARN] - cannot find opercmd, please make sure ${CI_XMEM_PROCLIB_MEMBER} is stopped."
-fi
+(exec "${CIZT_INSTALL_DIR}/opercmd" "P ${CIZT_ZSS_PROCLIB_MEMBER}")
 echo
 
+################################################################################
 # stop Zowe
 echo "[${SCRIPT_NAME}] stopping Zowe ..."
-if [ -f "${CI_ZOWE_ROOT_DIR}/scripts/zowe-stop.sh" ]; then
-  (exec "${CI_ZOWE_ROOT_DIR}/scripts/zowe-stop.sh")
-elif [ -f "${CI_INSTALL_DIR}/opercmd" ]; then
-  # stop zowe before 1.4.0
-  (exec "${CI_INSTALL_DIR}/opercmd" "C ${CI_ZOWE_DS_MEMBER}")
-  # stop zowe after 1.4.0
-  (exec "${CI_INSTALL_DIR}/opercmd" "C ${CI_ZOWE_JOB_NAME}")
+if [ -f "${CIZT_ZOWE_ROOT_DIR}/scripts/zowe-stop.sh" ]; then
+  (exec "${CIZT_ZOWE_ROOT_DIR}/scripts/zowe-stop.sh")
+fi
+if [ -f "${CIZT_INSTALL_DIR}/opercmd" ]; then
+  # job name before 1.4.0: ZOWESVR
+  # job name after 1.4.0: ZOWESV1
+  # job name preparing for 1.5.0: ZOWE1SV
+  for ZOWE_JOB_NANE in $KNOWN_ZOWE_JOB_NAMES; do
+    echo "[${SCRIPT_NAME}] - ${ZOWE_JOB_NANE}"
+    (exec "${CIZT_INSTALL_DIR}/opercmd" "C ${ZOWE_JOB_NANE}")
+  done
 else
-  echo "[${SCRIPT_NAME}][WARN] - cannot find opercmd, please make sure ${CI_ZOWE_JOB_NAME} is stopped."
+  echo "[${SCRIPT_NAME}][WARN] - cannot find opercmd, please make sure ${CIZT_PROCLIB_MEMBER} is stopped."
 fi
 echo
 
 ################################################################################
 # delete started tasks
 echo "[${SCRIPT_NAME}] deleting started tasks ..."
-run_script_with_timeout "tsocmd 'RDELETE STARTED (ZWESIS*.*)'" 10
-run_script_with_timeout "tsocmd 'RDELETE STARTED (ZOWESVR.*)'" 10
-run_script_with_timeout "tsocmd 'SETR RACLIST(STARTED) REFRESH'" 10
+tsocmd.sh 'RDELETE STARTED (ZWESIS*.*)'
+tsocmd.sh 'RDELETE STARTED (ZOWESVR.*)'
+tsocmd.sh 'SETR RACLIST(STARTED) REFRESH'
 echo
 
+################################################################################
 # removing environment viarables from .profile
+touch "${PROFILE}"
 echo "[${SCRIPT_NAME}] cleaning $PROFILE ..."
 echo "[${SCRIPT_NAME}]   - before cleaning:"
 cat "${PROFILE}"
 echo "[${SCRIPT_NAME}]   -----------------"
 echo
-sed -E '/export +ZOWE_[^=]+=/d' "${PROFILE}" > "${PROFILE}.tmp" && mv "${PROFILE}.tmp" "${PROFILE}"
+sed -E '/export +ZOWE_[^=]+=/d' "${PROFILE}" > "${PROFILE}.tmp" && mv -f "${PROFILE}.tmp" "${PROFILE}"
 echo "[${SCRIPT_NAME}]   - after cleaning:"
 cat "${PROFILE}"
 echo "[${SCRIPT_NAME}]   -----------------"
 echo
 
+################################################################################
 # listing ZOWE_ environment variables
 echo "[${SCRIPT_NAME}] active ZOWE_* variables ..."
 ENV_VARS=$(env | grep ZOWE_ | awk -F= '{print $1}')
@@ -228,31 +194,26 @@ for one in $ENV_VARS; do
 done
 echo
 
+################################################################################
 # delete .zowe_profile
 echo "[${SCRIPT_NAME}] deleting $ZOWE_PROFILE ..."
 rm -fr "${ZOWE_PROFILE}"
 echo
 
+################################################################################
 # removing ZOWESVR
-echo "[${SCRIPT_NAME}] deleting ${CI_ZOWE_DS_MEMBER} PROC ..."
-if [ ! -f "${CI_INSTALL_DIR}/opercmd" ]; then
-  echo "[${SCRIPT_NAME}][error] opercmd doesn't exist."
-  exit 1;
-fi
-# make sure profile noprefix
-export TSOPROFILE="noprefix"
-tsocmd profile noprefix
+echo "[${SCRIPT_NAME}] deleting ${CIZT_PROCLIB_MEMBER} PROC ..."
 # listing all proclibs and members
 FOUND_ZOWESVR_AT=
-procs=$("${CI_INSTALL_DIR}/opercmd" '$d proclib' | grep 'DSNAME=.*\.PROCLIB' | sed 's/.*DSNAME=\(.*\)\.PROCLIB.*/\1.PROCLIB/')
+procs=$("${CIZT_INSTALL_DIR}/opercmd" '$d proclib' | grep 'DSNAME=.*\.PROCLIB' | sed 's/.*DSNAME=\(.*\)\.PROCLIB.*/\1.PROCLIB/')
 for proclib in $procs
 do
   echo "[${SCRIPT_NAME}] - finding in $proclib ..."
-  members=$(tsocmd listds "${proclib}" members | sed -e '1,/--MEMBERS--/d')
+  members=$(tsocmd.sh listds "'${proclib}'" members | sed -e '1,/--MEMBERS--/d')
   for member in $members
   do
     echo "[${SCRIPT_NAME}]   - ${member}"
-    if [ "${member}" = "${CI_ZOWE_DS_MEMBER}" ]; then
+    if [ "${member}" = "${CIZT_PROCLIB_MEMBER}" ]; then
       FOUND_ZOWESVR_AT=$proclib
       break 2
     fi
@@ -260,110 +221,91 @@ do
 done
 # do we find ZOWESVR?
 if [ -z "$FOUND_ZOWESVR_AT" ]; then
-  echo "[${SCRIPT_NAME}][warn] cannot find ${CI_ZOWE_DS_MEMBER} in PROCLIBs, skipped."
+  echo "[${SCRIPT_NAME}][warn] cannot find ${CIZT_PROCLIB_MEMBER} in PROCLIBs, skipped."
 else
-  echo "[${SCRIPT_NAME}] found ${CI_ZOWE_DS_MEMBER} in ${FOUND_ZOWESVR_AT}, deleting ..."
-  run_script_with_timeout "tsocmd DELETE '${FOUND_ZOWESVR_AT}(${CI_ZOWE_DS_MEMBER})'" 10
+  echo "[${SCRIPT_NAME}] found ${CIZT_PROCLIB_MEMBER} in ${FOUND_ZOWESVR_AT}, deleting ..."
+  tsocmd.sh DELETE "'${FOUND_ZOWESVR_AT}(${CIZT_PROCLIB_MEMBER})'"
 fi
 echo
 
+################################################################################
 # delet APF settings for LOADLIB
-echo "[${SCRIPT_NAME}] deleting APF settings of ${CI_XMEM_LOADLIB}(${CI_XMEM_LOADLIB_MEMBER}) ..."
-XMEM_LOADLIB_VOLUME=$(${CI_INSTALL_DIR}/opercmd "D PROG,APF,DSNAME=${CI_XMEM_LOADLIB}" | grep -e "[0-9]\\+ \\+[a-z0-9A-Z]\\+ \\+${CI_XMEM_LOADLIB}" | awk "{print \$2}")
+echo "[${SCRIPT_NAME}] deleting APF settings of ${CIZT_ZSS_LOADLIB_DS_NAME}(${CIZT_ZSS_LOADLIB_MEMBER}) ..."
+XMEM_LOADLIB_VOLUME=$(${CIZT_INSTALL_DIR}/opercmd "D PROG,APF,DSNAME=${CIZT_ZSS_LOADLIB_DS_NAME}" | grep -e "[0-9]\\+ \\+[a-z0-9A-Z]\\+ \\+${CIZT_ZSS_LOADLIB_DS_NAME}" | awk "{print \$2}")
 if [ -z "$XMEM_LOADLIB_VOLUME" ]; then
-  echo "[${SCRIPT_NAME}][warn] cannot find volume of ${CI_XMEM_LOADLIB}, skipped."
+  echo "[${SCRIPT_NAME}][warn] cannot find volume of ${CIZT_ZSS_LOADLIB_DS_NAME}, skipped."
 else
-  echo "[${SCRIPT_NAME}] found volume of ${CI_XMEM_LOADLIB} is ${XMEM_LOADLIB_VOLUME}, deleting APF settings ..."
+  echo "[${SCRIPT_NAME}] found volume of ${CIZT_ZSS_LOADLIB_DS_NAME} is ${XMEM_LOADLIB_VOLUME}, deleting APF settings ..."
   if [ "$XMEM_LOADLIB_VOLUME" = "SMS" ]; then
-    ${CI_INSTALL_DIR}/opercmd "SETPROG APF,DELETE,DSNAME=${CI_XMEM_LOADLIB},${XMEM_LOADLIB_VOLUME}"
+    (exec "${CIZT_INSTALL_DIR}/opercmd" "SETPROG APF,DELETE,DSNAME=${CIZT_ZSS_LOADLIB_DS_NAME},${XMEM_LOADLIB_VOLUME}")
   else
-    ${CI_INSTALL_DIR}/opercmd "SETPROG APF,DELETE,DSNAME=${CI_XMEM_LOADLIB},VOLUME=${XMEM_LOADLIB_VOLUME}"
+    (exec "${CIZT_INSTALL_DIR}/opercmd" "SETPROG APF,DELETE,DSNAME=${CIZT_ZSS_LOADLIB_DS_NAME},VOLUME=${XMEM_LOADLIB_VOLUME}")
   fi
 fi
 echo
 
+################################################################################
 # removing xmem LOADLIB(ZWESIS01)
-echo "[${SCRIPT_NAME}] deleting ${CI_XMEM_LOADLIB}(${CI_XMEM_LOADLIB_MEMBER}) ..."
-if [ ! -f "${CI_INSTALL_DIR}/opercmd" ]; then
-  echo "[${SCRIPT_NAME}][error] opercmd doesn't exist."
-  exit 1;
-fi
-# make sure profile noprefix
-export TSOPROFILE="noprefix"
-tsocmd profile noprefix
+echo "[${SCRIPT_NAME}] deleting ${CIZT_ZSS_LOADLIB_DS_NAME}(${CIZT_ZSS_LOADLIB_MEMBER}) ..."
 # listing all proclibs and members
 FOUND_DS_MEMBER_AT=
-echo "[${SCRIPT_NAME}] - finding in ${CI_XMEM_LOADLIB} ..."
-members=$(tsocmd listds "${CI_XMEM_LOADLIB}" members | sed -e '1,/--MEMBERS--/d')
+echo "[${SCRIPT_NAME}] - finding in ${CIZT_ZSS_LOADLIB_DS_NAME} ..."
+members=$(tsocmd.sh listds "'${CIZT_ZSS_LOADLIB_DS_NAME}'" members | sed -e '1,/--MEMBERS--/d')
 for member in $members
 do
   echo "[${SCRIPT_NAME}]   - ${member}"
-  if [ "${member}" = "${CI_XMEM_LOADLIB_MEMBER}" ]; then
-    FOUND_DS_MEMBER_AT=$CI_XMEM_LOADLIB
+  if [ "${member}" = "${CIZT_ZSS_LOADLIB_MEMBER}" ]; then
+    FOUND_DS_MEMBER_AT=$CIZT_ZSS_LOADLIB_DS_NAME
     break 2
   fi
 done
-# do we find CI_XMEM_LOADLIB_MEMBER?
+# do we find CIZT_ZSS_LOADLIB_MEMBER?
 if [ -z "$FOUND_DS_MEMBER_AT" ]; then
-  echo "[${SCRIPT_NAME}][warn] cannot find ${CI_XMEM_LOADLIB_MEMBER} in ${CI_XMEM_LOADLIB}, skipped."
+  echo "[${SCRIPT_NAME}][warn] cannot find ${CIZT_ZSS_LOADLIB_MEMBER} in ${CIZT_ZSS_LOADLIB_DS_NAME}, skipped."
 else
-  echo "[${SCRIPT_NAME}] found ${CI_XMEM_LOADLIB_MEMBER} in ${FOUND_DS_MEMBER_AT}, deleting ..."
-  # run_script_with_timeout "tsocmd DELETE '${FOUND_DS_MEMBER_AT}(${CI_XMEM_LOADLIB_MEMBER})'" 10
-  run_script_with_timeout "tsocmd DELETE '${FOUND_DS_MEMBER_AT}'" 10
+  echo "[${SCRIPT_NAME}] found ${CIZT_ZSS_LOADLIB_MEMBER} in ${FOUND_DS_MEMBER_AT}, deleting ..."
+  tsocmd.sh DELETE "'${FOUND_DS_MEMBER_AT}(${CIZT_ZSS_LOADLIB_MEMBER})'"
 fi
 echo
 
+################################################################################
 # removing xmem PARMLIB(ZWESIP00)
-echo "[${SCRIPT_NAME}] deleting ${CI_XMEM_PARMLIB}(${CI_XMEM_PARMLIB_MEMBER}) ..."
-if [ ! -f "${CI_INSTALL_DIR}/opercmd" ]; then
-  echo "[${SCRIPT_NAME}][error] opercmd doesn't exist."
-  exit 1;
-fi
-# make sure profile noprefix
-export TSOPROFILE="noprefix"
-tsocmd profile noprefix
+echo "[${SCRIPT_NAME}] deleting ${CIZT_ZSS_PARMLIB_DS_NAME}(${CIZT_ZSS_PARMLIB_MEMBER}) ..."
 # listing all proclibs and members
 FOUND_DS_MEMBER_AT=
-echo "[${SCRIPT_NAME}] - finding in ${CI_XMEM_PARMLIB} ..."
-members=$(tsocmd listds "${CI_XMEM_PARMLIB}" members | sed -e '1,/--MEMBERS--/d')
+echo "[${SCRIPT_NAME}] - finding in ${CIZT_ZSS_PARMLIB_DS_NAME} ..."
+members=$(tsocmd.sh listds "'${CIZT_ZSS_PARMLIB_DS_NAME}'" members | sed -e '1,/--MEMBERS--/d')
 for member in $members
 do
   echo "[${SCRIPT_NAME}]   - ${member}"
-  if [ "${member}" = "${CI_XMEM_PARMLIB_MEMBER}" ]; then
-    FOUND_DS_MEMBER_AT=$CI_XMEM_PARMLIB
+  if [ "${member}" = "${CIZT_ZSS_PARMLIB_MEMBER}" ]; then
+    FOUND_DS_MEMBER_AT=$CIZT_ZSS_PARMLIB_DS_NAME
     break 2
   fi
 done
-# do we find CI_XMEM_PARMLIB_MEMBER?
+# do we find CIZT_ZSS_PARMLIB_MEMBER?
 if [ -z "$FOUND_DS_MEMBER_AT" ]; then
-  echo "[${SCRIPT_NAME}][warn] cannot find ${CI_XMEM_PARMLIB_MEMBER} in ${CI_XMEM_PARMLIB}, skipped."
+  echo "[${SCRIPT_NAME}][warn] cannot find ${CIZT_ZSS_PARMLIB_MEMBER} in ${CIZT_ZSS_PARMLIB_DS_NAME}, skipped."
 else
-  echo "[${SCRIPT_NAME}] found ${CI_XMEM_PARMLIB_MEMBER} in ${FOUND_DS_MEMBER_AT}, deleting ..."
-  # run_script_with_timeout "tsocmd DELETE '${FOUND_DS_MEMBER_AT}(${CI_XMEM_PARMLIB_MEMBER})'" 10
-  run_script_with_timeout "tsocmd DELETE '${FOUND_DS_MEMBER_AT}'" 10
+  echo "[${SCRIPT_NAME}] found ${CIZT_ZSS_PARMLIB_MEMBER} in ${FOUND_DS_MEMBER_AT}, deleting ..."
+  tsocmd.sh DELETE "'${FOUND_DS_MEMBER_AT}(${CIZT_ZSS_PARMLIB_MEMBER})'"
 fi
 echo
 
+################################################################################
 # removing ZWESIS01
-echo "[${SCRIPT_NAME}] deleting ${CI_XMEM_PROCLIB_MEMBER} PROC ..."
-if [ ! -f "${CI_INSTALL_DIR}/opercmd" ]; then
-  echo "[${SCRIPT_NAME}][error] opercmd doesn't exist."
-  exit 1;
-fi
-# make sure profile noprefix
-export TSOPROFILE="noprefix"
-tsocmd profile noprefix
+echo "[${SCRIPT_NAME}] deleting ${CIZT_ZSS_PROCLIB_MEMBER} PROC ..."
 # listing all proclibs and members
 FOUND_ZWESIS01_AT=
-procs=$("${CI_INSTALL_DIR}/opercmd" '$d proclib' | grep 'DSNAME=.*\.PROCLIB' | sed 's/.*DSNAME=\(.*\)\.PROCLIB.*/\1.PROCLIB/')
+procs=$("${CIZT_INSTALL_DIR}/opercmd" '$d proclib' | grep 'DSNAME=.*\.PROCLIB' | sed 's/.*DSNAME=\(.*\)\.PROCLIB.*/\1.PROCLIB/')
 for proclib in $procs
 do
   echo "[${SCRIPT_NAME}] - finding in $proclib ..."
-  members=$(tsocmd listds "${proclib}" members | sed -e '1,/--MEMBERS--/d')
+  members=$(tsocmd.sh listds "'${proclib}'" members | sed -e '1,/--MEMBERS--/d')
   for member in $members
   do
     echo "[${SCRIPT_NAME}]   - ${member}"
-    if [ "${member}" = "${CI_XMEM_PROCLIB_MEMBER}" ]; then
+    if [ "${member}" = "${CIZT_ZSS_PROCLIB_MEMBER}" ]; then
       FOUND_ZWESIS01_AT=$proclib
       break 2
     fi
@@ -371,18 +313,39 @@ do
 done
 # do we find ZWESIS01?
 if [ -z "$FOUND_ZWESIS01_AT" ]; then
-  echo "[${SCRIPT_NAME}][warn] cannot find ${CI_XMEM_PROCLIB_MEMBER} in PROCLIBs, skipped."
+  echo "[${SCRIPT_NAME}][warn] cannot find ${CIZT_ZSS_PROCLIB_MEMBER} in PROCLIBs, skipped."
 else
-  echo "[${SCRIPT_NAME}] found ${CI_XMEM_PROCLIB_MEMBER} in ${FOUND_ZWESIS01_AT}, deleting ..."
-  run_script_with_timeout "tsocmd DELETE '${FOUND_ZWESIS01_AT}(${CI_XMEM_PROCLIB_MEMBER})'" 10
+  echo "[${SCRIPT_NAME}] found ${CIZT_ZSS_PROCLIB_MEMBER} in ${FOUND_ZWESIS01_AT}, deleting ..."
+  tsocmd.sh DELETE "'${FOUND_ZWESIS01_AT}(${CIZT_ZSS_PROCLIB_MEMBER})'"
 fi
 echo
 
+################################################################################
 # removing folder
-echo "[${SCRIPT_NAME}] removing installation folder ..."
-rm -fr $CI_ZOWE_ROOT_DIR || true
+echo "[${SCRIPT_NAME}] removing installation folder $CIZT_ZOWE_ROOT_DIR ..."
+(echo rm -fr $CIZT_ZOWE_ROOT_DIR | su) || true
+echo "[${SCRIPT_NAME}] removing user folder $CIZT_ZOWE_USER_DIR ..."
+(echo rm -fr $CIZT_ZOWE_USER_DIR | su) || true
+echo
 
 ################################################################################
+# uninstall SMP/e installation
+echo "[${SCRIPT_NAME}] uninstalling SMP/e installation ..."
+for FMID in $KNOWN_SMPE_FMIDS; do
+  echo "[${SCRIPT_NAME}] - ${FMID}"
+  ./uninstall-SMPE-PAX.sh \
+    ${CIZT_SMPE_HLQ_DSN} \
+    ${CIZT_SMPE_HLQ_CSI} \
+    ${CIZT_SMPE_HLQ_TZONE} \
+    ${CIZT_SMPE_HLQ_DZONE} \
+    ${CIZT_SMPE_PATH_PREFIX} \
+    ${CIZT_INSTALL_DIR} \
+    ${CIZT_INSTALL_DIR}/extracted \
+    ${FMID} \
+    ${CIZT_SMPE_REL_FILE_PREFIX}
+done
 echo
+
+################################################################################
 echo "[${SCRIPT_NAME}] done."
 exit 0

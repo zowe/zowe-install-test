@@ -19,29 +19,25 @@
 ################################################################################
 
 SCRIPT_NAME=$(basename "$0")
-CI_ZOWE_ROOT_DIR=$1
-FULL_EXTRACTED_ZOWE_FOLDER=$2
+FULL_EXTRACTED_ZOWE_FOLDER=$1
 echo "[${SCRIPT_NAME}] started ..."
-echo "[${SCRIPT_NAME}]    CI_ZOWE_ROOT_DIR           : $CI_ZOWE_ROOT_DIR"
 echo "[${SCRIPT_NAME}]    FULL_EXTRACTED_ZOWE_FOLDER : $FULL_EXTRACTED_ZOWE_FOLDER"
-CI_PWD=$(pwd)
 
 ################################################################################
-# import z/OSMF cert fail due to permission error, so we need to make sure
-#    verifyCertificatesOfServices
-# is set to false for install yaml file
-cd $FULL_EXTRACTED_ZOWE_FOLDER/install
-CI_ZOWE_CONFIG_FILE=zowe-install.yaml
-echo "Current value of ${CI_ZOWE_CONFIG_FILE} verifyCertificatesOfServices:"
-cat "${CI_ZOWE_CONFIG_FILE}" | grep verifyCertificatesOfServices
-echo "Changing to false ..."
-cat "${CI_ZOWE_CONFIG_FILE}" | \
-  sed -e "/^api-mediation:/,\$s#verifyCertificatesOfServices=.*\$#verifyCertificatesOfServices=false#" \
-  > "${CI_ZOWE_CONFIG_FILE}.tmp"
-mv "${CI_ZOWE_CONFIG_FILE}.tmp" "${CI_ZOWE_CONFIG_FILE}"
-echo
-
-cd $CI_PWD
+if [ "$CIZT_TARGET_SERVER" = "marist" ]; then
+  if [ "$CI_IS_SMPE" = "yes" ]; then
+    # need to adjust directory permission for SMP/e installation
+    cd $CIZT_SMPE_PATH_PREFIX
+    echo "[${SCRIPT_NAME}] current file permissions:"
+    echo "----- $(pwd)"
+    ls -la
+    echo "----- ${CIZT_SMPE_PATH_DEFAULT}"
+    ls -la $CIZT_SMPE_PATH_DEFAULT
+    # echo "[${SCRIPT_NAME}] changing all to $USER.IZUADMIN ..."
+    (echo chown -R $USER usr | su) || true
+    # (echo chgrp -R IZUADMIN usr | su) || true
+  fi
+fi
 
 ################################################################################
 echo
