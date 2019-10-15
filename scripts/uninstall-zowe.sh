@@ -268,6 +268,31 @@ fi
 echo
 
 ################################################################################
+# removing xmem LOADLIB(ZWESAUX)
+echo "[${SCRIPT_NAME}] deleting ${CIZT_ZSS_LOADLIB_DS_NAME}(${CIZT_ZSS_AUX_LOADLIB_MEMBER}) ..."
+# listing all proclibs and members
+FOUND_DS_MEMBER_AT=
+echo "[${SCRIPT_NAME}] - finding in ${CIZT_ZSS_LOADLIB_DS_NAME} ..."
+members=$(tsocmd listds "'${CIZT_ZSS_LOADLIB_DS_NAME}'" members | sed -e '1,/--MEMBERS--/d')
+for member in $members
+do
+  echo "[${SCRIPT_NAME}]   - ${member}"
+  if [ "${member}" = "${CIZT_ZSS_AUX_LOADLIB_MEMBER}" ]; then
+    FOUND_DS_MEMBER_AT=$CIZT_ZSS_LOADLIB_DS_NAME
+    break 2
+  fi
+done
+# do we find CIZT_ZSS_AUX_LOADLIB_MEMBER?
+if [ -z "$FOUND_DS_MEMBER_AT" ]; then
+  echo "[${SCRIPT_NAME}][warn] cannot find ${CIZT_ZSS_AUX_LOADLIB_MEMBER} in ${CIZT_ZSS_LOADLIB_DS_NAME}, skipped."
+else
+  echo "[${SCRIPT_NAME}] found ${CIZT_ZSS_AUX_LOADLIB_MEMBER} in ${FOUND_DS_MEMBER_AT}, deleting ..."
+  TSOCMD_RESULT=$(tsocmd DELETE "'${FOUND_DS_MEMBER_AT}(${CIZT_ZSS_AUX_LOADLIB_MEMBER})'")
+  echo $TSOCMD_RESULT
+fi
+echo
+
+################################################################################
 # removing xmem PARMLIB(ZWESIP00)
 echo "[${SCRIPT_NAME}] deleting ${CIZT_ZSS_PARMLIB_DS_NAME}(${CIZT_ZSS_PARMLIB_MEMBER}) ..."
 # listing all proclibs and members
@@ -293,7 +318,7 @@ fi
 echo
 
 ################################################################################
-# removing ZWESIS01
+# removing ZWESIS01 proc
 echo "[${SCRIPT_NAME}] deleting ${CIZT_ZSS_PROCLIB_MEMBER} PROC ..."
 # listing all proclibs and members
 FOUND_ZWESIS01_AT=
@@ -317,6 +342,35 @@ if [ -z "$FOUND_ZWESIS01_AT" ]; then
 else
   echo "[${SCRIPT_NAME}] found ${CIZT_ZSS_PROCLIB_MEMBER} in ${FOUND_ZWESIS01_AT}, deleting ..."
   TSOCMD_RESULT=$(tsocmd DELETE "'${FOUND_ZWESIS01_AT}(${CIZT_ZSS_PROCLIB_MEMBER})'")
+  echo $TSOCMD_RESULT
+fi
+echo
+
+################################################################################
+# removing ZWESAUX proc
+echo "[${SCRIPT_NAME}] deleting ${CIZT_ZSS_AUX_PROCLIB_MEMBER} PROC ..."
+# listing all proclibs and members
+FOUND_ZWESAUX_AT=
+procs=$("${CIZT_INSTALL_DIR}/opercmd" '$d proclib' | grep 'DSNAME=.*\.PROCLIB' | sed 's/.*DSNAME=\(.*\)\.PROCLIB.*/\1.PROCLIB/')
+for proclib in $procs
+do
+  echo "[${SCRIPT_NAME}] - finding in $proclib ..."
+  members=$(tsocmd listds "'${proclib}'" members | sed -e '1,/--MEMBERS--/d')
+  for member in $members
+  do
+    echo "[${SCRIPT_NAME}]   - ${member}"
+    if [ "${member}" = "${CIZT_ZSS_AUX_PROCLIB_MEMBER}" ]; then
+      FOUND_ZWESAUX_AT=$proclib
+      break 2
+    fi
+  done
+done
+# do we find ZWESAUX?
+if [ -z "$FOUND_ZWESAUX_AT" ]; then
+  echo "[${SCRIPT_NAME}][warn] cannot find ${CIZT_ZSS_AUX_PROCLIB_MEMBER} in PROCLIBs, skipped."
+else
+  echo "[${SCRIPT_NAME}] found ${CIZT_ZSS_AUX_PROCLIB_MEMBER} in ${FOUND_ZWESAUX_AT}, deleting ..."
+  TSOCMD_RESULT=$(tsocmd DELETE "'${FOUND_ZWESAUX_AT}(${CIZT_ZSS_AUX_PROCLIB_MEMBER})'")
   echo $TSOCMD_RESULT
 fi
 echo
