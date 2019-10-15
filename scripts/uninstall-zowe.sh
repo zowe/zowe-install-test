@@ -376,6 +376,21 @@ fi
 echo
 
 ################################################################################
+# removing datasetPrefix={userid}.ZWE
+if [ -n "$USER" ]; then
+  DATASET_PREFIX=$(echo "$USER.ZWE" | tr [a-z] [A-Z])
+  echo "[${SCRIPT_NAME}] deleting ${DATASET_PREFIX}.* data sets ..."
+  # listing 
+  datasets=$(tsocmd listds "'$DATASET_PREFIX'" level | grep "$DATASET_PREFIX")
+  for ds in $datasets
+  do
+    echo "[${SCRIPT_NAME}] - found ${ds}, deleting ..."
+    TSOCMD_RESULT=$(tsocmd DELETE "'${ds}'")
+    echo $TSOCMD_RESULT
+  done
+fi
+
+################################################################################
 # removing folder
 echo "[${SCRIPT_NAME}] removing installation folder $CIZT_ZOWE_ROOT_DIR ..."
 (echo rm -fr $CIZT_ZOWE_ROOT_DIR | su) || true
