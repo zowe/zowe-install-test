@@ -73,7 +73,6 @@ echo $SCRIPT    PREFIX=$PREFIX
 echo $SCRIPT    volser=$volser
 
 operdir=$SCRIPT_DIR         # this is where opercmd should be available
-tsodir=$SCRIPT_DIR          # this is where tsocmd(s).sh should be available
 
 head -1 $operdir/opercmd | grep REXX 1> /dev/null 2> /dev/null
 if [[ $? -ne 0 ]]
@@ -83,17 +82,6 @@ then
     exit 9
 fi
 
-for cmd in tsocmds # tsocmd is not used
-do
-    head -1 $tsodir/$cmd.sh | grep '#!/bin/sh' 1> /dev/null 2> /dev/null
-    if [[ $? -ne 0 ]]
-    then
-        echo $SCRIPT ERROR: $cmd.sh not found in $tsodir or is not valid shell script  
-        echo $SCRIPT INFO: CWD is `pwd`
-        exit 9
-    fi
-done 
-
 
 README=readme.txt                   # the filename of the FMID.readme-v.m.r-smpe-test-nn-yyyymmddhhmmss.txt file
 
@@ -101,38 +89,58 @@ README=readme.txt                   # the filename of the FMID.readme-v.m.r-smpe
 
 # In case previous run failed,
 # delete the datasets that this script creates
-cat > $CIZT_TMP/tso.$$.cmd <<EndOfList
-delete ('${hlq}.${FMID}.F1')
-delete ('${hlq}.${FMID}.F2')
-delete ('${hlq}.${FMID}.F3')
-delete ('${hlq}.${FMID}.F4')
-delete ('${hlq}.${FMID}.smpmcs')
-delete ('${hlq}.ZOWE.${FMID}.F1')
-delete ('${hlq}.ZOWE.${FMID}.F2')
-delete ('${hlq}.ZOWE.${FMID}.F3')
-delete ('${hlq}.ZOWE.${FMID}.F4')
-delete ('${hlq}.ZOWE.${FMID}.smpmcs')
-delete ('${hlq}.SMPE.CSI')
-delete ('${hlq}.SMPE.SMPLOG')
-delete ('${hlq}.SMPE.SMPLOGA')
-delete ('${hlq}.SMPE.SMPLTS')
-delete ('${hlq}.SMPE.SMPMTS')
-delete ('${hlq}.SMPE.SMPPTS')
-delete ('${hlq}.SMPE.SMPSCDS')
-delete ('${hlq}.SMPE.SMPSTS')
-delete ('${hlq}.SMPE.AZWEAUTH')
-delete ('${hlq}.SMPE.AZWESAMP')
-delete ('${hlq}.SMPE.AZWEZFS')
-delete ('${hlq}.SMPE.SZWEAUTH')
-delete ('${hlq}.SMPE.SZWESAMP')
-delete ('${hlq}.install.jcl')
-delete (TEST.jcl.*)
-free all
-EndOfList
-
-# execute the multiple TSO commands
-$tsodir/tsocmds.sh $CIZT_TMP/tso.$$.cmd
-rm $CIZT_TMP/tso.$$.cmd 
+TSOCMD_RESULT=$(tsocmd delete '${hlq}.${FMID}.F1')
+echo $TSOCMD_RESULT
+TSOCMD_RESULT=$(tsocmd delete '${hlq}.${FMID}.F2')
+echo $TSOCMD_RESULT
+TSOCMD_RESULT=$(tsocmd delete '${hlq}.${FMID}.F3')
+echo $TSOCMD_RESULT
+TSOCMD_RESULT=$(tsocmd delete '${hlq}.${FMID}.F4')
+echo $TSOCMD_RESULT
+TSOCMD_RESULT=$(tsocmd delete '${hlq}.${FMID}.smpmcs')
+echo $TSOCMD_RESULT
+TSOCMD_RESULT=$(tsocmd delete '${hlq}.ZOWE.${FMID}.F1')
+echo $TSOCMD_RESULT
+TSOCMD_RESULT=$(tsocmd delete '${hlq}.ZOWE.${FMID}.F2')
+echo $TSOCMD_RESULT
+TSOCMD_RESULT=$(tsocmd delete '${hlq}.ZOWE.${FMID}.F3')
+echo $TSOCMD_RESULT
+TSOCMD_RESULT=$(tsocmd delete '${hlq}.ZOWE.${FMID}.F4')
+echo $TSOCMD_RESULT
+TSOCMD_RESULT=$(tsocmd delete '${hlq}.ZOWE.${FMID}.smpmcs')
+echo $TSOCMD_RESULT
+TSOCMD_RESULT=$(tsocmd delete '${hlq}.SMPE.CSI')
+echo $TSOCMD_RESULT
+TSOCMD_RESULT=$(tsocmd delete '${hlq}.SMPE.SMPLOG')
+echo $TSOCMD_RESULT
+TSOCMD_RESULT=$(tsocmd delete '${hlq}.SMPE.SMPLOGA')
+echo $TSOCMD_RESULT
+TSOCMD_RESULT=$(tsocmd delete '${hlq}.SMPE.SMPLTS')
+echo $TSOCMD_RESULT
+TSOCMD_RESULT=$(tsocmd delete '${hlq}.SMPE.SMPMTS')
+echo $TSOCMD_RESULT
+TSOCMD_RESULT=$(tsocmd delete '${hlq}.SMPE.SMPPTS')
+echo $TSOCMD_RESULT
+TSOCMD_RESULT=$(tsocmd delete '${hlq}.SMPE.SMPSCDS')
+echo $TSOCMD_RESULT
+TSOCMD_RESULT=$(tsocmd delete '${hlq}.SMPE.SMPSTS')
+echo $TSOCMD_RESULT
+TSOCMD_RESULT=$(tsocmd delete '${hlq}.SMPE.AZWEAUTH')
+echo $TSOCMD_RESULT
+TSOCMD_RESULT=$(tsocmd delete '${hlq}.SMPE.AZWESAMP')
+echo $TSOCMD_RESULT
+TSOCMD_RESULT=$(tsocmd delete '${hlq}.SMPE.AZWEZFS')
+echo $TSOCMD_RESULT
+TSOCMD_RESULT=$(tsocmd delete '${hlq}.SMPE.SZWEAUTH')
+echo $TSOCMD_RESULT
+TSOCMD_RESULT=$(tsocmd delete '${hlq}.SMPE.SZWESAMP')
+echo $TSOCMD_RESULT
+TSOCMD_RESULT=$(tsocmd delete '${hlq}.install.jcl')
+echo $TSOCMD_RESULT
+TSOCMD_RESULT=$(tsocmd delete TEST.jcl.*)
+echo $TSOCMD_RESULT
+TSOCMD_RESULT=$(tsocmd free all)
+echo $TSOCMD_RESULT
 
 if [ -d "${pathprefix}usr/lpp/zowe" ]; then
   if [ "${pathprefix}" = "/" ]; then
@@ -321,7 +329,6 @@ for smpejob in \
  ZWE7APLY \
  ZWE8ACPT
 do
-    # $tsodir/tsocmd.sh oput "  '${PREFIX}.ZOWE.${FMID}.F1($smpejob)' '$smpejob.jcl0' "
     cp "//'${PREFIX}.ZOWE.${FMID}.F1($smpejob)'" $zfs_path/$smpejob.jcl0
 
     # we can customized which volume to use for each job
@@ -374,12 +381,10 @@ do
     if [[ $smpejob = ZWE7APLY ]]
     then
         echo; echo $SCRIPT fix error in APPLY job PAX parameter
-        # $tsodir/tsocmd.sh oput "  '${csihlq}.${FMID}.F4(ZWESHPAX)' 'ZWESHPAX.jcl0' "
         cp "//'${csihlq}.${FMID}.F4(ZWESHPAX)'" $zfs_path/ZWESHPAX.jcl0
         echo; echo $SCRIPT find pe in JCL
         grep " -pe " $zfs_path/ZWESHPAX.jcl0
         sed 's/ -pe / -pp /' $zfs_path/ZWESHPAX.jcl0 > $zfs_path/ZWESHPAX.jcl
-        # $tsodir/tsocmd.sh oget " 'ZWESHPAX.jcl'  '${csihlq}.${FMID}.F4(ZWESHPAX)' "
         cp $zfs_path/ZWESHPAX.jcl  "//'${csihlq}.${FMID}.F4(ZWESHPAX)'"
     fi
 

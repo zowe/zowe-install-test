@@ -33,8 +33,10 @@ echo "[${SCRIPT_NAME}]    CIZT_ZOWE_ROOT_DIR         : $CIZT_ZOWE_ROOT_DIR"
 # [ERROR ] CWPKI0033E: The keystore located at safkeyringhybrid:///IZUKeyring.IZUDFLT did not load because of the following error: Errors encountered loading keyring. Keyring could not be loaded as a JCECCARACFKS or JCERACFKS keystore.
 echo
 echo "[${SCRIPT_NAME}] change ${CIZT_PROCLIB_MEMBER} RACF user ..."
-tsocmd.sh "RDEFINE STARTED ${CIZT_PROCLIB_MEMBER}.* UACC(NONE) STDATA(USER(IZUSVR) GROUP(IZUADMIN) PRIVILEGED(NO) TRUSTED(NO) TRACE(YES))"
-tsocmd.sh "SETROPTS RACLIST(STARTED) REFRESH"
+TSOCMD_RESULT=$(tsocmd "RDEFINE STARTED ${CIZT_PROCLIB_MEMBER}.* UACC(NONE) STDATA(USER(IZUSVR) GROUP(IZUADMIN) PRIVILEGED(NO) TRUSTED(NO) TRACE(YES))")
+echo $TSOCMD_RESULT
+TSOCMD_RESULT=$(tsocmd "SETROPTS RACLIST(STARTED) REFRESH")
+echo $TSOCMD_RESULT
 echo
 
 ################################################################################

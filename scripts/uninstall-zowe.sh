@@ -116,12 +116,6 @@ fi
 if [ -f "opercmd" ]; then
   ensure_script_encoding opercmd "parse var command opercmd"
 fi
-if [ -f "tsocmd.sh" ]; then
-  ensure_script_encoding tsocmd.sh
-fi
-if [ -f "tsocmds.sh" ]; then
-  ensure_script_encoding tsocmds.sh
-fi
 if [ -f "uninstall-SMPE-PAX.sh" ]; then
   ensure_script_encoding uninstall-SMPE-PAX.sh
 fi
@@ -166,9 +160,12 @@ echo
 ################################################################################
 # delete started tasks
 echo "[${SCRIPT_NAME}] deleting started tasks ..."
-tsocmd.sh 'RDELETE STARTED (ZWESIS*.*)'
-tsocmd.sh 'RDELETE STARTED (ZOWESVR.*)'
-tsocmd.sh 'SETR RACLIST(STARTED) REFRESH'
+TSOCMD_RESULT=$(tsocmd 'RDELETE STARTED (ZWESIS*.*)')
+echo $TSOCMD_RESULT
+TSOCMD_RESULT=$(tsocmd 'RDELETE STARTED (ZOWESVR.*)')
+echo $TSOCMD_RESULT
+TSOCMD_RESULT=$(tsocmd 'SETR RACLIST(STARTED) REFRESH')
+echo $TSOCMD_RESULT
 echo
 
 ################################################################################
@@ -209,7 +206,7 @@ procs=$("${CIZT_INSTALL_DIR}/opercmd" '$d proclib' | grep 'DSNAME=.*\.PROCLIB' |
 for proclib in $procs
 do
   echo "[${SCRIPT_NAME}] - finding in $proclib ..."
-  members=$(tsocmd.sh listds "'${proclib}'" members | sed -e '1,/--MEMBERS--/d')
+  members=$(tsocmd listds "'${proclib}'" members | sed -e '1,/--MEMBERS--/d')
   for member in $members
   do
     echo "[${SCRIPT_NAME}]   - ${member}"
@@ -224,7 +221,8 @@ if [ -z "$FOUND_ZOWESVR_AT" ]; then
   echo "[${SCRIPT_NAME}][warn] cannot find ${CIZT_PROCLIB_MEMBER} in PROCLIBs, skipped."
 else
   echo "[${SCRIPT_NAME}] found ${CIZT_PROCLIB_MEMBER} in ${FOUND_ZOWESVR_AT}, deleting ..."
-  tsocmd.sh DELETE "'${FOUND_ZOWESVR_AT}(${CIZT_PROCLIB_MEMBER})'"
+  TSOCMD_RESULT=$(tsocmd DELETE "'${FOUND_ZOWESVR_AT}(${CIZT_PROCLIB_MEMBER})'")
+  echo $TSOCMD_RESULT
 fi
 echo
 
@@ -250,7 +248,7 @@ echo "[${SCRIPT_NAME}] deleting ${CIZT_ZSS_LOADLIB_DS_NAME}(${CIZT_ZSS_LOADLIB_M
 # listing all proclibs and members
 FOUND_DS_MEMBER_AT=
 echo "[${SCRIPT_NAME}] - finding in ${CIZT_ZSS_LOADLIB_DS_NAME} ..."
-members=$(tsocmd.sh listds "'${CIZT_ZSS_LOADLIB_DS_NAME}'" members | sed -e '1,/--MEMBERS--/d')
+members=$(tsocmd listds "'${CIZT_ZSS_LOADLIB_DS_NAME}'" members | sed -e '1,/--MEMBERS--/d')
 for member in $members
 do
   echo "[${SCRIPT_NAME}]   - ${member}"
@@ -264,7 +262,8 @@ if [ -z "$FOUND_DS_MEMBER_AT" ]; then
   echo "[${SCRIPT_NAME}][warn] cannot find ${CIZT_ZSS_LOADLIB_MEMBER} in ${CIZT_ZSS_LOADLIB_DS_NAME}, skipped."
 else
   echo "[${SCRIPT_NAME}] found ${CIZT_ZSS_LOADLIB_MEMBER} in ${FOUND_DS_MEMBER_AT}, deleting ..."
-  tsocmd.sh DELETE "'${FOUND_DS_MEMBER_AT}(${CIZT_ZSS_LOADLIB_MEMBER})'"
+  TSOCMD_RESULT=$(tsocmd DELETE "'${FOUND_DS_MEMBER_AT}(${CIZT_ZSS_LOADLIB_MEMBER})'")
+  echo $TSOCMD_RESULT
 fi
 echo
 
@@ -274,7 +273,7 @@ echo "[${SCRIPT_NAME}] deleting ${CIZT_ZSS_PARMLIB_DS_NAME}(${CIZT_ZSS_PARMLIB_M
 # listing all proclibs and members
 FOUND_DS_MEMBER_AT=
 echo "[${SCRIPT_NAME}] - finding in ${CIZT_ZSS_PARMLIB_DS_NAME} ..."
-members=$(tsocmd.sh listds "'${CIZT_ZSS_PARMLIB_DS_NAME}'" members | sed -e '1,/--MEMBERS--/d')
+members=$(tsocmd listds "'${CIZT_ZSS_PARMLIB_DS_NAME}'" members | sed -e '1,/--MEMBERS--/d')
 for member in $members
 do
   echo "[${SCRIPT_NAME}]   - ${member}"
@@ -288,7 +287,8 @@ if [ -z "$FOUND_DS_MEMBER_AT" ]; then
   echo "[${SCRIPT_NAME}][warn] cannot find ${CIZT_ZSS_PARMLIB_MEMBER} in ${CIZT_ZSS_PARMLIB_DS_NAME}, skipped."
 else
   echo "[${SCRIPT_NAME}] found ${CIZT_ZSS_PARMLIB_MEMBER} in ${FOUND_DS_MEMBER_AT}, deleting ..."
-  tsocmd.sh DELETE "'${FOUND_DS_MEMBER_AT}(${CIZT_ZSS_PARMLIB_MEMBER})'"
+  TSOCMD_RESULT=$(tsocmd DELETE "'${FOUND_DS_MEMBER_AT}(${CIZT_ZSS_PARMLIB_MEMBER})'")
+  echo $TSOCMD_RESULT
 fi
 echo
 
@@ -301,7 +301,7 @@ procs=$("${CIZT_INSTALL_DIR}/opercmd" '$d proclib' | grep 'DSNAME=.*\.PROCLIB' |
 for proclib in $procs
 do
   echo "[${SCRIPT_NAME}] - finding in $proclib ..."
-  members=$(tsocmd.sh listds "'${proclib}'" members | sed -e '1,/--MEMBERS--/d')
+  members=$(tsocmd listds "'${proclib}'" members | sed -e '1,/--MEMBERS--/d')
   for member in $members
   do
     echo "[${SCRIPT_NAME}]   - ${member}"
@@ -316,7 +316,8 @@ if [ -z "$FOUND_ZWESIS01_AT" ]; then
   echo "[${SCRIPT_NAME}][warn] cannot find ${CIZT_ZSS_PROCLIB_MEMBER} in PROCLIBs, skipped."
 else
   echo "[${SCRIPT_NAME}] found ${CIZT_ZSS_PROCLIB_MEMBER} in ${FOUND_ZWESIS01_AT}, deleting ..."
-  tsocmd.sh DELETE "'${FOUND_ZWESIS01_AT}(${CIZT_ZSS_PROCLIB_MEMBER})'"
+  TSOCMD_RESULT=$(tsocmd DELETE "'${FOUND_ZWESIS01_AT}(${CIZT_ZSS_PROCLIB_MEMBER})'")
+  echo $TSOCMD_RESULT
 fi
 echo
 
