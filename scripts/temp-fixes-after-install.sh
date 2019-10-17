@@ -89,6 +89,21 @@ if [ -n "${CIZT_ZDNT_HOSTNAME}" ]; then
 fi
 
 ################################################################################
+# FIXME: on marist server, message queue accumulated fast and will soon run out
+#        of space. Need to use __IPC_CLEANUP=1 to clean up.
+echo "[${SCRIPT_NAME}] updating run-zowe.sh to prepend __IPC_CLEANUP=1 ..."
+cd "${CIZT_ZOWE_ROOT_DIR}/scripts/internal"
+echo "[${SCRIPT_NAME}] prepending __IPC_CLEANUP=1 ..."
+cp run-zowe.sh run-zowe.sh.orig
+sed \
+    -e "/# Copyright / a\\
+    __IPC_CLEANUP=1 ${CUSTOM_NODE_HOME}/bin/node --version"\
+    run-zowe.sh > run-zowe.sh.tmp
+cp run-zowe.sh.tmp run-zowe.sh
+rm run-zowe.sh.tmp
+echo
+
+################################################################################
 echo
 echo "[${SCRIPT_NAME}] done."
 exit 0
