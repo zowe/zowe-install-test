@@ -326,9 +326,9 @@ cd ${installDir} && \
   ${installDir}/${zoweArtifact} || { echo "[install-zowe.sh] failed"; exit 1; }
 echo "[install-zowe.sh] succeeds" && exit 0
 EOF"""
-        }
+        } // end of timeout - run install-zowe.sh
 
-        // wait for Zowe is fully started
+        // wait for Zowe to be fully started
         timeout(60) {
           def port = ''
           // check if zLux is started
@@ -355,7 +355,7 @@ EOF"""
             returnStdout: true
           ).trim()
           sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 -d '{\"username\":\"${USERNAME}\",\"password\":\"${PASSWORD}\"}' 'https://${SSH_HOST}:${port}/api/v1/apicatalog/auth/login'"
-        }
+        } // end of timeout - wait for Zowe to be fully started
 
         // post install verify script
         timeout(30) {
@@ -365,10 +365,10 @@ cd ${installDir} && \
   temp-fixes-after-started.sh "${SSH_HOST}" "${USERNAME}" "${PASSWORD}" || { echo "[temp-fixes-after-started.sh] failed"; exit 0; }
 echo "[temp-fixes-after-started.sh] succeeds" && exit 0
 EOF"""
-        }
-      }
-      }
-      }
+        } // end of timeout - post install verify script
+      } // end of withCredentials
+      } // end of timestamps
+      } // end of lock
     },
     timeout: [time: 120, unit: 'MINUTES']
   )
