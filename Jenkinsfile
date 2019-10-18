@@ -287,14 +287,14 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
       return !params.SKIP_INSTALLATION
     },
     stage         : {
+      lock('my-resource-name') {
+      timestamps {
       withCredentials([
         usernamePassword(
           credentialsId: testImageGuestSshHostPort,
           passwordVariable: 'SSH_PORT',
           usernameVariable: 'SSH_HOST'
-        )
-      ]) {
-      withCredentials([
+        ),
         usernamePassword(
           credentialsId: testImageGuestSshCredential,
           passwordVariable: 'PASSWORD',
@@ -366,6 +366,7 @@ cd ${installDir} && \
 echo "[temp-fixes-after-started.sh] succeeds" && exit 0
 EOF"""
         }
+      }
       }
       }
     },
