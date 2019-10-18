@@ -355,9 +355,6 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
     fi
   fi
 
-  echo ">>>>>>>>>>>>>>>>>"
-  exit 1
-
   # configure installation
   echo "[${SCRIPT_NAME}] configure installation yaml ..."
   cd $CIZT_ZOWE_ROOT_DIR/scripts/configure
@@ -396,6 +393,9 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
     exit 1
   fi
   echo
+
+  echo ">>>>>>>>DEBUG EXIT>>>>>>>>>"
+  exit 1
 
   # update xmem installation config file
   echo "[${SCRIPT_NAME}] Zowe configuration is done, start installing xmem server ..."

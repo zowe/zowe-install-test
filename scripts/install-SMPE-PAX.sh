@@ -90,57 +90,57 @@ README=readme.txt                   # the filename of the FMID.readme-v.m.r-smpe
 # In case previous run failed,
 # delete the datasets that this script creates
 TSOCMD_RESULT=$(tsocmd delete "'${hlq}.${FMID}.F1'")
-echo $TSOCMD_RESULT
+printf $TSOCMD_RESULT
 TSOCMD_RESULT=$(tsocmd delete "'${hlq}.${FMID}.F2'")
-echo $TSOCMD_RESULT
+printf $TSOCMD_RESULT
 TSOCMD_RESULT=$(tsocmd delete "'${hlq}.${FMID}.F3'")
-echo $TSOCMD_RESULT
+printf $TSOCMD_RESULT
 TSOCMD_RESULT=$(tsocmd delete "'${hlq}.${FMID}.F4'")
-echo $TSOCMD_RESULT
+printf $TSOCMD_RESULT
 TSOCMD_RESULT=$(tsocmd delete "'${hlq}.${FMID}.smpmcs'")
-echo $TSOCMD_RESULT
+printf $TSOCMD_RESULT
 TSOCMD_RESULT=$(tsocmd delete "'${hlq}.ZOWE.${FMID}.F1'")
-echo $TSOCMD_RESULT
+printf $TSOCMD_RESULT
 TSOCMD_RESULT=$(tsocmd delete "'${hlq}.ZOWE.${FMID}.F2'")
-echo $TSOCMD_RESULT
+printf $TSOCMD_RESULT
 TSOCMD_RESULT=$(tsocmd delete "'${hlq}.ZOWE.${FMID}.F3'")
-echo $TSOCMD_RESULT
+printf $TSOCMD_RESULT
 TSOCMD_RESULT=$(tsocmd delete "'${hlq}.ZOWE.${FMID}.F4'")
-echo $TSOCMD_RESULT
+printf $TSOCMD_RESULT
 TSOCMD_RESULT=$(tsocmd delete "'${hlq}.ZOWE.${FMID}.smpmcs'")
-echo $TSOCMD_RESULT
+printf $TSOCMD_RESULT
 TSOCMD_RESULT=$(tsocmd delete "'${hlq}.SMPE.CSI'")
-echo $TSOCMD_RESULT
+printf $TSOCMD_RESULT
 TSOCMD_RESULT=$(tsocmd delete "'${hlq}.SMPE.SMPLOG'")
-echo $TSOCMD_RESULT
+printf $TSOCMD_RESULT
 TSOCMD_RESULT=$(tsocmd delete "'${hlq}.SMPE.SMPLOGA'")
-echo $TSOCMD_RESULT
+printf $TSOCMD_RESULT
 TSOCMD_RESULT=$(tsocmd delete "'${hlq}.SMPE.SMPLTS'")
-echo $TSOCMD_RESULT
+printf $TSOCMD_RESULT
 TSOCMD_RESULT=$(tsocmd delete "'${hlq}.SMPE.SMPMTS'")
-echo $TSOCMD_RESULT
+printf $TSOCMD_RESULT
 TSOCMD_RESULT=$(tsocmd delete "'${hlq}.SMPE.SMPPTS'")
-echo $TSOCMD_RESULT
+printf $TSOCMD_RESULT
 TSOCMD_RESULT=$(tsocmd delete "'${hlq}.SMPE.SMPSCDS'")
-echo $TSOCMD_RESULT
+printf $TSOCMD_RESULT
 TSOCMD_RESULT=$(tsocmd delete "'${hlq}.SMPE.SMPSTS'")
-echo $TSOCMD_RESULT
+printf $TSOCMD_RESULT
 TSOCMD_RESULT=$(tsocmd delete "'${hlq}.SMPE.AZWEAUTH'")
-echo $TSOCMD_RESULT
+printf $TSOCMD_RESULT
 TSOCMD_RESULT=$(tsocmd delete "'${hlq}.SMPE.AZWESAMP'")
-echo $TSOCMD_RESULT
+printf $TSOCMD_RESULT
 TSOCMD_RESULT=$(tsocmd delete "'${hlq}.SMPE.AZWEZFS'")
-echo $TSOCMD_RESULT
+printf $TSOCMD_RESULT
 TSOCMD_RESULT=$(tsocmd delete "'${hlq}.SMPE.SZWEAUTH'")
-echo $TSOCMD_RESULT
+printf $TSOCMD_RESULT
 TSOCMD_RESULT=$(tsocmd delete "'${hlq}.SMPE.SZWESAMP'")
-echo $TSOCMD_RESULT
+printf $TSOCMD_RESULT
 TSOCMD_RESULT=$(tsocmd delete "'${hlq}.install.jcl'")
-echo $TSOCMD_RESULT
+printf $TSOCMD_RESULT
 TSOCMD_RESULT=$(tsocmd delete "TEST.jcl.*")
-echo $TSOCMD_RESULT
+printf $TSOCMD_RESULT
 TSOCMD_RESULT=$(tsocmd free all)
-echo $TSOCMD_RESULT
+printf $TSOCMD_RESULT
 
 if [ -d "${pathprefix}usr/lpp/zowe" ]; then
   if [ "${pathprefix}" = "/" ]; then

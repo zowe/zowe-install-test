@@ -161,11 +161,11 @@ echo
 # delete started tasks
 echo "[${SCRIPT_NAME}] deleting started tasks ..."
 TSOCMD_RESULT=$(tsocmd 'RDELETE STARTED (ZWESIS*.*)')
-echo $TSOCMD_RESULT
+printf $TSOCMD_RESULT
 TSOCMD_RESULT=$(tsocmd 'RDELETE STARTED (ZOWESVR.*)')
-echo $TSOCMD_RESULT
+printf $TSOCMD_RESULT
 TSOCMD_RESULT=$(tsocmd 'SETR RACLIST(STARTED) REFRESH')
-echo $TSOCMD_RESULT
+printf $TSOCMD_RESULT
 echo
 
 ################################################################################
@@ -198,12 +198,15 @@ rm -fr "${ZOWE_PROFILE}"
 echo
 
 ################################################################################
+# list all proclibs
+PROCLIBS=$("${CIZT_INSTALL_DIR}/opercmd" '$d proclib' | grep 'DSNAME=.*\.PROCLIB' | sed 's/.*DSNAME=\(.*\)\.PROCLIB.*/\1.PROCLIB/')
+
+################################################################################
 # removing ZOWESVR
 echo "[${SCRIPT_NAME}] deleting ${CIZT_PROCLIB_MEMBER} PROC ..."
 # listing all proclibs and members
 FOUND_ZOWESVR_AT=
-procs=$("${CIZT_INSTALL_DIR}/opercmd" '$d proclib' | grep 'DSNAME=.*\.PROCLIB' | sed 's/.*DSNAME=\(.*\)\.PROCLIB.*/\1.PROCLIB/')
-for proclib in $procs
+for proclib in $PROCLIBS
 do
   echo "[${SCRIPT_NAME}] - finding in $proclib ..."
   members=$(tsocmd listds "'${proclib}'" members | sed -e '1,/--MEMBERS--/d')
@@ -222,7 +225,7 @@ if [ -z "$FOUND_ZOWESVR_AT" ]; then
 else
   echo "[${SCRIPT_NAME}] found ${CIZT_PROCLIB_MEMBER} in ${FOUND_ZOWESVR_AT}, deleting ..."
   TSOCMD_RESULT=$(tsocmd DELETE "'${FOUND_ZOWESVR_AT}(${CIZT_PROCLIB_MEMBER})'")
-  echo $TSOCMD_RESULT
+  printf $TSOCMD_RESULT
 fi
 echo
 
@@ -263,7 +266,7 @@ if [ -z "$FOUND_DS_MEMBER_AT" ]; then
 else
   echo "[${SCRIPT_NAME}] found ${CIZT_ZSS_LOADLIB_MEMBER} in ${FOUND_DS_MEMBER_AT}, deleting ..."
   TSOCMD_RESULT=$(tsocmd DELETE "'${FOUND_DS_MEMBER_AT}(${CIZT_ZSS_LOADLIB_MEMBER})'")
-  echo $TSOCMD_RESULT
+  printf $TSOCMD_RESULT
 fi
 echo
 
@@ -288,7 +291,7 @@ if [ -z "$FOUND_DS_MEMBER_AT" ]; then
 else
   echo "[${SCRIPT_NAME}] found ${CIZT_ZSS_AUX_LOADLIB_MEMBER} in ${FOUND_DS_MEMBER_AT}, deleting ..."
   TSOCMD_RESULT=$(tsocmd DELETE "'${FOUND_DS_MEMBER_AT}(${CIZT_ZSS_AUX_LOADLIB_MEMBER})'")
-  echo $TSOCMD_RESULT
+  printf $TSOCMD_RESULT
 fi
 echo
 
@@ -313,7 +316,7 @@ if [ -z "$FOUND_DS_MEMBER_AT" ]; then
 else
   echo "[${SCRIPT_NAME}] found ${CIZT_ZSS_PARMLIB_MEMBER} in ${FOUND_DS_MEMBER_AT}, deleting ..."
   TSOCMD_RESULT=$(tsocmd DELETE "'${FOUND_DS_MEMBER_AT}(${CIZT_ZSS_PARMLIB_MEMBER})'")
-  echo $TSOCMD_RESULT
+  printf $TSOCMD_RESULT
 fi
 echo
 
@@ -322,8 +325,7 @@ echo
 echo "[${SCRIPT_NAME}] deleting ${CIZT_ZSS_PROCLIB_MEMBER} PROC ..."
 # listing all proclibs and members
 FOUND_ZWESIS01_AT=
-procs=$("${CIZT_INSTALL_DIR}/opercmd" '$d proclib' | grep 'DSNAME=.*\.PROCLIB' | sed 's/.*DSNAME=\(.*\)\.PROCLIB.*/\1.PROCLIB/')
-for proclib in $procs
+for proclib in $PROCLIBS
 do
   echo "[${SCRIPT_NAME}] - finding in $proclib ..."
   members=$(tsocmd listds "'${proclib}'" members | sed -e '1,/--MEMBERS--/d')
@@ -342,7 +344,7 @@ if [ -z "$FOUND_ZWESIS01_AT" ]; then
 else
   echo "[${SCRIPT_NAME}] found ${CIZT_ZSS_PROCLIB_MEMBER} in ${FOUND_ZWESIS01_AT}, deleting ..."
   TSOCMD_RESULT=$(tsocmd DELETE "'${FOUND_ZWESIS01_AT}(${CIZT_ZSS_PROCLIB_MEMBER})'")
-  echo $TSOCMD_RESULT
+  printf $TSOCMD_RESULT
 fi
 echo
 
@@ -351,8 +353,7 @@ echo
 echo "[${SCRIPT_NAME}] deleting ${CIZT_ZSS_AUX_PROCLIB_MEMBER} PROC ..."
 # listing all proclibs and members
 FOUND_ZWESAUX_AT=
-procs=$("${CIZT_INSTALL_DIR}/opercmd" '$d proclib' | grep 'DSNAME=.*\.PROCLIB' | sed 's/.*DSNAME=\(.*\)\.PROCLIB.*/\1.PROCLIB/')
-for proclib in $procs
+for proclib in $PROCLIBS
 do
   echo "[${SCRIPT_NAME}] - finding in $proclib ..."
   members=$(tsocmd listds "'${proclib}'" members | sed -e '1,/--MEMBERS--/d')
@@ -371,7 +372,7 @@ if [ -z "$FOUND_ZWESAUX_AT" ]; then
 else
   echo "[${SCRIPT_NAME}] found ${CIZT_ZSS_AUX_PROCLIB_MEMBER} in ${FOUND_ZWESAUX_AT}, deleting ..."
   TSOCMD_RESULT=$(tsocmd DELETE "'${FOUND_ZWESAUX_AT}(${CIZT_ZSS_AUX_PROCLIB_MEMBER})'")
-  echo $TSOCMD_RESULT
+  printf $TSOCMD_RESULT
 fi
 echo
 
@@ -381,13 +382,14 @@ if [ -n "$USER" ]; then
   DATASET_PREFIX=$(echo "$USER.ZWE" | tr [a-z] [A-Z])
   echo "[${SCRIPT_NAME}] deleting ${DATASET_PREFIX}.* data sets ..."
   # listing 
-  datasets=$(tsocmd listds "'$DATASET_PREFIX'" level | grep "$DATASET_PREFIX")
+  datasets=$(tsocmd listds "'$DATASET_PREFIX'" level | grep "$DATASET_PREFIX" | grep -v "UNABLE TO COMPLETE")
   for ds in $datasets
   do
     echo "[${SCRIPT_NAME}] - found ${ds}, deleting ..."
     TSOCMD_RESULT=$(tsocmd DELETE "'${ds}'")
-    echo $TSOCMD_RESULT
+    printf $TSOCMD_RESULT
   done
+  echo
 fi
 
 ################################################################################
