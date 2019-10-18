@@ -542,6 +542,9 @@ echo "[${SCRIPT_NAME}] start ZWESIS01 ..."
 sleep 10
 echo
 
+echo ">>>>>>>>DEBUG EXIT>>>>>>>>>"
+exit 1
+
 # start zowe
 echo "[${SCRIPT_NAME}] start Zowe ..."
 cd $CIZT_ZOWE_ROOT_DIR/scripts
