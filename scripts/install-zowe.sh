@@ -536,6 +536,9 @@ if [ "$CI_SKIP_TEMP_FIXES" != "yes" ]; then
   fi
 fi
 
+echo ">>>>>>>>DEBUG EXIT>>>>>>>>>"
+exit 0
+
 # start cross memory server
 echo "[${SCRIPT_NAME}] start ZWESIS01 ..."
 (exec "$CIZT_ZOWE_ROOT_DIR/scripts/internal/opercmd" "S ZWESIS01")
@@ -553,9 +556,6 @@ if [[ "$EXIT_CODE" != "0" ]]; then
   exit 1
 fi
 echo
-
-echo ">>>>>>>>DEBUG EXIT>>>>>>>>>"
-exit 0
 
 ################################################################################
 echo
