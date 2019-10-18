@@ -542,9 +542,6 @@ echo "[${SCRIPT_NAME}] start ZWESIS01 ..."
 sleep 10
 echo
 
-echo ">>>>>>>>DEBUG EXIT>>>>>>>>>"
-exit 1
-
 # start zowe
 echo "[${SCRIPT_NAME}] start Zowe ..."
 cd $CIZT_ZOWE_ROOT_DIR/scripts
@@ -556,6 +553,9 @@ if [[ "$EXIT_CODE" != "0" ]]; then
   exit 1
 fi
 echo
+
+echo ">>>>>>>>DEBUG EXIT>>>>>>>>>"
+exit 1
 
 ################################################################################
 echo
