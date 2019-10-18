@@ -85,62 +85,48 @@ fi
 
 README=readme.txt                   # the filename of the FMID.readme-v.m.r-smpe-test-nn-yyyymmddhhmmss.txt file
 
+################################################################################
+# Make a tsocmd call
+#
+# NOTE: This function exists to solve the issue calling tsocmd directly in
+#       pipeline will not exit properly.
+################################################################################
+function call_tsocmd {
+  echo "[call_tsocmd] $@ >>>"
+  TSOCMD_RESULT=$(tsocmd $@)
+  printf "%s\n[call_tsocmd] <<<\n" "$TSOCMD_RESULT"
+}
+
 # # prepare to run this script
 
 # In case previous run failed,
 # delete the datasets that this script creates
-TSOCMD_RESULT=$(tsocmd delete "'${hlq}.${FMID}.F1'")
-printf "%s\n" "$TSOCMD_RESULT"
-TSOCMD_RESULT=$(tsocmd delete "'${hlq}.${FMID}.F2'")
-printf "%s\n" "$TSOCMD_RESULT"
-TSOCMD_RESULT=$(tsocmd delete "'${hlq}.${FMID}.F3'")
-printf "%s\n" "$TSOCMD_RESULT"
-TSOCMD_RESULT=$(tsocmd delete "'${hlq}.${FMID}.F4'")
-printf "%s\n" "$TSOCMD_RESULT"
-TSOCMD_RESULT=$(tsocmd delete "'${hlq}.${FMID}.smpmcs'")
-printf "%s\n" "$TSOCMD_RESULT"
-TSOCMD_RESULT=$(tsocmd delete "'${hlq}.ZOWE.${FMID}.F1'")
-printf "%s\n" "$TSOCMD_RESULT"
-TSOCMD_RESULT=$(tsocmd delete "'${hlq}.ZOWE.${FMID}.F2'")
-printf "%s\n" "$TSOCMD_RESULT"
-TSOCMD_RESULT=$(tsocmd delete "'${hlq}.ZOWE.${FMID}.F3'")
-printf "%s\n" "$TSOCMD_RESULT"
-TSOCMD_RESULT=$(tsocmd delete "'${hlq}.ZOWE.${FMID}.F4'")
-printf "%s\n" "$TSOCMD_RESULT"
-TSOCMD_RESULT=$(tsocmd delete "'${hlq}.ZOWE.${FMID}.smpmcs'")
-printf "%s\n" "$TSOCMD_RESULT"
-TSOCMD_RESULT=$(tsocmd delete "'${hlq}.SMPE.CSI'")
-printf "%s\n" "$TSOCMD_RESULT"
-TSOCMD_RESULT=$(tsocmd delete "'${hlq}.SMPE.SMPLOG'")
-printf "%s\n" "$TSOCMD_RESULT"
-TSOCMD_RESULT=$(tsocmd delete "'${hlq}.SMPE.SMPLOGA'")
-printf "%s\n" "$TSOCMD_RESULT"
-TSOCMD_RESULT=$(tsocmd delete "'${hlq}.SMPE.SMPLTS'")
-printf "%s\n" "$TSOCMD_RESULT"
-TSOCMD_RESULT=$(tsocmd delete "'${hlq}.SMPE.SMPMTS'")
-printf "%s\n" "$TSOCMD_RESULT"
-TSOCMD_RESULT=$(tsocmd delete "'${hlq}.SMPE.SMPPTS'")
-printf "%s\n" "$TSOCMD_RESULT"
-TSOCMD_RESULT=$(tsocmd delete "'${hlq}.SMPE.SMPSCDS'")
-printf "%s\n" "$TSOCMD_RESULT"
-TSOCMD_RESULT=$(tsocmd delete "'${hlq}.SMPE.SMPSTS'")
-printf "%s\n" "$TSOCMD_RESULT"
-TSOCMD_RESULT=$(tsocmd delete "'${hlq}.SMPE.AZWEAUTH'")
-printf "%s\n" "$TSOCMD_RESULT"
-TSOCMD_RESULT=$(tsocmd delete "'${hlq}.SMPE.AZWESAMP'")
-printf "%s\n" "$TSOCMD_RESULT"
-TSOCMD_RESULT=$(tsocmd delete "'${hlq}.SMPE.AZWEZFS'")
-printf "%s\n" "$TSOCMD_RESULT"
-TSOCMD_RESULT=$(tsocmd delete "'${hlq}.SMPE.SZWEAUTH'")
-printf "%s\n" "$TSOCMD_RESULT"
-TSOCMD_RESULT=$(tsocmd delete "'${hlq}.SMPE.SZWESAMP'")
-printf "%s\n" "$TSOCMD_RESULT"
-TSOCMD_RESULT=$(tsocmd delete "'${hlq}.install.jcl'")
-printf "%s\n" "$TSOCMD_RESULT"
-TSOCMD_RESULT=$(tsocmd delete "TEST.jcl.*")
-printf "%s\n" "$TSOCMD_RESULT"
-TSOCMD_RESULT=$(tsocmd free all)
-printf "%s\n" "$TSOCMD_RESULT"
+call_tsocmd DELETE "'${hlq}.${FMID}.F1'"
+call_tsocmd DELETE "'${hlq}.${FMID}.F2'"
+call_tsocmd DELETE "'${hlq}.${FMID}.F3'"
+call_tsocmd DELETE "'${hlq}.${FMID}.F4'"
+call_tsocmd DELETE "'${hlq}.${FMID}.smpmcs'"
+call_tsocmd DELETE "'${hlq}.ZOWE.${FMID}.F1'"
+call_tsocmd DELETE "'${hlq}.ZOWE.${FMID}.F2'"
+call_tsocmd DELETE "'${hlq}.ZOWE.${FMID}.F3'"
+call_tsocmd DELETE "'${hlq}.ZOWE.${FMID}.F4'"
+call_tsocmd DELETE "'${hlq}.ZOWE.${FMID}.smpmcs'"
+call_tsocmd DELETE "'${hlq}.SMPE.CSI'"
+call_tsocmd DELETE "'${hlq}.SMPE.SMPLOG'"
+call_tsocmd DELETE "'${hlq}.SMPE.SMPLOGA'"
+call_tsocmd DELETE "'${hlq}.SMPE.SMPLTS'"
+call_tsocmd DELETE "'${hlq}.SMPE.SMPMTS'"
+call_tsocmd DELETE "'${hlq}.SMPE.SMPPTS'"
+call_tsocmd DELETE "'${hlq}.SMPE.SMPSCDS'"
+call_tsocmd DELETE "'${hlq}.SMPE.SMPSTS'"
+call_tsocmd DELETE "'${hlq}.SMPE.AZWEAUTH'"
+call_tsocmd DELETE "'${hlq}.SMPE.AZWESAMP'"
+call_tsocmd DELETE "'${hlq}.SMPE.AZWEZFS'"
+call_tsocmd DELETE "'${hlq}.SMPE.SZWEAUTH'"
+call_tsocmd DELETE "'${hlq}.SMPE.SZWESAMP'"
+call_tsocmd DELETE "'${hlq}.install.jcl'"
+call_tsocmd DELETE "TEST.jcl.*"
+call_tsocmd free all
 
 if [ -d "${pathprefix}usr/lpp/zowe" ]; then
   if [ "${pathprefix}" = "/" ]; then

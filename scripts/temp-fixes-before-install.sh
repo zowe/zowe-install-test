@@ -33,7 +33,7 @@ if [ "$CIZT_TARGET_SERVER" = "marist" ]; then
     ls -la
     echo "----- ${CIZT_SMPE_PATH_DEFAULT}"
     ls -la $CIZT_SMPE_PATH_DEFAULT
-    # echo "[${SCRIPT_NAME}] changing all to $USER.IZUADMIN ..."
+    echo "[${SCRIPT_NAME}] changing all owners to $USER ..."
     (echo chown -R $USER usr | su) || true
     # (echo chgrp -R IZUADMIN usr | su) || true
   fi
