@@ -322,7 +322,7 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   cd $CIZT_INSTALL_DIR
   # install SMP/e package
   echo "[${SCRIPT_NAME}] installing $CI_ZOWE_PAX to $CIZT_ZOWE_ROOT_DIR ..."
-  echo ./install-SMPE-PAX.sh \
+  ./install-SMPE-PAX.sh \
     ${CIZT_SMPE_HLQ_DSN} \
     ${CIZT_SMPE_HLQ_CSI} \
     ${CIZT_SMPE_HLQ_TZONE} \
@@ -354,6 +354,9 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
       fi
     fi
   fi
+
+  echo ">>>>>>>>>>>>>>>>>"
+  exit 1
 
   # configure installation
   echo "[${SCRIPT_NAME}] configure installation yaml ..."
