@@ -287,7 +287,7 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
       return !params.SKIP_INSTALLATION
     },
     stage         : {
-      lock('my-resource-name') {
+      lock("zowe-install-test-${params.TARGET_SERVER}") {
       timestamps {
       withCredentials([
         usernamePassword(
