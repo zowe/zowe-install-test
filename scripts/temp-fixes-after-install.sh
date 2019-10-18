@@ -34,9 +34,9 @@ echo "[${SCRIPT_NAME}]    CIZT_ZOWE_ROOT_DIR         : $CIZT_ZOWE_ROOT_DIR"
 echo
 echo "[${SCRIPT_NAME}] change ${CIZT_PROCLIB_MEMBER} RACF user ..."
 TSOCMD_RESULT=$(tsocmd "RDEFINE STARTED ${CIZT_PROCLIB_MEMBER}.* UACC(NONE) STDATA(USER(IZUSVR) GROUP(IZUADMIN) PRIVILEGED(NO) TRUSTED(NO) TRACE(YES))")
-printf $TSOCMD_RESULT
+printf "%s" "$TSOCMD_RESULT"
 TSOCMD_RESULT=$(tsocmd "SETROPTS RACLIST(STARTED) REFRESH")
-printf $TSOCMD_RESULT
+printf "%s" "$TSOCMD_RESULT"
 echo
 
 ################################################################################
