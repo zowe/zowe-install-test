@@ -394,9 +394,6 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   fi
   echo
 
-  echo ">>>>>>>>DEBUG EXIT>>>>>>>>>"
-  exit 1
-
   # update xmem installation config file
   echo "[${SCRIPT_NAME}] Zowe configuration is done, start installing xmem server ..."
   cd ${CIZT_SMPE_PATH_PREFIX}${CIZT_SMPE_PATH_DEFAULT}/xmem-server
@@ -524,6 +521,9 @@ else
   fi
   echo
 fi
+
+echo ">>>>>>>>DEBUG EXIT>>>>>>>>>"
+exit 1
 
 # run temp fixes
 if [ "$CI_SKIP_TEMP_FIXES" != "yes" ]; then
