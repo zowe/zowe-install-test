@@ -161,11 +161,11 @@ echo
 # delete started tasks
 echo "[${SCRIPT_NAME}] deleting started tasks ..."
 TSOCMD_RESULT=$(tsocmd 'RDELETE STARTED (ZWESIS*.*)')
-printf "%s" "$TSOCMD_RESULT"
+printf "%s\n" "$TSOCMD_RESULT"
 TSOCMD_RESULT=$(tsocmd 'RDELETE STARTED (ZOWESVR.*)')
-printf "%s" "$TSOCMD_RESULT"
+printf "%s\n" "$TSOCMD_RESULT"
 TSOCMD_RESULT=$(tsocmd 'SETR RACLIST(STARTED) REFRESH')
-printf "%s" "$TSOCMD_RESULT"
+printf "%s\n" "$TSOCMD_RESULT"
 echo
 
 ################################################################################
@@ -225,7 +225,7 @@ if [ -z "$FOUND_ZOWESVR_AT" ]; then
 else
   echo "[${SCRIPT_NAME}] found ${CIZT_PROCLIB_MEMBER} in ${FOUND_ZOWESVR_AT}, deleting ..."
   TSOCMD_RESULT=$(tsocmd DELETE "'${FOUND_ZOWESVR_AT}(${CIZT_PROCLIB_MEMBER})'")
-  printf "%s" "$TSOCMD_RESULT"
+  printf "%s\n" "$TSOCMD_RESULT"
 fi
 echo
 
@@ -266,7 +266,7 @@ if [ -z "$FOUND_DS_MEMBER_AT" ]; then
 else
   echo "[${SCRIPT_NAME}] found ${CIZT_ZSS_LOADLIB_MEMBER} in ${FOUND_DS_MEMBER_AT}, deleting ..."
   TSOCMD_RESULT=$(tsocmd DELETE "'${FOUND_DS_MEMBER_AT}(${CIZT_ZSS_LOADLIB_MEMBER})'")
-  printf "%s" "$TSOCMD_RESULT"
+  printf "%s\n" "$TSOCMD_RESULT"
 fi
 echo
 
@@ -291,7 +291,7 @@ if [ -z "$FOUND_DS_MEMBER_AT" ]; then
 else
   echo "[${SCRIPT_NAME}] found ${CIZT_ZSS_AUX_LOADLIB_MEMBER} in ${FOUND_DS_MEMBER_AT}, deleting ..."
   TSOCMD_RESULT=$(tsocmd DELETE "'${FOUND_DS_MEMBER_AT}(${CIZT_ZSS_AUX_LOADLIB_MEMBER})'")
-  printf "%s" "$TSOCMD_RESULT"
+  printf "%s\n" "$TSOCMD_RESULT"
 fi
 echo
 
@@ -316,7 +316,7 @@ if [ -z "$FOUND_DS_MEMBER_AT" ]; then
 else
   echo "[${SCRIPT_NAME}] found ${CIZT_ZSS_PARMLIB_MEMBER} in ${FOUND_DS_MEMBER_AT}, deleting ..."
   TSOCMD_RESULT=$(tsocmd DELETE "'${FOUND_DS_MEMBER_AT}(${CIZT_ZSS_PARMLIB_MEMBER})'")
-  printf "%s" "$TSOCMD_RESULT"
+  printf "%s\n" "$TSOCMD_RESULT"
 fi
 echo
 
@@ -344,7 +344,7 @@ if [ -z "$FOUND_ZWESIS01_AT" ]; then
 else
   echo "[${SCRIPT_NAME}] found ${CIZT_ZSS_PROCLIB_MEMBER} in ${FOUND_ZWESIS01_AT}, deleting ..."
   TSOCMD_RESULT=$(tsocmd DELETE "'${FOUND_ZWESIS01_AT}(${CIZT_ZSS_PROCLIB_MEMBER})'")
-  printf "%s" "$TSOCMD_RESULT"
+  printf "%s\n" "$TSOCMD_RESULT"
 fi
 echo
 
@@ -372,7 +372,7 @@ if [ -z "$FOUND_ZWESAUX_AT" ]; then
 else
   echo "[${SCRIPT_NAME}] found ${CIZT_ZSS_AUX_PROCLIB_MEMBER} in ${FOUND_ZWESAUX_AT}, deleting ..."
   TSOCMD_RESULT=$(tsocmd DELETE "'${FOUND_ZWESAUX_AT}(${CIZT_ZSS_AUX_PROCLIB_MEMBER})'")
-  printf "%s" "$TSOCMD_RESULT"
+  printf "%s\n" "$TSOCMD_RESULT"
 fi
 echo
 
@@ -387,7 +387,7 @@ if [ -n "$USER" ]; then
   do
     echo "[${SCRIPT_NAME}] - found ${ds}, deleting ..."
     TSOCMD_RESULT=$(tsocmd DELETE "'${ds}'")
-    printf "%s" "$TSOCMD_RESULT"
+    printf "%s\n" "$TSOCMD_RESULT"
   done
   echo
 fi

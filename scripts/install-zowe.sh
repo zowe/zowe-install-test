@@ -522,9 +522,6 @@ else
   echo
 fi
 
-echo ">>>>>>>>DEBUG EXIT>>>>>>>>>"
-exit 1
-
 # run temp fixes
 if [ "$CI_SKIP_TEMP_FIXES" != "yes" ]; then
   cd $CIZT_INSTALL_DIR
@@ -538,6 +535,9 @@ if [ "$CI_SKIP_TEMP_FIXES" != "yes" ]; then
     fi
   fi
 fi
+
+echo ">>>>>>>>DEBUG EXIT>>>>>>>>>"
+exit 1
 
 # start cross memory server
 echo "[${SCRIPT_NAME}] start ZWESIS01 ..."
