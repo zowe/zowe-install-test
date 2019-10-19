@@ -339,6 +339,9 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   fi
   echo
 
+echo ">>>>>>>>DEBUG EXIT>>>>>>>>>"
+exit 0
+
   FULL_EXTRACTED_ZOWE_FOLDER=$CIZT_INSTALL_DIR/extracted
 
   # run temp fixes
@@ -535,9 +538,6 @@ if [ "$CI_SKIP_TEMP_FIXES" != "yes" ]; then
     fi
   fi
 fi
-
-echo ">>>>>>>>DEBUG EXIT>>>>>>>>>"
-exit 0
 
 # start cross memory server
 echo "[${SCRIPT_NAME}] start ZWESIS01 ..."
