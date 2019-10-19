@@ -29,15 +29,15 @@ echo "[${SCRIPT_NAME}]    CI_HOSTNAME                : $CI_HOSTNAME"
 echo "[${SCRIPT_NAME}]    CIZT_ZOWE_ROOT_DIR         : $CIZT_ZOWE_ROOT_DIR"
 
 ################################################################################
-# Make a tsocmd call
+# Wrap call into $()
 #
-# NOTE: This function exists to solve the issue calling tsocmd directly in
-#       pipeline will not exit properly.
+# NOTE: This function exists to solve the issue calling tsocmd/submit/cp directly
+#       in pipeline will not exit properly.
 ################################################################################
-function call_tsocmd {
-  echo "[call_tsocmd] $@ >>>"
-  TSOCMD_RESULT=$(tsocmd $@)
-  printf "%s\n[call_tsocmd] <<<\n" "$TSOCMD_RESULT"
+function wrap_call {
+  echo "[wrap_call] $@ >>>"
+  CALL_RESULT=$($@)
+  printf "%s\n[wrap_call] <<<\n" "$CALL_RESULT"
 }
 
 ################################################################################
@@ -45,8 +45,8 @@ function call_tsocmd {
 # [ERROR ] CWPKI0033E: The keystore located at safkeyringhybrid:///IZUKeyring.IZUDFLT did not load because of the following error: Errors encountered loading keyring. Keyring could not be loaded as a JCECCARACFKS or JCERACFKS keystore.
 echo
 echo "[${SCRIPT_NAME}] change ${CIZT_PROCLIB_MEMBER} RACF user ..."
-call_tsocmd "RDEFINE STARTED ${CIZT_PROCLIB_MEMBER}.* UACC(NONE) STDATA(USER(IZUSVR) GROUP(IZUADMIN) PRIVILEGED(NO) TRUSTED(NO) TRACE(YES))"
-call_tsocmd "SETROPTS RACLIST(STARTED) REFRESH"
+wrap_call tsocmd "RDEFINE STARTED ${CIZT_PROCLIB_MEMBER}.* UACC(NONE) STDATA(USER(IZUSVR) GROUP(IZUADMIN) PRIVILEGED(NO) TRUSTED(NO) TRACE(YES))"
+wrap_call tsocmd "SETROPTS RACLIST(STARTED) REFRESH"
 echo
 
 ################################################################################

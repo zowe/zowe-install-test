@@ -74,15 +74,15 @@ function ensure_script_encoding {
 }
 
 ################################################################################
-# Make a tsocmd call
+# Wrap call into $()
 #
-# NOTE: This function exists to solve the issue calling tsocmd directly in
-#       pipeline will not exit properly.
+# NOTE: This function exists to solve the issue calling tsocmd/submit/cp directly
+#       in pipeline will not exit properly.
 ################################################################################
-function call_tsocmd {
-  echo "[call_tsocmd] $@ >>>"
-  TSOCMD_RESULT=$(tsocmd $@)
-  printf "%s\n[call_tsocmd] <<<\n" "$TSOCMD_RESULT"
+function wrap_call {
+  echo "[wrap_call] $@ >>>"
+  CALL_RESULT=$($@)
+  printf "%s\n[wrap_call] <<<\n" "$CALL_RESULT"
 }
 
 ################################################################################
@@ -172,9 +172,9 @@ echo
 ################################################################################
 # delete started tasks
 echo "[${SCRIPT_NAME}] deleting started tasks ..."
-call_tsocmd 'RDELETE STARTED (ZWESIS*.*)'
-call_tsocmd 'RDELETE STARTED (ZOWESVR.*)'
-call_tsocmd 'SETR RACLIST(STARTED) REFRESH'
+wrap_call tsocmd 'RDELETE STARTED (ZWESIS*.*)'
+wrap_call tsocmd 'RDELETE STARTED (ZOWESVR.*)'
+wrap_call tsocmd 'SETR RACLIST(STARTED) REFRESH'
 echo
 
 ################################################################################
@@ -233,7 +233,7 @@ if [ -z "$FOUND_ZOWESVR_AT" ]; then
   echo "[${SCRIPT_NAME}][warn] cannot find ${CIZT_PROCLIB_MEMBER} in PROCLIBs, skipped."
 else
   echo "[${SCRIPT_NAME}] found ${CIZT_PROCLIB_MEMBER} in ${FOUND_ZOWESVR_AT}, deleting ..."
-  call_tsocmd DELETE "'${FOUND_ZOWESVR_AT}(${CIZT_PROCLIB_MEMBER})'"
+  wrap_call tsocmd DELETE "'${FOUND_ZOWESVR_AT}(${CIZT_PROCLIB_MEMBER})'"
 fi
 echo
 
@@ -273,7 +273,7 @@ if [ -z "$FOUND_DS_MEMBER_AT" ]; then
   echo "[${SCRIPT_NAME}][warn] cannot find ${CIZT_ZSS_LOADLIB_MEMBER} in ${CIZT_ZSS_LOADLIB_DS_NAME}, skipped."
 else
   echo "[${SCRIPT_NAME}] found ${CIZT_ZSS_LOADLIB_MEMBER} in ${FOUND_DS_MEMBER_AT}, deleting ..."
-  call_tsocmd DELETE "'${FOUND_DS_MEMBER_AT}(${CIZT_ZSS_LOADLIB_MEMBER})'"
+  wrap_call tsocmd DELETE "'${FOUND_DS_MEMBER_AT}(${CIZT_ZSS_LOADLIB_MEMBER})'"
 fi
 echo
 
@@ -297,7 +297,7 @@ if [ -z "$FOUND_DS_MEMBER_AT" ]; then
   echo "[${SCRIPT_NAME}][warn] cannot find ${CIZT_ZSS_AUX_LOADLIB_MEMBER} in ${CIZT_ZSS_LOADLIB_DS_NAME}, skipped."
 else
   echo "[${SCRIPT_NAME}] found ${CIZT_ZSS_AUX_LOADLIB_MEMBER} in ${FOUND_DS_MEMBER_AT}, deleting ..."
-  call_tsocmd DELETE "'${FOUND_DS_MEMBER_AT}(${CIZT_ZSS_AUX_LOADLIB_MEMBER})'"
+  wrap_call tsocmd DELETE "'${FOUND_DS_MEMBER_AT}(${CIZT_ZSS_AUX_LOADLIB_MEMBER})'"
 fi
 echo
 
@@ -321,7 +321,7 @@ if [ -z "$FOUND_DS_MEMBER_AT" ]; then
   echo "[${SCRIPT_NAME}][warn] cannot find ${CIZT_ZSS_PARMLIB_MEMBER} in ${CIZT_ZSS_PARMLIB_DS_NAME}, skipped."
 else
   echo "[${SCRIPT_NAME}] found ${CIZT_ZSS_PARMLIB_MEMBER} in ${FOUND_DS_MEMBER_AT}, deleting ..."
-  call_tsocmd DELETE "'${FOUND_DS_MEMBER_AT}(${CIZT_ZSS_PARMLIB_MEMBER})'"
+  wrap_call tsocmd DELETE "'${FOUND_DS_MEMBER_AT}(${CIZT_ZSS_PARMLIB_MEMBER})'"
 fi
 echo
 
@@ -348,7 +348,7 @@ if [ -z "$FOUND_ZWESIS01_AT" ]; then
   echo "[${SCRIPT_NAME}][warn] cannot find ${CIZT_ZSS_PROCLIB_MEMBER} in PROCLIBs, skipped."
 else
   echo "[${SCRIPT_NAME}] found ${CIZT_ZSS_PROCLIB_MEMBER} in ${FOUND_ZWESIS01_AT}, deleting ..."
-  call_tsocmd DELETE "'${FOUND_ZWESIS01_AT}(${CIZT_ZSS_PROCLIB_MEMBER})'"
+  wrap_call tsocmd DELETE "'${FOUND_ZWESIS01_AT}(${CIZT_ZSS_PROCLIB_MEMBER})'"
 fi
 echo
 
@@ -375,7 +375,7 @@ if [ -z "$FOUND_ZWESAUX_AT" ]; then
   echo "[${SCRIPT_NAME}][warn] cannot find ${CIZT_ZSS_AUX_PROCLIB_MEMBER} in PROCLIBs, skipped."
 else
   echo "[${SCRIPT_NAME}] found ${CIZT_ZSS_AUX_PROCLIB_MEMBER} in ${FOUND_ZWESAUX_AT}, deleting ..."
-  call_tsocmd DELETE "'${FOUND_ZWESAUX_AT}(${CIZT_ZSS_AUX_PROCLIB_MEMBER})'"
+  wrap_call tsocmd DELETE "'${FOUND_ZWESAUX_AT}(${CIZT_ZSS_AUX_PROCLIB_MEMBER})'"
 fi
 echo
 
@@ -389,7 +389,7 @@ if [ -n "$USER" ]; then
   for ds in $datasets
   do
     echo "[${SCRIPT_NAME}] - found ${ds}, deleting ..."
-    call_tsocmd DELETE "'${ds}'"
+    wrap_call tsocmd DELETE "'${ds}'"
   done
   echo
 fi

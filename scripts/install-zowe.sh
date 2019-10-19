@@ -333,14 +333,14 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
     ${CI_SMPE_FMID} \
     ${CIZT_SMPE_REL_FILE_PREFIX} \
     ${CIZT_SMPE_VOLSER}
+
+echo ">>>>>>>>DEBUG EXIT>>>>>>>>>"
+exit 0
   if [ ! -d "${CIZT_ZOWE_ROOT_DIR}/scripts" ]; then
     echo "[${SCRIPT_NAME}][error] installation is not successfully, ${CIZT_ZOWE_ROOT_DIR}/scripts doesn't exist."
     exit 1
   fi
   echo
-
-echo ">>>>>>>>DEBUG EXIT>>>>>>>>>"
-exit 0
 
   FULL_EXTRACTED_ZOWE_FOLDER=$CIZT_INSTALL_DIR/extracted
 
