@@ -154,9 +154,7 @@ function runJob {
     echo $SCRIPT ====================== content end ========================
 
     # submit the job using the USS submit command
-    # wrap into $() to make sure we can exit properly in pipeline
-    SUBMIT_RESULT=$(submit $jclname > $CIZT_TMP/submit.job.$$.out)
-    printf "%s\n" "$SUBMIT_RESULT"
+    submit $jclname > $CIZT_TMP/submit.job.$$.out
     if [[ $? -ne 0 ]]
     then
         echo $SCRIPT ERROR: submit JCL $jclname failed
@@ -305,9 +303,6 @@ then
     exit 1
 fi
 
-
-echo ">>>>>>>>DEBUG EXIT 1>>>>>>>>>"
-exit 0
 
 # SMP/E -- SMP/E -- SMP/E -- SMP/E
 
