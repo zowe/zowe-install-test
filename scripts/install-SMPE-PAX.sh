@@ -155,12 +155,14 @@ function runJob {
 
     # submit the job using the USS submit command
     # wrap into $() to make sure we can exit properly in pipeline
-    wrap_call submit $jclname > $CIZT_TMP/submit.job.$$.out
+    CALL_RESULT=$(submit $jclname > $CIZT_TMP/submit.job.$$.out)
     if [[ $? -ne 0 ]]
     then
+        printf "%s\n" "$CALL_RESULT"
         echo $SCRIPT ERROR: submit JCL $jclname failed
         return 1
     else
+        printf "%s\n" "$CALL_RESULT"
         echo $SCRIPT INFO: JCL $jclname submitted
     fi
 
