@@ -306,6 +306,9 @@ then
 fi
 
 
+echo ">>>>>>>>DEBUG EXIT 1>>>>>>>>>"
+exit 0
+
 # SMP/E -- SMP/E -- SMP/E -- SMP/E
 
 # run these SMP/E jobs
