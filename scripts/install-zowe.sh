@@ -318,9 +318,6 @@ if [[ "$CI_UNINSTALL" = "yes" ]]; then
 fi
 
 rm -fr ${CIZT_INSTALL_DIR}/extracted && mkdir -p ${CIZT_INSTALL_DIR}/extracted
-
-echo ">>>>>>>>DEBUG EXIT>>>>>>>>>"
-exit 0
 if [[ "$CI_IS_SMPE" = "yes" ]]; then
   cd $CIZT_INSTALL_DIR
   # install SMP/e package
@@ -341,6 +338,9 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
     exit 1
   fi
   echo
+
+echo ">>>>>>>>DEBUG EXIT>>>>>>>>>"
+exit 0
 
   FULL_EXTRACTED_ZOWE_FOLDER=$CIZT_INSTALL_DIR/extracted
 
