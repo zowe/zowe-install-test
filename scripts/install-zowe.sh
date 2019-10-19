@@ -322,7 +322,7 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   cd $CIZT_INSTALL_DIR
   # install SMP/e package
   echo "[${SCRIPT_NAME}] installing $CI_ZOWE_PAX to $CIZT_ZOWE_ROOT_DIR ..."
-  INSTALL_SMPE_RESULT=$(./install-SMPE-PAX.sh \
+  ./install-SMPE-PAX.sh \
     ${CIZT_SMPE_HLQ_DSN} \
     ${CIZT_SMPE_HLQ_CSI} \
     ${CIZT_SMPE_HLQ_TZONE} \
@@ -332,8 +332,7 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
     ${CIZT_INSTALL_DIR}/extracted \
     ${CI_SMPE_FMID} \
     ${CIZT_SMPE_REL_FILE_PREFIX} \
-    ${CIZT_SMPE_VOLSER})
-  printf "%s\n" "$INSTALL_SMPE_RESULT"
+    ${CIZT_SMPE_VOLSER}
   if [ ! -d "${CIZT_ZOWE_ROOT_DIR}/scripts" ]; then
     echo "[${SCRIPT_NAME}][error] installation is not successfully, ${CIZT_ZOWE_ROOT_DIR}/scripts doesn't exist."
     exit 1
