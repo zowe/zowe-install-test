@@ -300,6 +300,8 @@ pax -rvf $download_path/$FMID.pax.Z
 
 # Run the GIMUNZIP job
 runJob $zfs_path/gimunzip.jcl
+echo ">>>>>>>>DEBUG EXIT 1>>>>>>>>>"
+exit 0
 if [[ $? -ne 0 ]]
 then
     echo $SCRIPT ERROR: GIMUNZIP JOB failed
