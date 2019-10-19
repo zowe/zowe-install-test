@@ -152,11 +152,11 @@ function runJob {
     echo $SCRIPT ====================== content start ======================
     cat $jclname
     echo $SCRIPT ====================== content end ========================
+    return 0
 
     # submit the job using the USS submit command
     # wrap into $() to make sure we can exit properly in pipeline
     CALL_RESULT=$(submit $jclname > $CIZT_TMP/submit.job.$$.out)
-    return 0
     if [[ $? -ne 0 ]]
     then
         printf "%s\n" "$CALL_RESULT"
