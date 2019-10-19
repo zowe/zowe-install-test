@@ -152,7 +152,6 @@ function runJob {
     echo $SCRIPT ====================== content start ======================
     cat $jclname
     echo $SCRIPT ====================== content end ========================
-    return 0
 
     # submit the job using the USS submit command
     # wrap into $() to make sure we can exit properly in pipeline
@@ -298,11 +297,11 @@ sed '1 i\
 cd $zfs_path    # extract pax file and create work files here
 echo; echo $SCRIPT un-PAX SMP/E file to $zfs_path
 pax -rvf $download_path/$FMID.pax.Z
+echo ">>>>>>>>DEBUG EXIT 1>>>>>>>>>"
+exit 0
 
 # Run the GIMUNZIP job
 runJob $zfs_path/gimunzip.jcl
-echo ">>>>>>>>DEBUG EXIT 1>>>>>>>>>"
-exit 0
 if [[ $? -ne 0 ]]
 then
     echo $SCRIPT ERROR: GIMUNZIP JOB failed
