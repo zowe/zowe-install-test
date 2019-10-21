@@ -139,6 +139,8 @@ if [ -d "${pathprefix}usr/lpp/zowe" ]; then
     (echo rm -fr "${pathprefix}usr" | su) || true
   fi
 fi
+echo ">>>>>>>>DEBUG EXIT 1>>>>>>>>>"
+exit 0
 
 function runJob {
 
@@ -297,8 +299,6 @@ sed '1 i\
 cd $zfs_path    # extract pax file and create work files here
 echo; echo $SCRIPT un-PAX SMP/E file to $zfs_path
 pax -rvf $download_path/$FMID.pax.Z
-echo ">>>>>>>>DEBUG EXIT 1>>>>>>>>>"
-exit 0
 
 # Run the GIMUNZIP job
 runJob $zfs_path/gimunzip.jcl
