@@ -30,6 +30,7 @@ node('ibm-jenkins-slave-dind') {
     "scripts/install-SMPE-PAX.sh",
     "scripts/uninstall-SMPE-PAX.sh",
     "scripts/opercmd",
+    "scripts/show-job-logs.sh",
   ]
   def zoweArtifact = ''
   def zoweRootDir = ''
@@ -366,6 +367,23 @@ cd ${installDir} && \
 echo "[temp-fixes-after-started.sh] succeeds" && exit 0
 EOF"""
         } // end of timeout - post install verify script
+
+        // pull job log
+        // show-job-logs.sh encoding should have been converted
+        sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${SSH_PORT} ${USERNAME}@${SSH_HOST} << EOF
+cd ${installDir}
+JOBS=\$(./show-job-logs.sh -H "${SSH_HOST}" -P "${SSH_PORT}" -u "${USERNAME}" -p "${PASSWORD}" -n 'ZOWE*' -o IZUSVR jobs)
+for job in \$JOBS; do
+  JOBNAME=\$(echo \$job | awk -F, '{print \$1}')
+  JOBID=\$(echo \$job | awk -F, '{print \$2}')
+  JOBSTATUS=\$(echo \$job | awk -F, '{print \$3}')
+  if [ "\${JOBSTATUS}" = "ACTIVE" ]; then
+    echo ">> found \${JOBNAME}-\${JOBID}"
+    ./show-job-logs.sh -H "${SSH_HOST}" -P "${SSH_PORT}" -u "${USERNAME}" -p "${PASSWORD}" -n "\${JOBNAME}" -o "\${JOBID}" file-contents
+  fi
+done
+exit 0
+EOF"""
       } // end of withCredentials
       } // end of timestamps
       } // end of lock
@@ -394,16 +412,14 @@ EOF"""
           credentialsId: testImageGuestSshHostPort,
           passwordVariable: 'SSH_PORT',
           usernameVariable: 'SSH_HOST'
+        ),
+        usernamePassword(
+          credentialsId: testImageGuestSshCredential,
+          passwordVariable: 'PASSWORD',
+          usernameVariable: 'USERNAME'
         )
       ]) {
-        withCredentials([
-          usernamePassword(
-            credentialsId: testImageGuestSshCredential,
-            passwordVariable: 'PASSWORD',
-            usernameVariable: 'USERNAME'
-          )
-        ]) {
-          sh """. scripts/install-config.sh
+        sh """. scripts/install-config.sh
 ZOWE_ROOT_DIR=${zoweRootDir} \
 SSH_HOST=${SSH_HOST} \
 SSH_PORT=${SSH_PORT} \
@@ -418,9 +434,8 @@ ZOWE_EXPLORER_JOBS_PORT=\${CIZT_ZOWE_EXPLORER_JOBS_PORT} \
 ZOWE_EXPLORER_DATASETS_PORT=\${CIZT_ZOWE_EXPLORER_DATASETS_PORT} \
 DEBUG=${params.TEST_CASE_DEBUG_INFORMATION} \
 npm test"""
-        }
-        }
-      }
+      } // end of withCredentials
+      } // end of ansiColor
     },
     junit         : "reports/junit.xml",
     htmlReports   : [
