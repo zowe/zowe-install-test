@@ -335,8 +335,6 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
     ${CIZT_SMPE_VOLSER}
   run_script_with_timeout "${RUN_SCRIPT}" 300
 
-echo ">>>>>>>>DEBUG EXIT>>>>>>>>>"
-exit 0
   if [ ! -d "${CIZT_ZOWE_ROOT_DIR}/scripts" ]; then
     echo "[${SCRIPT_NAME}][error] installation is not successfully, ${CIZT_ZOWE_ROOT_DIR}/scripts doesn't exist."
     exit 1
