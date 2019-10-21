@@ -377,9 +377,10 @@ for job in \\\$JOBS; do
   JOBNAME=\\\$(echo \\\$job | awk -F, '{print \\\$1}')
   JOBID=\\\$(echo \\\$job | awk -F, '{print \\\$2}')
   JOBSTATUS=\\\$(echo \\\$job | awk -F, '{print \\\$3}')
+  echo ">> found \\\${JOBNAME}-\\\${JOBID}"
   if [ "\\\${JOBSTATUS}" = "ACTIVE" ]; then
-    echo ">> found \\\${JOBNAME}-\\\${JOBID}"
-    ./show-job-logs.sh -H "${SSH_HOST}" -P "${SSH_PORT}" -u "${USERNAME}" -p "${PASSWORD}" -n "\\\${JOBNAME}" -o "\\\${JOBID}" file-contents
+    echo ">> - ACTIVE, fetching logs"
+    ./show-job-logs.sh -H "${SSH_HOST}" -P "${SSH_PORT}" -u "${USERNAME}" -p "${PASSWORD}" -n "\\\${JOBNAME}" -i "\\\${JOBID}" file-contents
   fi
 done
 exit 0
