@@ -333,7 +333,7 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
     ${CI_SMPE_FMID} \
     ${CIZT_SMPE_REL_FILE_PREFIX} \
     ${CIZT_SMPE_VOLSER}
-  run_script_with_timeout "${RUN_SCRIPT}" 300
+  run_script_with_timeout "${RUN_SCRIPT}" 1800
 
   if [ ! -d "${CIZT_ZOWE_ROOT_DIR}/scripts" ]; then
     echo "[${SCRIPT_NAME}][error] installation is not successfully, ${CIZT_ZOWE_ROOT_DIR}/scripts doesn't exist."
