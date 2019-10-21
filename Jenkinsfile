@@ -372,14 +372,14 @@ EOF"""
         // show-job-logs.sh encoding should have been converted
         sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${SSH_PORT} ${USERNAME}@${SSH_HOST} << EOF
 cd ${installDir}
-JOBS=\$(./show-job-logs.sh -H "${SSH_HOST}" -P "${SSH_PORT}" -u "${USERNAME}" -p "${PASSWORD}" -n 'ZOWE*' -o IZUSVR jobs)
-for job in \$JOBS; do
-  JOBNAME=\$(echo \$job | awk -F, '{print \$1}')
-  JOBID=\$(echo \$job | awk -F, '{print \$2}')
-  JOBSTATUS=\$(echo \$job | awk -F, '{print \$3}')
-  if [ "\${JOBSTATUS}" = "ACTIVE" ]; then
-    echo ">> found \${JOBNAME}-\${JOBID}"
-    ./show-job-logs.sh -H "${SSH_HOST}" -P "${SSH_PORT}" -u "${USERNAME}" -p "${PASSWORD}" -n "\${JOBNAME}" -o "\${JOBID}" file-contents
+JOBS=\\\$(./show-job-logs.sh -H "${SSH_HOST}" -P "${SSH_PORT}" -u "${USERNAME}" -p "${PASSWORD}" -n 'ZOWE*' -o IZUSVR jobs)
+for job in \\\$JOBS; do
+  JOBNAME=\\\$(echo \\\$job | awk -F, '{print \\\$1}')
+  JOBID=\\\$(echo \\\$job | awk -F, '{print \\\$2}')
+  JOBSTATUS=\\\$(echo \\\$job | awk -F, '{print \\\$3}')
+  if [ "\\\${JOBSTATUS}" = "ACTIVE" ]; then
+    echo ">> found \\\${JOBNAME}-\\\${JOBID}"
+    ./show-job-logs.sh -H "${SSH_HOST}" -P "${SSH_PORT}" -u "${USERNAME}" -p "${PASSWORD}" -n "\\\${JOBNAME}" -o "\\\${JOBID}" file-contents
   fi
 done
 exit 0

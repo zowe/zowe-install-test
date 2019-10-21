@@ -59,17 +59,20 @@ function usage {
   echo "  -f|--fileid                     file id"
   echo
   echo "Actions:"
-  echo "  jobs        list jobs"
-  echo "  files       list files of a job"
-  echo "  file        get content of a file from the job"
+  echo "  jobs              list jobs"
+  echo "  files             list files of a job"
+  echo "  file              get content of a file from the job"
+  echo "  file-contents     get all file contents from the job"
   echo
   echo "Examples:"
   echo "- show job list with pattern"
   echo "  ./show-job-logs.sh -n 'ZOWE*' jobs"
   echo "- show files of a job"
   echo "  ./show-job-logs.sh -n 'ZOWE1SV' -i ST01234 files"
-  echo "- show file content of a job"
+  echo "- show one file content of a job"
   echo "  ./show-job-logs.sh -n 'ZOWE1SV' -i ST01234 -f 101 file"
+  echo "- show all file contents of a job"
+  echo "  ./show-job-logs.sh -n 'ZOWE1SV' -i ST01234 file-contents"
   echo
 }
 
