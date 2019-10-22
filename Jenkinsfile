@@ -372,7 +372,10 @@ EOF"""
         // show-job-logs.sh encoding should have been converted
         sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${SSH_PORT} ${USERNAME}@${SSH_HOST} << EOF
 cd ${installDir}
-./show-job-logs.sh -H "${SSH_HOST}" -P "${SSH_PORT}" -u "${USERNAME}" -p "${PASSWORD}" -n 'ZOWE*' -o IZUSVR -a file-contents
+pwd
+echo ./show-job-logs.sh -H "${SSH_HOST}" -P "${SSH_PORT}" -u "${USERNAME}" -p "${PASSWORD}" -n 'ZOWE*' -o IZUSVR -a file-contents > tmp.sh
+chmod +x tmp.sh
+./tmp.sh
 exit 0
 EOF"""
       } // end of withCredentials
