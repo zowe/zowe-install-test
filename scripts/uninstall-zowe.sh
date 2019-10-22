@@ -74,6 +74,18 @@ function ensure_script_encoding {
 }
 
 ################################################################################
+# Wrap call into $()
+#
+# NOTE: This function exists to solve the issue calling tsocmd/submit/cp directly
+#       in pipeline will not exit properly.
+################################################################################
+function wrap_call {
+  echo "[wrap_call] $@ >>>"
+  CALL_RESULT=$($@)
+  printf "%s\n[wrap_call] <<<\n" "$CALL_RESULT"
+}
+
+################################################################################
 # parse parameters
 function usage {
   echo "Uninstall Zowe."
@@ -115,12 +127,6 @@ if [ -z "${CIZT_ZOWE_ROOT_DIR}" ]; then
 fi
 if [ -f "opercmd" ]; then
   ensure_script_encoding opercmd "parse var command opercmd"
-fi
-if [ -f "tsocmd.sh" ]; then
-  ensure_script_encoding tsocmd.sh
-fi
-if [ -f "tsocmds.sh" ]; then
-  ensure_script_encoding tsocmds.sh
 fi
 if [ -f "uninstall-SMPE-PAX.sh" ]; then
   ensure_script_encoding uninstall-SMPE-PAX.sh
@@ -166,9 +172,9 @@ echo
 ################################################################################
 # delete started tasks
 echo "[${SCRIPT_NAME}] deleting started tasks ..."
-tsocmd.sh 'RDELETE STARTED (ZWESIS*.*)'
-tsocmd.sh 'RDELETE STARTED (ZOWESVR.*)'
-tsocmd.sh 'SETR RACLIST(STARTED) REFRESH'
+wrap_call tsocmd 'RDELETE STARTED (ZWESIS*.*)'
+wrap_call tsocmd 'RDELETE STARTED (ZOWESVR.*)'
+wrap_call tsocmd 'SETR RACLIST(STARTED) REFRESH'
 echo
 
 ################################################################################
@@ -201,15 +207,18 @@ rm -fr "${ZOWE_PROFILE}"
 echo
 
 ################################################################################
+# list all proclibs
+PROCLIBS=$("${CIZT_INSTALL_DIR}/opercmd" '$d proclib' | grep 'DSNAME=.*\.PROCLIB' | sed 's/.*DSNAME=\(.*\)\.PROCLIB.*/\1.PROCLIB/')
+
+################################################################################
 # removing ZOWESVR
 echo "[${SCRIPT_NAME}] deleting ${CIZT_PROCLIB_MEMBER} PROC ..."
 # listing all proclibs and members
 FOUND_ZOWESVR_AT=
-procs=$("${CIZT_INSTALL_DIR}/opercmd" '$d proclib' | grep 'DSNAME=.*\.PROCLIB' | sed 's/.*DSNAME=\(.*\)\.PROCLIB.*/\1.PROCLIB/')
-for proclib in $procs
+for proclib in $PROCLIBS
 do
   echo "[${SCRIPT_NAME}] - finding in $proclib ..."
-  members=$(tsocmd.sh listds "'${proclib}'" members | sed -e '1,/--MEMBERS--/d')
+  members=$(tsocmd listds "'${proclib}'" members | sed -e '1,/--MEMBERS--/d')
   for member in $members
   do
     echo "[${SCRIPT_NAME}]   - ${member}"
@@ -224,7 +233,7 @@ if [ -z "$FOUND_ZOWESVR_AT" ]; then
   echo "[${SCRIPT_NAME}][warn] cannot find ${CIZT_PROCLIB_MEMBER} in PROCLIBs, skipped."
 else
   echo "[${SCRIPT_NAME}] found ${CIZT_PROCLIB_MEMBER} in ${FOUND_ZOWESVR_AT}, deleting ..."
-  tsocmd.sh DELETE "'${FOUND_ZOWESVR_AT}(${CIZT_PROCLIB_MEMBER})'"
+  wrap_call tsocmd DELETE "'${FOUND_ZOWESVR_AT}(${CIZT_PROCLIB_MEMBER})'"
 fi
 echo
 
@@ -250,7 +259,7 @@ echo "[${SCRIPT_NAME}] deleting ${CIZT_ZSS_LOADLIB_DS_NAME}(${CIZT_ZSS_LOADLIB_M
 # listing all proclibs and members
 FOUND_DS_MEMBER_AT=
 echo "[${SCRIPT_NAME}] - finding in ${CIZT_ZSS_LOADLIB_DS_NAME} ..."
-members=$(tsocmd.sh listds "'${CIZT_ZSS_LOADLIB_DS_NAME}'" members | sed -e '1,/--MEMBERS--/d')
+members=$(tsocmd listds "'${CIZT_ZSS_LOADLIB_DS_NAME}'" members | sed -e '1,/--MEMBERS--/d')
 for member in $members
 do
   echo "[${SCRIPT_NAME}]   - ${member}"
@@ -264,7 +273,31 @@ if [ -z "$FOUND_DS_MEMBER_AT" ]; then
   echo "[${SCRIPT_NAME}][warn] cannot find ${CIZT_ZSS_LOADLIB_MEMBER} in ${CIZT_ZSS_LOADLIB_DS_NAME}, skipped."
 else
   echo "[${SCRIPT_NAME}] found ${CIZT_ZSS_LOADLIB_MEMBER} in ${FOUND_DS_MEMBER_AT}, deleting ..."
-  tsocmd.sh DELETE "'${FOUND_DS_MEMBER_AT}(${CIZT_ZSS_LOADLIB_MEMBER})'"
+  wrap_call tsocmd DELETE "'${FOUND_DS_MEMBER_AT}(${CIZT_ZSS_LOADLIB_MEMBER})'"
+fi
+echo
+
+################################################################################
+# removing xmem LOADLIB(ZWESAUX)
+echo "[${SCRIPT_NAME}] deleting ${CIZT_ZSS_LOADLIB_DS_NAME}(${CIZT_ZSS_AUX_LOADLIB_MEMBER}) ..."
+# listing all proclibs and members
+FOUND_DS_MEMBER_AT=
+echo "[${SCRIPT_NAME}] - finding in ${CIZT_ZSS_LOADLIB_DS_NAME} ..."
+members=$(tsocmd listds "'${CIZT_ZSS_LOADLIB_DS_NAME}'" members | sed -e '1,/--MEMBERS--/d')
+for member in $members
+do
+  echo "[${SCRIPT_NAME}]   - ${member}"
+  if [ "${member}" = "${CIZT_ZSS_AUX_LOADLIB_MEMBER}" ]; then
+    FOUND_DS_MEMBER_AT=$CIZT_ZSS_LOADLIB_DS_NAME
+    break 2
+  fi
+done
+# do we find CIZT_ZSS_AUX_LOADLIB_MEMBER?
+if [ -z "$FOUND_DS_MEMBER_AT" ]; then
+  echo "[${SCRIPT_NAME}][warn] cannot find ${CIZT_ZSS_AUX_LOADLIB_MEMBER} in ${CIZT_ZSS_LOADLIB_DS_NAME}, skipped."
+else
+  echo "[${SCRIPT_NAME}] found ${CIZT_ZSS_AUX_LOADLIB_MEMBER} in ${FOUND_DS_MEMBER_AT}, deleting ..."
+  wrap_call tsocmd DELETE "'${FOUND_DS_MEMBER_AT}(${CIZT_ZSS_AUX_LOADLIB_MEMBER})'"
 fi
 echo
 
@@ -274,7 +307,7 @@ echo "[${SCRIPT_NAME}] deleting ${CIZT_ZSS_PARMLIB_DS_NAME}(${CIZT_ZSS_PARMLIB_M
 # listing all proclibs and members
 FOUND_DS_MEMBER_AT=
 echo "[${SCRIPT_NAME}] - finding in ${CIZT_ZSS_PARMLIB_DS_NAME} ..."
-members=$(tsocmd.sh listds "'${CIZT_ZSS_PARMLIB_DS_NAME}'" members | sed -e '1,/--MEMBERS--/d')
+members=$(tsocmd listds "'${CIZT_ZSS_PARMLIB_DS_NAME}'" members | sed -e '1,/--MEMBERS--/d')
 for member in $members
 do
   echo "[${SCRIPT_NAME}]   - ${member}"
@@ -288,20 +321,19 @@ if [ -z "$FOUND_DS_MEMBER_AT" ]; then
   echo "[${SCRIPT_NAME}][warn] cannot find ${CIZT_ZSS_PARMLIB_MEMBER} in ${CIZT_ZSS_PARMLIB_DS_NAME}, skipped."
 else
   echo "[${SCRIPT_NAME}] found ${CIZT_ZSS_PARMLIB_MEMBER} in ${FOUND_DS_MEMBER_AT}, deleting ..."
-  tsocmd.sh DELETE "'${FOUND_DS_MEMBER_AT}(${CIZT_ZSS_PARMLIB_MEMBER})'"
+  wrap_call tsocmd DELETE "'${FOUND_DS_MEMBER_AT}(${CIZT_ZSS_PARMLIB_MEMBER})'"
 fi
 echo
 
 ################################################################################
-# removing ZWESIS01
+# removing ZWESIS01 proc
 echo "[${SCRIPT_NAME}] deleting ${CIZT_ZSS_PROCLIB_MEMBER} PROC ..."
 # listing all proclibs and members
 FOUND_ZWESIS01_AT=
-procs=$("${CIZT_INSTALL_DIR}/opercmd" '$d proclib' | grep 'DSNAME=.*\.PROCLIB' | sed 's/.*DSNAME=\(.*\)\.PROCLIB.*/\1.PROCLIB/')
-for proclib in $procs
+for proclib in $PROCLIBS
 do
   echo "[${SCRIPT_NAME}] - finding in $proclib ..."
-  members=$(tsocmd.sh listds "'${proclib}'" members | sed -e '1,/--MEMBERS--/d')
+  members=$(tsocmd listds "'${proclib}'" members | sed -e '1,/--MEMBERS--/d')
   for member in $members
   do
     echo "[${SCRIPT_NAME}]   - ${member}"
@@ -316,9 +348,51 @@ if [ -z "$FOUND_ZWESIS01_AT" ]; then
   echo "[${SCRIPT_NAME}][warn] cannot find ${CIZT_ZSS_PROCLIB_MEMBER} in PROCLIBs, skipped."
 else
   echo "[${SCRIPT_NAME}] found ${CIZT_ZSS_PROCLIB_MEMBER} in ${FOUND_ZWESIS01_AT}, deleting ..."
-  tsocmd.sh DELETE "'${FOUND_ZWESIS01_AT}(${CIZT_ZSS_PROCLIB_MEMBER})'"
+  wrap_call tsocmd DELETE "'${FOUND_ZWESIS01_AT}(${CIZT_ZSS_PROCLIB_MEMBER})'"
 fi
 echo
+
+################################################################################
+# removing ZWESAUX proc
+echo "[${SCRIPT_NAME}] deleting ${CIZT_ZSS_AUX_PROCLIB_MEMBER} PROC ..."
+# listing all proclibs and members
+FOUND_ZWESAUX_AT=
+for proclib in $PROCLIBS
+do
+  echo "[${SCRIPT_NAME}] - finding in $proclib ..."
+  members=$(tsocmd listds "'${proclib}'" members | sed -e '1,/--MEMBERS--/d')
+  for member in $members
+  do
+    echo "[${SCRIPT_NAME}]   - ${member}"
+    if [ "${member}" = "${CIZT_ZSS_AUX_PROCLIB_MEMBER}" ]; then
+      FOUND_ZWESAUX_AT=$proclib
+      break 2
+    fi
+  done
+done
+# do we find ZWESAUX?
+if [ -z "$FOUND_ZWESAUX_AT" ]; then
+  echo "[${SCRIPT_NAME}][warn] cannot find ${CIZT_ZSS_AUX_PROCLIB_MEMBER} in PROCLIBs, skipped."
+else
+  echo "[${SCRIPT_NAME}] found ${CIZT_ZSS_AUX_PROCLIB_MEMBER} in ${FOUND_ZWESAUX_AT}, deleting ..."
+  wrap_call tsocmd DELETE "'${FOUND_ZWESAUX_AT}(${CIZT_ZSS_AUX_PROCLIB_MEMBER})'"
+fi
+echo
+
+################################################################################
+# removing datasetPrefix={userid}.ZWE
+if [ -n "$USER" ]; then
+  DATASET_PREFIX=$(echo "$USER.ZWE" | tr [a-z] [A-Z])
+  echo "[${SCRIPT_NAME}] deleting ${DATASET_PREFIX}.* data sets ..."
+  # listing 
+  datasets=$(tsocmd listds "'$DATASET_PREFIX'" level | grep "$DATASET_PREFIX" | grep -v "UNABLE TO COMPLETE")
+  for ds in $datasets
+  do
+    echo "[${SCRIPT_NAME}] - found ${ds}, deleting ..."
+    wrap_call tsocmd DELETE "'${ds}'"
+  done
+  echo
+fi
 
 ################################################################################
 # removing folder
