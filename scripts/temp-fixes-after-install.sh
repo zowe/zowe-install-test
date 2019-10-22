@@ -29,27 +29,6 @@ echo "[${SCRIPT_NAME}]    CI_HOSTNAME                : $CI_HOSTNAME"
 echo "[${SCRIPT_NAME}]    CIZT_ZOWE_ROOT_DIR         : $CIZT_ZOWE_ROOT_DIR"
 
 ################################################################################
-# Wrap call into $()
-#
-# NOTE: This function exists to solve the issue calling tsocmd/submit/cp directly
-#       in pipeline will not exit properly.
-################################################################################
-function wrap_call {
-  echo "[wrap_call] $@ >>>"
-  CALL_RESULT=$($@)
-  printf "%s\n[wrap_call] <<<\n" "$CALL_RESULT"
-}
-
-################################################################################
-# Error when starting explore-server:
-# [ERROR ] CWPKI0033E: The keystore located at safkeyringhybrid:///IZUKeyring.IZUDFLT did not load because of the following error: Errors encountered loading keyring. Keyring could not be loaded as a JCECCARACFKS or JCERACFKS keystore.
-echo
-echo "[${SCRIPT_NAME}] change ${CIZT_PROCLIB_MEMBER} RACF user ..."
-wrap_call tsocmd "RDEFINE STARTED ${CIZT_PROCLIB_MEMBER}.* UACC(NONE) STDATA(USER(IZUSVR) GROUP(IZUADMIN) PRIVILEGED(NO) TRUSTED(NO) TRACE(YES))"
-wrap_call tsocmd "SETROPTS RACLIST(STARTED) REFRESH"
-echo
-
-################################################################################
 # Error during zowe-install:
 # Exporting certificate zOSMFCA from z/OSMF:
 # keytool error (likely untranslated): java.io.FileNotFoundException: /zaas1/zowe-install/extracted/zowe-0.9.5/install/../temp_2018-12-19/zosmf_cert_zOSMFCA.cer (EDC5111I Permission denied.)

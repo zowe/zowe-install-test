@@ -517,6 +517,25 @@ else
   echo
 fi
 
+# execute scripts/zowe-runtime-authorize.sh
+echo "[${SCRIPT_NAME}] executing scripts/zowe-runtime-authorize.sh ..."
+if [ -f "${CIZT_ZOWE_ROOT_DIR}/scripts/zowe-runtime-authorize.sh" ]; then
+  (exec "${CIZT_ZOWE_ROOT_DIR}/scripts/zowe-runtime-authorize.sh")
+else
+  echo "[${SCRIPT_NAME}][warning] not found."
+fi
+echo
+
+# execute scripts/configure/zowe-config-stc.sh
+echo "[${SCRIPT_NAME}] executing scripts/configure/zowe-config-stc.sh ..."
+if [ -f "${CIZT_ZOWE_ROOT_DIR}/scripts/configure/zowe-config-stc.sh" ]; then
+  (exec "${CIZT_ZOWE_ROOT_DIR}/scripts/configure/zowe-config-stc.sh")
+else
+  echo "[${SCRIPT_NAME}][warning] not found."
+fi
+echo
+
+
 # run temp fixes
 if [ "$CI_SKIP_TEMP_FIXES" != "yes" ]; then
   cd $CIZT_INSTALL_DIR
