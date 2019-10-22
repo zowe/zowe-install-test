@@ -372,17 +372,7 @@ EOF"""
         // show-job-logs.sh encoding should have been converted
         sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${SSH_PORT} ${USERNAME}@${SSH_HOST} << EOF
 cd ${installDir}
-JOBS=\\\$(./show-job-logs.sh -H "${SSH_HOST}" -P "${SSH_PORT}" -u "${USERNAME}" -p "${PASSWORD}" -n 'ZOWE*' -o IZUSVR jobs)
-for job in \\\$JOBS; do
-  JOBNAME=\\\$(echo \\\$job | awk -F, '{print \\\$1}')
-  JOBID=\\\$(echo \\\$job | awk -F, '{print \\\$2}')
-  JOBSTATUS=\\\$(echo \\\$job | awk -F, '{print \\\$3}')
-  echo ">> found \\\${JOBNAME}-\\\${JOBID}"
-  if [ "\\\${JOBSTATUS}" = "ACTIVE" ]; then
-    echo ">> - ACTIVE, fetching logs"
-    ./show-job-logs.sh -H "${SSH_HOST}" -P "${SSH_PORT}" -u "${USERNAME}" -p "${PASSWORD}" -n "\\\${JOBNAME}" -i "\\\${JOBID}" file-contents
-  fi
-done
+./show-job-logs.sh -H "${SSH_HOST}" -P "${SSH_PORT}" -u "${USERNAME}" -p "${PASSWORD}" -n 'ZOWE*' -o IZUSVR -a file-contents
 exit 0
 EOF"""
       } // end of withCredentials

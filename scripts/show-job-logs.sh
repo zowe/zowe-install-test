@@ -27,7 +27,8 @@ CI_ZOSMF_PORT=
 CI_ZOSMF_USER=
 CI_ZOSMF_PASS=
 CI_JOBNAME=
-CI_JOBOWBER=*
+CI_JOBOWNER=*
+CI_JOBACTIVE=
 CI_JOBID=
 CI_FILEID=
 
@@ -49,19 +50,20 @@ function usage {
   echo "Options:"
   echo "  -h|--help                       display this help message."
   echo "  -d|--debug                      show debug information."
-  echo "  -H|--zosmf-host                 z/OSMF host. Default is localhost"
+  echo "  -H|--zosmf-host                 z/OSMF host. Default is localhost."
   echo "  -P|--zosmf-port                 z/OSMF port."
   echo "  -u|--zosmf-user                 z/OSMF user."
   echo "  -p|--zosmf-pass                 z/OSMF user password."
-  echo "  -n|--jobname                    job name"
-  echo "  -o|--jobowner                   job owner. Default is *"
-  echo "  -i|--jobid                      job id"
-  echo "  -f|--fileid                     file id"
+  echo "  -n|--jobname                    job name."
+  echo "  -o|--jobowner                   job owner. Default is *."
+  echo "  -a|--active-only                only show active jobs."
+  echo "  -i|--jobid                      job id."
+  echo "  -f|--fileid                     file id."
   echo
   echo "Actions:"
   echo "  jobs              list jobs"
   echo "  files             list files of a job"
-  echo "  file              get content of a file from the job"
+  echo "  file-content      get content of a file from the job"
   echo "  file-contents     get all file contents from the job"
   echo
   echo "Examples:"
@@ -70,9 +72,11 @@ function usage {
   echo "- show files of a job"
   echo "  ./show-job-logs.sh -n 'ZOWE1SV' -i ST01234 files"
   echo "- show one file content of a job"
-  echo "  ./show-job-logs.sh -n 'ZOWE1SV' -i ST01234 -f 101 file"
-  echo "- show all file contents of a job"
+  echo "  ./show-job-logs.sh -n 'ZOWE1SV' -i ST01234 -f 101 file-content"
+  echo "- show all file contents of one job"
   echo "  ./show-job-logs.sh -n 'ZOWE1SV' -i ST01234 file-contents"
+  echo "- show all file contents of a set of active jobs"
+  echo "  ./show-job-logs.sh -n 'ZOWE*' -o IZUSVR -a file-contents"
   echo
 }
 
@@ -125,9 +129,13 @@ while [ $# -gt 0 ]; do
       shift # past value
       ;;
     -o|--jobowner)
-      CI_JOBOWBER="$2"
+      CI_JOBOWNER="$2"
       shift # past argument
       shift # past value
+      ;;
+    -a|--active-only)
+      CI_JOBACTIVE=yes
+      shift # past argument
       ;;
     -i|--jobid)
       CI_JOBID="$2"
@@ -205,7 +213,7 @@ case $CI_ACTION in
       exit 1
     fi
 
-    JOBS=$(call_zosmf_api "/restjobs/jobs?owner=${CI_JOBOWBER}&prefix=${CI_JOBNAME}" | npx jq2 '$.map(s => `${s.jobname},${s.jobid},${s.status}`).join("\n")')
+    JOBS=$(call_zosmf_api "/restjobs/jobs?owner=${CI_JOBOWNER}&prefix=${CI_JOBNAME}" | npx jq2 '$.map(s => `${s.jobname},${s.jobid},${s.status}`).join("\n")')
     if [ "${CI_DEBUG}" = "yes" ]; then
       echo "[${SCRIPT_NAME}] job list of ${CI_JOBNAME}:"
       echo
@@ -234,7 +242,7 @@ case $CI_ACTION in
       echo "${f}"
     done
     ;;
-  file)
+  file-content)
     # validate
     if [ -z "$CI_JOBNAME" ]; then
       >&2 echo "[${SCRIPT_NAME}][error] job name option is required."
@@ -263,29 +271,34 @@ case $CI_ACTION in
       exit 1
     fi
     if [ -z "$CI_JOBID" ]; then
-      >&2 echo "[${SCRIPT_NAME}][error] job id option is required."
-      exit 1
+      JOBS=$(call_zosmf_api "/restjobs/jobs?owner=${CI_JOBOWNER}&prefix=${CI_JOBNAME}" | npx jq2 '$.map(s => `${s.jobname},${s.jobid}`).join("\n")')
+    else
+      JOBS="${CI_JOBNAME},${CI_JOBID}"
     fi
 
-    FILES=$(call_zosmf_api "/restjobs/jobs/${CI_JOBNAME}/${CI_JOBID}/files" | npx jq2 '$.map(s => `${s.id},${s.ddname}`).join("\n")')
-    if [ "${CI_DEBUG}" = "yes" ]; then
-      echo "[${SCRIPT_NAME}] files list of ${CI_JOBNAME}-${CI_JOBID}:"
-      echo
-    fi
-    for f in $FILES; do
-      FILE_ID=$(echo $f | awk -F, '{print $1}')
-      FILE_NAME=$(echo $f | awk -F, '{print $2}')
-      FILE_CONTENT=$(call_zosmf_api "/restjobs/jobs/${CI_JOBNAME}/${CI_JOBID}/files/${FILE_ID}/records")
+    for job in $JOBS; do
+      JOBNAME=$(echo $job | awk -F, '{print $1}')
+      JOBID=$(echo $job | awk -F, '{print $2}')
+      FILES=$(call_zosmf_api "/restjobs/jobs/${JOBNAME}/${JOBID}/files" | npx jq2 '$.map(s => `${s.id},${s.ddname}`).join("\n")')
       if [ "${CI_DEBUG}" = "yes" ]; then
-        echo "[${SCRIPT_NAME}] file ${CI_JOBNAME}-${CI_JOBID} (${FILE_ID}-${FILE_NAME}):"
-        echo
-      else
-        echo "===========================${CI_JOBNAME}-${CI_JOBID}-${FILE_NAME}=============================="
-      fi
-      printf "%s\n" "${FILE_CONTENT}"
-      if [ "${CI_DEBUG}" = "yes" ]; then
+        echo "[${SCRIPT_NAME}] files list of ${JOBNAME}-${JOBID}:"
         echo
       fi
+      for f in $FILES; do
+        FILE_ID=$(echo $f | awk -F, '{print $1}')
+        FILE_NAME=$(echo $f | awk -F, '{print $2}')
+        FILE_CONTENT=$(call_zosmf_api "/restjobs/jobs/${JOBNAME}/${JOBID}/files/${FILE_ID}/records")
+        if [ "${CI_DEBUG}" = "yes" ]; then
+          echo "[${SCRIPT_NAME}] file ${JOBNAME}-${JOBID} (${FILE_ID}-${FILE_NAME}):"
+          echo
+        else
+          echo "===========================${JOBNAME}-${JOBID}-${FILE_NAME}=============================="
+        fi
+        printf "%s\n" "${FILE_CONTENT}"
+        if [ "${CI_DEBUG}" = "yes" ]; then
+          echo
+        fi
+      done
     done
     ;;
   *)
