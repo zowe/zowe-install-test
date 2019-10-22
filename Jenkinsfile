@@ -373,7 +373,7 @@ EOF"""
         sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${SSH_PORT} ${USERNAME}@${SSH_HOST} << EOF
 cd ${installDir}
 . install-config.sh
-./show-job-logs.sh -H "${SSH_HOST}" -P "\${CIZT_ZOSMF_PORT}" -u "${USERNAME}" -p "${PASSWORD}" -n 'ZOWE*' -o IZUSVR -a file-contents
+./show-job-logs.sh -H "${SSH_HOST}" -P "\\\${CIZT_ZOSMF_PORT}" -u "${USERNAME}" -p "${PASSWORD}" -n 'ZOWE*' -o IZUSVR -a file-contents
 exit 0
 EOF"""
       } // end of withCredentials
