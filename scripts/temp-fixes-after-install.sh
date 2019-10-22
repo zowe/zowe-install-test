@@ -82,12 +82,12 @@ fi
 #        of space. Need to use __IPC_CLEANUP=1 to clean up.
 echo "[${SCRIPT_NAME}] updating run-zowe.sh to prepend __IPC_CLEANUP=1 ..."
 cd "${CIZT_ZOWE_ROOT_DIR}/scripts/internal"
-echo "[${SCRIPT_NAME}] prepending __IPC_CLEANUP=1 ..."
 cp run-zowe.sh run-zowe.sh.orig
-CUSTOM_NODE_HOME=(cat run-zowe.sh | grep NODE_HOME= | awk -F= '{print $2}')
+CUSTOM_NODE_HOME=$(cat run-zowe.sh | grep NODE_HOME= | awk -F= '{print $2}')
 if [ -z "$CUSTOM_NODE_HOME" ]; then
   echo "[${SCRIPT_NAME}][warning] cannot find NODE_HOME value."
 else
+  echo "[${SCRIPT_NAME}] prepending __IPC_CLEANUP=1 ..."
   sed \
     -e "/# Copyright / a\\
     __IPC_CLEANUP=1 ${CUSTOM_NODE_HOME}/bin/node --version"\
