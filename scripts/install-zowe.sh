@@ -520,7 +520,14 @@ fi
 # execute scripts/zowe-runtime-authorize.sh
 echo "[${SCRIPT_NAME}] executing scripts/zowe-runtime-authorize.sh ..."
 if [ -f "${CIZT_ZOWE_ROOT_DIR}/scripts/zowe-runtime-authorize.sh" ]; then
-  (exec "${CIZT_ZOWE_ROOT_DIR}/scripts/zowe-runtime-authorize.sh")
+  RUN_SCRIPT="${CIZT_ZOWE_ROOT_DIR}/scripts/zowe-runtime-authorize.sh"
+  if [ -f "$RUN_SCRIPT" ]; then
+    run_script_with_timeout "${RUN_SCRIPT}" 300
+    EXIT_CODE=$?
+    if [[ "$EXIT_CODE" != "0" ]]; then
+      echo "[${SCRIPT_NAME}][warning] ${RUN_SCRIPT} failed with exit code ${EXIT_CODE}."
+    fi
+  fi
 else
   echo "[${SCRIPT_NAME}][warning] not found."
 fi
@@ -529,7 +536,14 @@ echo
 # execute scripts/configure/zowe-config-stc.sh
 echo "[${SCRIPT_NAME}] executing scripts/configure/zowe-config-stc.sh ..."
 if [ -f "${CIZT_ZOWE_ROOT_DIR}/scripts/configure/zowe-config-stc.sh" ]; then
-  (exec "${CIZT_ZOWE_ROOT_DIR}/scripts/configure/zowe-config-stc.sh")
+  RUN_SCRIPT="${CIZT_ZOWE_ROOT_DIR}/scripts/configure/zowe-config-stc.sh"
+  if [ -f "$RUN_SCRIPT" ]; then
+    run_script_with_timeout "${RUN_SCRIPT}" 300
+    EXIT_CODE=$?
+    if [[ "$EXIT_CODE" != "0" ]]; then
+      echo "[${SCRIPT_NAME}][warning] ${RUN_SCRIPT} failed with exit code ${EXIT_CODE}."
+    fi
+  fi
 else
   echo "[${SCRIPT_NAME}][warning] not found."
 fi
