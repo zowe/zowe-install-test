@@ -84,12 +84,17 @@ echo "[${SCRIPT_NAME}] updating run-zowe.sh to prepend __IPC_CLEANUP=1 ..."
 cd "${CIZT_ZOWE_ROOT_DIR}/scripts/internal"
 echo "[${SCRIPT_NAME}] prepending __IPC_CLEANUP=1 ..."
 cp run-zowe.sh run-zowe.sh.orig
-sed \
+CUSTOM_NODE_HOME=(cat run-zowe.sh | grep NODE_HOME= | awk -F= '{print $2}')
+if [ -z "$CUSTOM_NODE_HOME" ]; then
+  echo "[${SCRIPT_NAME}][warning] cannot find NODE_HOME value."
+else
+  sed \
     -e "/# Copyright / a\\
     __IPC_CLEANUP=1 ${CUSTOM_NODE_HOME}/bin/node --version"\
     run-zowe.sh > run-zowe.sh.tmp
-cp run-zowe.sh.tmp run-zowe.sh
-rm run-zowe.sh.tmp
+  cp run-zowe.sh.tmp run-zowe.sh
+  rm run-zowe.sh.tmp
+fi
 echo
 
 ################################################################################
