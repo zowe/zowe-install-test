@@ -264,6 +264,9 @@ fi
 if [ -f "opercmd" ]; then
   ensure_script_encoding opercmd "parse var command opercmd"
 fi
+if [ -f "show-job-logs.sh" ]; then
+  ensure_script_encoding show-job-logs.sh
+fi
 
 ################################################################################
 echo "[${SCRIPT_NAME}] installation script started ..."
@@ -322,17 +325,9 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   cd $CIZT_INSTALL_DIR
   # install SMP/e package
   echo "[${SCRIPT_NAME}] installing $CI_ZOWE_PAX to $CIZT_ZOWE_ROOT_DIR ..."
-  ./install-SMPE-PAX.sh \
-    ${CIZT_SMPE_HLQ_DSN} \
-    ${CIZT_SMPE_HLQ_CSI} \
-    ${CIZT_SMPE_HLQ_TZONE} \
-    ${CIZT_SMPE_HLQ_DZONE} \
-    ${CIZT_SMPE_PATH_PREFIX} \
-    ${CIZT_INSTALL_DIR} \
-    ${CIZT_INSTALL_DIR}/extracted \
-    ${CI_SMPE_FMID} \
-    ${CIZT_SMPE_REL_FILE_PREFIX} \
-    ${CIZT_SMPE_VOLSER}
+  RUN_SCRIPT="./install-SMPE-PAX.sh ${CIZT_SMPE_HLQ_DSN} ${CIZT_SMPE_HLQ_CSI} ${CIZT_SMPE_HLQ_TZONE} ${CIZT_SMPE_HLQ_DZONE} ${CIZT_SMPE_PATH_PREFIX} ${CIZT_INSTALL_DIR} ${CIZT_INSTALL_DIR}/extracted ${CI_SMPE_FMID} ${CIZT_SMPE_REL_FILE_PREFIX} ${CIZT_SMPE_VOLSER}"
+  run_script_with_timeout "${RUN_SCRIPT}" 1800
+
   if [ ! -d "${CIZT_ZOWE_ROOT_DIR}/scripts" ]; then
     echo "[${SCRIPT_NAME}][error] installation is not successfully, ${CIZT_ZOWE_ROOT_DIR}/scripts doesn't exist."
     exit 1
@@ -521,6 +516,39 @@ else
   fi
   echo
 fi
+
+# execute scripts/zowe-runtime-authorize.sh
+echo "[${SCRIPT_NAME}] executing scripts/zowe-runtime-authorize.sh ..."
+if [ -f "${CIZT_ZOWE_ROOT_DIR}/scripts/zowe-runtime-authorize.sh" ]; then
+  RUN_SCRIPT="${CIZT_ZOWE_ROOT_DIR}/scripts/zowe-runtime-authorize.sh"
+  if [ -f "$RUN_SCRIPT" ]; then
+    run_script_with_timeout "${RUN_SCRIPT}" 300
+    EXIT_CODE=$?
+    if [[ "$EXIT_CODE" != "0" ]]; then
+      echo "[${SCRIPT_NAME}][warning] ${RUN_SCRIPT} failed with exit code ${EXIT_CODE}."
+    fi
+  fi
+else
+  echo "[${SCRIPT_NAME}][warning] not found."
+fi
+echo
+
+# execute scripts/configure/zowe-config-stc.sh
+echo "[${SCRIPT_NAME}] executing scripts/configure/zowe-config-stc.sh ..."
+if [ -f "${CIZT_ZOWE_ROOT_DIR}/scripts/configure/zowe-config-stc.sh" ]; then
+  RUN_SCRIPT="${CIZT_ZOWE_ROOT_DIR}/scripts/configure/zowe-config-stc.sh"
+  if [ -f "$RUN_SCRIPT" ]; then
+    run_script_with_timeout "${RUN_SCRIPT}" 300
+    EXIT_CODE=$?
+    if [[ "$EXIT_CODE" != "0" ]]; then
+      echo "[${SCRIPT_NAME}][warning] ${RUN_SCRIPT} failed with exit code ${EXIT_CODE}."
+    fi
+  fi
+else
+  echo "[${SCRIPT_NAME}][warning] not found."
+fi
+echo
+
 
 # run temp fixes
 if [ "$CI_SKIP_TEMP_FIXES" != "yes" ]; then

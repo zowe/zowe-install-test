@@ -29,15 +29,6 @@ echo "[${SCRIPT_NAME}]    CI_HOSTNAME                : $CI_HOSTNAME"
 echo "[${SCRIPT_NAME}]    CIZT_ZOWE_ROOT_DIR         : $CIZT_ZOWE_ROOT_DIR"
 
 ################################################################################
-# Error when starting explore-server:
-# [ERROR ] CWPKI0033E: The keystore located at safkeyringhybrid:///IZUKeyring.IZUDFLT did not load because of the following error: Errors encountered loading keyring. Keyring could not be loaded as a JCECCARACFKS or JCERACFKS keystore.
-echo
-echo "[${SCRIPT_NAME}] change ${CIZT_PROCLIB_MEMBER} RACF user ..."
-tsocmd.sh "RDEFINE STARTED ${CIZT_PROCLIB_MEMBER}.* UACC(NONE) STDATA(USER(IZUSVR) GROUP(IZUADMIN) PRIVILEGED(NO) TRUSTED(NO) TRACE(YES))"
-tsocmd.sh "SETROPTS RACLIST(STARTED) REFRESH"
-echo
-
-################################################################################
 # Error during zowe-install:
 # Exporting certificate zOSMFCA from z/OSMF:
 # keytool error (likely untranslated): java.io.FileNotFoundException: /zaas1/zowe-install/extracted/zowe-0.9.5/install/../temp_2018-12-19/zosmf_cert_zOSMFCA.cer (EDC5111I Permission denied.)
@@ -85,6 +76,26 @@ if [ -n "${CIZT_ZDNT_HOSTNAME}" ]; then
   done
   echo
 fi
+
+################################################################################
+# FIXME: on marist server, message queue accumulated fast and will soon run out
+#        of space. Need to use __IPC_CLEANUP=1 to clean up.
+echo "[${SCRIPT_NAME}] updating run-zowe.sh to prepend __IPC_CLEANUP=1 ..."
+cd "${CIZT_ZOWE_ROOT_DIR}/scripts/internal"
+cp run-zowe.sh run-zowe.sh.orig
+CUSTOM_NODE_HOME=$(cat run-zowe.sh | grep NODE_HOME= | awk -F= '{print $2}')
+if [ -z "$CUSTOM_NODE_HOME" ]; then
+  echo "[${SCRIPT_NAME}][warning] cannot find NODE_HOME value."
+else
+  echo "[${SCRIPT_NAME}] prepending __IPC_CLEANUP=1 ..."
+  sed \
+    -e "/# Copyright / a\\
+    __IPC_CLEANUP=1 ${CUSTOM_NODE_HOME}/bin/node --version"\
+    run-zowe.sh > run-zowe.sh.tmp
+  cp run-zowe.sh.tmp run-zowe.sh
+  rm run-zowe.sh.tmp
+fi
+echo
 
 ################################################################################
 echo
