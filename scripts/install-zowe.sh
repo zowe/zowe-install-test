@@ -356,12 +356,13 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   fi
 
   # configure installation
-  echo "[${SCRIPT_NAME}] configure installation yaml ..."
+  echo "[${SCRIPT_NAME}] configure installation yaml in $CIZT_ZOWE_ROOT_DIR/scripts/configure ..."
   cd $CIZT_ZOWE_ROOT_DIR/scripts/configure
   cat "${CI_ZOWE_CONFIG_FILE}" | \
     sed -e "/^install:/,\$s#rootDir=.*\$#rootDir=${CIZT_ZOWE_ROOT_DIR}#" | \
     sed -e "/^install:/,\$s#userDir=.*\$#userDir=${CIZT_ZOWE_USER_DIR}#" | \
     sed -e "/^install:/,\$s#prefix=.*\$#prefix=${CIZT_ZOWE_JOB_PREFIX}#" | \
+    sed -e "/^install:/,\$s#datasetPrefix=.*\$#datasetPrefix=${CIZT_SMPE_HLQ_TZONE}#" | \
     sed -e "/^zowe-server-proclib:/,\$s#dsName=.*\$#dsName=${CIZT_PROCLIB_DS}#" | \
     sed -e "/^zowe-server-proclib:/,\$s#memberName=.*\$#memberName=${CIZT_PROCLIB_MEMBER}#" | \
     sed -e "/^api-mediation:/,\$s#catalogPort=.*\$#catalogPort=${CIZT_ZOWE_API_MEDIATION_CATALOG_HTTP_PORT}#" | \
@@ -381,7 +382,7 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
     sed -e "/^terminals:/,\$s#sshPort=.*\$#sshPort=${CIZT_ZOWE_MVD_SSH_PORT}#" | \
     sed -e "/^terminals:/,\$s#telnetPort=.*\$#telnetPort=${CIZT_ZOWE_MVD_TELNET_PORT}#" > "${CI_ZOWE_CONFIG_FILE}.tmp"
   mv "${CI_ZOWE_CONFIG_FILE}.tmp" "${CI_ZOWE_CONFIG_FILE}"
-  echo "[${SCRIPT_NAME}] current Zowe configuration is:"
+  echo "[${SCRIPT_NAME}] current Zowe configuration in $CIZT_ZOWE_ROOT_DIR/scripts/configure is:"
   cat "${CI_ZOWE_CONFIG_FILE}"
 
   # configure Zowe
@@ -427,7 +428,7 @@ else
   fi
 
   # configure zowe installation
-  echo "[${SCRIPT_NAME}] configure installation yaml ..."
+  echo "[${SCRIPT_NAME}] configure installation yaml in $FULL_EXTRACTED_ZOWE_FOLDER/install ..."
   cd $FULL_EXTRACTED_ZOWE_FOLDER/install
   cat "${CI_ZOWE_CONFIG_FILE}" | \
     sed -e "/^install:/,\$s#rootDir=.*\$#rootDir=${CIZT_ZOWE_ROOT_DIR}#" | \
@@ -452,7 +453,7 @@ else
     sed -e "/^terminals:/,\$s#sshPort=.*\$#sshPort=${CIZT_ZOWE_MVD_SSH_PORT}#" | \
     sed -e "/^terminals:/,\$s#telnetPort=.*\$#telnetPort=${CIZT_ZOWE_MVD_TELNET_PORT}#" > "${CI_ZOWE_CONFIG_FILE}.tmp"
   mv "${CI_ZOWE_CONFIG_FILE}.tmp" "${CI_ZOWE_CONFIG_FILE}"
-  echo "[${SCRIPT_NAME}] current Zowe configuration is:"
+  echo "[${SCRIPT_NAME}] current Zowe configuration in $FULL_EXTRACTED_ZOWE_FOLDER/install is:"
   cat "${CI_ZOWE_CONFIG_FILE}"
   echo
 
