@@ -396,4 +396,8 @@ done
 rm $CIZT_TMP/$$.submit.job.out
 rm $CIZT_TMP/$$.dj.cc
 
+tsocmd "listds 'ZOWEAD3.SMPE.SZWESAMP' members"
+tsocmd "listds 'ZOWEAD3.SMPE.SZWEAUTH' members"
+tsocmd "listds 'ZOWEAD3.SMPE' level"
+
 echo script $SCRIPT ended from $SCRIPT_DIR
