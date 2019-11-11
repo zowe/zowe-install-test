@@ -237,6 +237,7 @@ function runJob {
     if [[ $rc -gt 4 ]]
     then
         echo $SCRIPT ERROR: job "$jobname(JOB$jobid)" failed, RC=$rc 
+        ./show-job-logs.sh -n $jobname -i JOB$jobid file-contents
         return 4
     fi
     # echo; echo $SCRIPT function runJob ended
