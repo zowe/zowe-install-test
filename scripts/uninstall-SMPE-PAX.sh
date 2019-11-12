@@ -57,6 +57,18 @@ echo $SCRIPT    zfs_path=$7
 echo $SCRIPT    FMID=$8
 echo $SCRIPT    PREFIX=$9
 
+################################################################################
+# Wrap call into $()
+#
+# NOTE: This function exists to solve the issue calling tsocmd/submit/cp directly
+#       in pipeline will not exit properly.
+################################################################################
+function wrap_call {
+  echo "[wrap_call] $@ >>>"
+  CALL_RESULT=$($@)
+  printf "%s\n[wrap_call] <<<\n" "$CALL_RESULT"
+}
+
 if [ -d "${pathprefix}usr/lpp/zowe" ]; then
   if [ "${pathprefix}" = "/" ]; then
     # looks like an official location under /usr/lpp, only remove zowe
@@ -70,37 +82,31 @@ if [ -d "${pathprefix}usr/lpp/zowe" ]; then
 fi
 
 # delete the datasets that install-SMPE-PAX.sh script creates
-cat > tso.cmd <<EndOfList
-delete ('${hlq}.${FMID}.F1')
-delete ('${hlq}.${FMID}.F2')
-delete ('${hlq}.${FMID}.F3')
-delete ('${hlq}.${FMID}.F4')
-delete ('${hlq}.${FMID}.smpmcs')
-delete ('${hlq}.ZOWE.${FMID}.F1')
-delete ('${hlq}.ZOWE.${FMID}.F2')
-delete ('${hlq}.ZOWE.${FMID}.F3')
-delete ('${hlq}.ZOWE.${FMID}.F4')
-delete ('${hlq}.ZOWE.${FMID}.smpmcs')
-delete ('${hlq}.SMPE.CSI')
-delete ('${hlq}.SMPE.SMPLOG')
-delete ('${hlq}.SMPE.SMPLOGA')
-delete ('${hlq}.SMPE.SMPLTS')
-delete ('${hlq}.SMPE.SMPMTS')
-delete ('${hlq}.SMPE.SMPPTS')
-delete ('${hlq}.SMPE.SMPSCDS')
-delete ('${hlq}.SMPE.SMPSTS')
-delete ('${hlq}.SMPE.AZWEAUTH')
-delete ('${hlq}.SMPE.AZWESAMP')
-delete ('${hlq}.SMPE.AZWEZFS')
-delete ('${hlq}.SMPE.SZWEAUTH')
-delete ('${hlq}.SMPE.SZWESAMP')
-delete ('${hlq}.install.jcl')
-delete (TEST.jcl.*)
-free all
-EndOfList
-
-# execute the multiple TSO commands
-tsocmds.sh tso.cmd
-rm tso.cmd 
+wrap_call tsocmd DELETE "'${hlq}.${FMID}.F1'"
+wrap_call tsocmd DELETE "'${hlq}.${FMID}.F2'"
+wrap_call tsocmd DELETE "'${hlq}.${FMID}.F3'"
+wrap_call tsocmd DELETE "'${hlq}.${FMID}.F4'"
+wrap_call tsocmd DELETE "'${hlq}.${FMID}.smpmcs'"
+wrap_call tsocmd DELETE "'${hlq}.ZOWE.${FMID}.F1'"
+wrap_call tsocmd DELETE "'${hlq}.ZOWE.${FMID}.F2'"
+wrap_call tsocmd DELETE "'${hlq}.ZOWE.${FMID}.F3'"
+wrap_call tsocmd DELETE "'${hlq}.ZOWE.${FMID}.F4'"
+wrap_call tsocmd DELETE "'${hlq}.ZOWE.${FMID}.smpmcs'"
+wrap_call tsocmd DELETE "'${hlq}.SMPE.CSI'"
+wrap_call tsocmd DELETE "'${hlq}.SMPE.SMPLOG'"
+wrap_call tsocmd DELETE "'${hlq}.SMPE.SMPLOGA'"
+wrap_call tsocmd DELETE "'${hlq}.SMPE.SMPLTS'"
+wrap_call tsocmd DELETE "'${hlq}.SMPE.SMPMTS'"
+wrap_call tsocmd DELETE "'${hlq}.SMPE.SMPPTS'"
+wrap_call tsocmd DELETE "'${hlq}.SMPE.SMPSCDS'"
+wrap_call tsocmd DELETE "'${hlq}.SMPE.SMPSTS'"
+wrap_call tsocmd DELETE "'${hlq}.SMPE.AZWEAUTH'"
+wrap_call tsocmd DELETE "'${hlq}.SMPE.AZWESAMP'"
+wrap_call tsocmd DELETE "'${hlq}.SMPE.AZWEZFS'"
+wrap_call tsocmd DELETE "'${hlq}.SMPE.SZWEAUTH'"
+wrap_call tsocmd DELETE "'${hlq}.SMPE.SZWESAMP'"
+wrap_call tsocmd DELETE "'${hlq}.install.jcl'"
+wrap_call tsocmd DELETE "'TEST.jcl.*'"
+wrap_call tsocmd free all
 
 echo script $SCRIPT ended from $SCRIPT_DIR

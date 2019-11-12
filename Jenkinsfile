@@ -30,8 +30,7 @@ node('ibm-jenkins-slave-dind') {
     "scripts/install-SMPE-PAX.sh",
     "scripts/uninstall-SMPE-PAX.sh",
     "scripts/opercmd",
-    "scripts/tsocmd.sh",
-    "scripts/tsocmds.sh",
+    "scripts/show-job-logs.sh",
   ]
   def zoweArtifact = ''
   def zoweRootDir = ''
@@ -289,14 +288,14 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
       return !params.SKIP_INSTALLATION
     },
     stage         : {
+      lock("zowe-install-test-${params.TARGET_SERVER}") {
+      timestamps {
       withCredentials([
         usernamePassword(
           credentialsId: testImageGuestSshHostPort,
           passwordVariable: 'SSH_PORT',
           usernameVariable: 'SSH_HOST'
-        )
-      ]) {
-      withCredentials([
+        ),
         usernamePassword(
           credentialsId: testImageGuestSshCredential,
           passwordVariable: 'PASSWORD',
@@ -328,9 +327,9 @@ cd ${installDir} && \
   ${installDir}/${zoweArtifact} || { echo "[install-zowe.sh] failed"; exit 1; }
 echo "[install-zowe.sh] succeeds" && exit 0
 EOF"""
-        }
+        } // end of timeout - run install-zowe.sh
 
-        // wait for Zowe is fully started
+        // wait for Zowe to be fully started
         timeout(60) {
           def port = ''
           // check if zLux is started
@@ -357,7 +356,7 @@ EOF"""
             returnStdout: true
           ).trim()
           sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 -d '{\"username\":\"${USERNAME}\",\"password\":\"${PASSWORD}\"}' 'https://${SSH_HOST}:${port}/api/v1/apicatalog/auth/login'"
-        }
+        } // end of timeout - wait for Zowe to be fully started
 
         // post install verify script
         timeout(30) {
@@ -367,9 +366,19 @@ cd ${installDir} && \
   temp-fixes-after-started.sh "${SSH_HOST}" "${USERNAME}" "${PASSWORD}" || { echo "[temp-fixes-after-started.sh] failed"; exit 0; }
 echo "[temp-fixes-after-started.sh] succeeds" && exit 0
 EOF"""
-        }
-      }
-      }
+        } // end of timeout - post install verify script
+
+        // pull job log
+        // show-job-logs.sh encoding should have been converted
+        sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${SSH_PORT} ${USERNAME}@${SSH_HOST} << EOF
+cd ${installDir}
+. install-config.sh
+./show-job-logs.sh -H "${SSH_HOST}" -P "\\\${CIZT_ZOSMF_PORT}" -u "${USERNAME}" -p "${PASSWORD}" -n 'ZOWE*' -o IZUSVR -a file-contents
+exit 0
+EOF"""
+      } // end of withCredentials
+      } // end of timestamps
+      } // end of lock
     },
     timeout: [time: 120, unit: 'MINUTES']
   )
@@ -395,16 +404,14 @@ EOF"""
           credentialsId: testImageGuestSshHostPort,
           passwordVariable: 'SSH_PORT',
           usernameVariable: 'SSH_HOST'
+        ),
+        usernamePassword(
+          credentialsId: testImageGuestSshCredential,
+          passwordVariable: 'PASSWORD',
+          usernameVariable: 'USERNAME'
         )
       ]) {
-        withCredentials([
-          usernamePassword(
-            credentialsId: testImageGuestSshCredential,
-            passwordVariable: 'PASSWORD',
-            usernameVariable: 'USERNAME'
-          )
-        ]) {
-          sh """. scripts/install-config.sh
+        sh """. scripts/install-config.sh
 ZOWE_ROOT_DIR=${zoweRootDir} \
 SSH_HOST=${SSH_HOST} \
 SSH_PORT=${SSH_PORT} \
@@ -419,9 +426,8 @@ ZOWE_EXPLORER_JOBS_PORT=\${CIZT_ZOWE_EXPLORER_JOBS_PORT} \
 ZOWE_EXPLORER_DATASETS_PORT=\${CIZT_ZOWE_EXPLORER_DATASETS_PORT} \
 DEBUG=${params.TEST_CASE_DEBUG_INFORMATION} \
 npm test"""
-        }
-        }
-      }
+      } // end of withCredentials
+      } // end of ansiColor
     },
     junit         : "reports/junit.xml",
     htmlReports   : [
