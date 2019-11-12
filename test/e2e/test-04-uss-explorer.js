@@ -36,16 +36,17 @@ const {
 let driver;
 
 const APP_TO_TEST = 'USS Explorer';
-const DIR_TO_TEST = 'explorer-USS';
-const FILE_TO_TEST = 'pluginDefinition.json';
+const DIR_TO_TEST = 'scripts';
+const FILE_TO_TEST = 'zowe-start.sh';
 
-const MVD_EXPLORER_TREE_SECTION = 'div.tree-card > div > div:nth-child(2)';
+const MVD_EXPLORER_INPUT_SECTION = 'div.tree-card div.component-header';
+const MVD_EXPLORER_TREE_SECTION = 'div.tree-card div.node';
 
 let appLaunched = false;
 let testDirIndex = -1;
 
 
-describe.skip(`test ${APP_TO_TEST}`, function() {
+describe(`test ${APP_TO_TEST}`, function() {
   before('verify environment variable and load login page', async function() {
     expect(process.env.SSH_HOST, 'SSH_HOST is not defined').to.not.be.empty;
     expect(process.env.SSH_USER, 'SSH_USER is not defined').to.not.be.empty;
@@ -115,7 +116,7 @@ describe.skip(`test ${APP_TO_TEST}`, function() {
       this.skip();
     }
 
-    let treeContent = await waitUntilElement(driver, MVD_EXPLORER_TREE_SECTION);
+    let treeContent = await waitUntilElement(driver, MVD_EXPLORER_INPUT_SECTION);
 
     // replace inputPath
     const inputPath = await getElement(treeContent, 'input#path');
@@ -134,11 +135,11 @@ describe.skip(`test ${APP_TO_TEST}`, function() {
     treeContent = await waitUntilElement(driver, MVD_EXPLORER_TREE_SECTION);
 
     // load children of DIR_TO_TEST
-    const items = await getElements(treeContent, 'div.node ul li');
+    const items = await getElements(treeContent, 'ul li');
     expect(items).to.be.an('array').that.have.lengthOf.above(0);
     debug(`found ${items.length} of menu items`);
     for (let i in items) {
-      const label = await getElement(items[i], 'div.uss-node-label div.react-contextmenu-wrapper span');
+      const label = await getElement(items[i], 'div.node div.react-contextmenu-wrapper div.node-label');
       if (label) {
         const text = await label.getText();
         if (text === DIR_TO_TEST) {
@@ -160,11 +161,11 @@ describe.skip(`test ${APP_TO_TEST}`, function() {
     await switchToIframeAppContext(driver, APP_TO_TEST, MVD_IFRAME_APP_CONTENT);
     const treeContent = await getElement(driver, MVD_EXPLORER_TREE_SECTION);
     expect(treeContent).to.be.an('object');
-    const items = await getElements(treeContent, 'div.node ul li');
+    const items = await getElements(treeContent, 'ul li');
     const testDirFound = items[testDirIndex];
 
     // find the file icon and click load content
-    const expandButton = await getElement(testDirFound, 'div.uss-node-label button');
+    const expandButton = await getElement(testDirFound, 'div.node div.react-contextmenu-wrapper div.node-label');
     expect(expandButton).to.be.an('object');
     await expandButton.click();
     debug(`${DIR_TO_TEST} is clicked`);
@@ -205,7 +206,7 @@ describe.skip(`test ${APP_TO_TEST}`, function() {
     debug(`found ${fileItems.length} of menu items`);
     let testFileIndex = -1;
     for (let i in fileItems) {
-      const label = await getElement(fileItems[i], 'div.node-label div.react-contextmenu-wrapper span.node-label');
+      const label = await getElement(fileItems[i], 'div.node div.react-contextmenu-wrapper div.node-label span.node-label');
       if (label) {
         const text = await label.getText();
         if (text === FILE_TO_TEST) {
@@ -219,7 +220,7 @@ describe.skip(`test ${APP_TO_TEST}`, function() {
     const testFileFound = fileItems[testFileIndex];
 
     // find the file icon and click load content
-    const contentLink = await getElement(testFileFound, 'div.node-label div.react-contextmenu-wrapper span.node-label');
+    const contentLink = await getElement(testFileFound, 'div.node div.react-contextmenu-wrapper div.node-label span.node-label');
     expect(contentLink).to.be.an('object');
     await contentLink.click();
     debug(`${DIR_TO_TEST}/${FILE_TO_TEST} is clicked`);
