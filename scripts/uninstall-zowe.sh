@@ -153,8 +153,8 @@ echo
 ################################################################################
 # stop Zowe
 echo "[${SCRIPT_NAME}] stopping Zowe ..."
-if [ -f "${CIZT_ZOWE_ROOT_DIR}/scripts/zowe-stop.sh" ]; then
-  (exec "${CIZT_ZOWE_ROOT_DIR}/scripts/zowe-stop.sh")
+if [ -f "${CIZT_ZOWE_USER_DIR}/bin/zowe-stop.sh" ]; then
+  (exec "${CIZT_ZOWE_USER_DIR}/bin/zowe-stop.sh")
 fi
 if [ -f "${CIZT_INSTALL_DIR}/opercmd" ]; then
   # job name before 1.4.0: ZOWESVR

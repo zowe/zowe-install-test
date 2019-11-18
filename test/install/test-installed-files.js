@@ -20,6 +20,7 @@ describe('verify installed files', function() {
     expect(process.env.SSH_USER, 'SSH_USER is not defined').to.not.be.empty;
     expect(process.env.SSH_PASSWD, 'SSH_PASSWD is not defined').to.not.be.empty;
     expect(process.env.ZOWE_ROOT_DIR, 'ZOWE_ROOT_DIR is not defined').to.not.be.empty;
+    expect(process.env.ZOWE_INSTANCE_DIR, 'ZOWE_INSTANCE_DIR is not defined').to.not.be.empty;
 
     const password = process.env.SSH_PASSWD;
 
@@ -49,7 +50,7 @@ describe('verify installed files', function() {
   });
 
   it('scripts/zowe-start.sh should exist', function() {
-    return ssh.execCommand('test -f ' + process.env.ZOWE_ROOT_DIR + '/scripts/zowe-start.sh')
+    return ssh.execCommand('test -f ' + process.env.ZOWE_INSTANCE_DIR + '/bin/zowe-start.sh')
       .then(function(result) {
         expect(result.stderr).to.be.empty;
         expect(result.code).to.equal(0);

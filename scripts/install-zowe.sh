@@ -383,7 +383,7 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   cd ${CIZT_ZOWE_ROOT_DIR}/scripts
   echo "[${SCRIPT_NAME}] installation is done, start configuring ..."
   ./configure/zowe-configure.sh < /dev/null
-  if [ ! -f "zowe-start.sh" ]; then
+  if [ ! -f ${CIZT_ZOWE_USER_DIR}"/bin/zowe-start.sh" ]; then
     echo "[${SCRIPT_NAME}][error] installation is not successfully, cannot find zowe-start.sh."
     exit 1
   fi
@@ -572,8 +572,7 @@ echo
 
 # start zowe
 echo "[${SCRIPT_NAME}] start Zowe ..."
-cd $CIZT_ZOWE_ROOT_DIR/scripts
-RUN_SCRIPT=zowe-start.sh
+RUN_SCRIPT=${CIZT_ZOWE_USER_DIR}"/bin/zowe-start.sh"
 (exec sh -c $RUN_SCRIPT)
 EXIT_CODE=$?
 if [[ "$EXIT_CODE" != "0" ]]; then
