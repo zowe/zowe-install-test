@@ -164,6 +164,10 @@ node('ibm-jenkins-slave-dind') {
         script: ". scripts/install-config.sh && echo \$CIZT_ZOWE_ROOT_DIR",
         returnStdout: true
       ).trim()
+      zoweInstanceDir = sh(
+        script: ". scripts/install-config.sh && echo \$CIZT_ZOWE_USER_DIR",
+        returnStdout: true
+      ).trim()
       if (params.IS_SMPE_PACKAGE) {
         // overwrite CIZT_ZOWE_ROOT_DIR for SMP/e package.
         zoweRootDir = sh(
@@ -413,6 +417,7 @@ EOF"""
       ]) {
         sh """. scripts/install-config.sh
 ZOWE_ROOT_DIR=${zoweRootDir} \
+ZOWE_INSTANCE_DIR=${zoweInstanceDir} \
 SSH_HOST=${SSH_HOST} \
 SSH_PORT=${SSH_PORT} \
 SSH_USER=${USERNAME} \
