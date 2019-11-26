@@ -21,7 +21,7 @@
 SCRIPT_NAME=$(basename "$0")
 SCRIPT_PWD=$(cd $(dirname "$0") && pwd)
 # this should list all known Zowe job names we ever shipped separated by space
-KNOWN_ZOWE_JOB_NAMES="ZOWESVR ZOWESV1 ZOWE1SV"
+KNOWN_ZOWE_JOB_NAMES="ZOWESVR ZOWESV1 ZOWE1SV ZWESVSTC"
 # this should list all known FMIDs we ever shipped separated by space, so the
 # uninstall script can uninstall any versions we ever installed.
 KNOWN_SMPE_FMIDS=AZWE001
@@ -145,8 +145,8 @@ if [ ! -f "${CIZT_INSTALL_DIR}/opercmd" ]; then
 fi
 
 ################################################################################
-# stop ZWESIS01
-echo "[${SCRIPT_NAME}] stopping ZWESIS01 ..."
+# stop ZWEXMSTC
+echo "[${SCRIPT_NAME}] stopping ZWEXMSTC ..."
 (exec "${CIZT_INSTALL_DIR}/opercmd" "P ${CIZT_ZSS_PROCLIB_MEMBER}")
 echo
 
@@ -173,7 +173,7 @@ echo
 # delete started tasks
 echo "[${SCRIPT_NAME}] deleting started tasks ..."
 wrap_call tsocmd 'RDELETE STARTED (ZWESIS*.*)'
-wrap_call tsocmd 'RDELETE STARTED (ZOWESVR.*)'
+wrap_call tsocmd 'RDELETE STARTED (ZWESVSTC.*)'
 wrap_call tsocmd 'SETR RACLIST(STARTED) REFRESH'
 echo
 
@@ -211,10 +211,10 @@ echo
 PROCLIBS=$("${CIZT_INSTALL_DIR}/opercmd" '$d proclib' | grep 'DSNAME=.*\.PROCLIB' | sed 's/.*DSNAME=\(.*\)\.PROCLIB.*/\1.PROCLIB/')
 
 ################################################################################
-# removing ZOWESVR
+# removing ZWESVSTC
 echo "[${SCRIPT_NAME}] deleting ${CIZT_PROCLIB_MEMBER} PROC ..."
 # listing all proclibs and members
-FOUND_ZOWESVR_AT=
+FOUND_ZWESVSTC_AT=
 for proclib in $PROCLIBS
 do
   echo "[${SCRIPT_NAME}] - finding in $proclib ..."
@@ -223,17 +223,17 @@ do
   do
     echo "[${SCRIPT_NAME}]   - ${member}"
     if [ "${member}" = "${CIZT_PROCLIB_MEMBER}" ]; then
-      FOUND_ZOWESVR_AT=$proclib
+      FOUND_ZWESVSTC_AT=$proclib
       break 2
     fi
   done
 done
-# do we find ZOWESVR?
-if [ -z "$FOUND_ZOWESVR_AT" ]; then
+# do we find ZWESVSTC?
+if [ -z "$FOUND_ZWESVSTC_AT" ]; then
   echo "[${SCRIPT_NAME}][warn] cannot find ${CIZT_PROCLIB_MEMBER} in PROCLIBs, skipped."
 else
-  echo "[${SCRIPT_NAME}] found ${CIZT_PROCLIB_MEMBER} in ${FOUND_ZOWESVR_AT}, deleting ..."
-  wrap_call tsocmd DELETE "'${FOUND_ZOWESVR_AT}(${CIZT_PROCLIB_MEMBER})'"
+  echo "[${SCRIPT_NAME}] found ${CIZT_PROCLIB_MEMBER} in ${FOUND_ZWESVSTC_AT}, deleting ..."
+  wrap_call tsocmd DELETE "'${FOUND_ZWESVSTC_AT}(${CIZT_PROCLIB_MEMBER})'"
 fi
 echo
 
@@ -326,10 +326,10 @@ fi
 echo
 
 ################################################################################
-# removing ZWESIS01 proc
+# removing ZWEXMSTC proc
 echo "[${SCRIPT_NAME}] deleting ${CIZT_ZSS_PROCLIB_MEMBER} PROC ..."
 # listing all proclibs and members
-FOUND_ZWESIS01_AT=
+FOUND_ZWEXMSTC_AT=
 for proclib in $PROCLIBS
 do
   echo "[${SCRIPT_NAME}] - finding in $proclib ..."
@@ -338,25 +338,25 @@ do
   do
     echo "[${SCRIPT_NAME}]   - ${member}"
     if [ "${member}" = "${CIZT_ZSS_PROCLIB_MEMBER}" ]; then
-      FOUND_ZWESIS01_AT=$proclib
+      FOUND_ZWEXMSTC_AT=$proclib
       break 2
     fi
   done
 done
-# do we find ZWESIS01?
-if [ -z "$FOUND_ZWESIS01_AT" ]; then
+# do we find ZWEXMSTC?
+if [ -z "$FOUND_ZWEXMSTC_AT" ]; then
   echo "[${SCRIPT_NAME}][warn] cannot find ${CIZT_ZSS_PROCLIB_MEMBER} in PROCLIBs, skipped."
 else
-  echo "[${SCRIPT_NAME}] found ${CIZT_ZSS_PROCLIB_MEMBER} in ${FOUND_ZWESIS01_AT}, deleting ..."
-  wrap_call tsocmd DELETE "'${FOUND_ZWESIS01_AT}(${CIZT_ZSS_PROCLIB_MEMBER})'"
+  echo "[${SCRIPT_NAME}] found ${CIZT_ZSS_PROCLIB_MEMBER} in ${FOUND_ZWEXMSTC_AT}, deleting ..."
+  wrap_call tsocmd DELETE "'${FOUND_ZWEXMSTC_AT}(${CIZT_ZSS_PROCLIB_MEMBER})'"
 fi
 echo
 
 ################################################################################
-# removing ZWESAUX proc
+# removing ZWEXASTC proc
 echo "[${SCRIPT_NAME}] deleting ${CIZT_ZSS_AUX_PROCLIB_MEMBER} PROC ..."
 # listing all proclibs and members
-FOUND_ZWESAUX_AT=
+FOUND_ZWEXASTC_AT=
 for proclib in $PROCLIBS
 do
   echo "[${SCRIPT_NAME}] - finding in $proclib ..."
@@ -365,17 +365,17 @@ do
   do
     echo "[${SCRIPT_NAME}]   - ${member}"
     if [ "${member}" = "${CIZT_ZSS_AUX_PROCLIB_MEMBER}" ]; then
-      FOUND_ZWESAUX_AT=$proclib
+      FOUND_ZWEXASTC_AT=$proclib
       break 2
     fi
   done
 done
-# do we find ZWESAUX?
-if [ -z "$FOUND_ZWESAUX_AT" ]; then
+# do we find ZWEXASTC?
+if [ -z "$FOUND_ZWEXASTC_AT" ]; then
   echo "[${SCRIPT_NAME}][warn] cannot find ${CIZT_ZSS_AUX_PROCLIB_MEMBER} in PROCLIBs, skipped."
 else
-  echo "[${SCRIPT_NAME}] found ${CIZT_ZSS_AUX_PROCLIB_MEMBER} in ${FOUND_ZWESAUX_AT}, deleting ..."
-  wrap_call tsocmd DELETE "'${FOUND_ZWESAUX_AT}(${CIZT_ZSS_AUX_PROCLIB_MEMBER})'"
+  echo "[${SCRIPT_NAME}] found ${CIZT_ZSS_AUX_PROCLIB_MEMBER} in ${FOUND_ZWEXASTC_AT}, deleting ..."
+  wrap_call tsocmd DELETE "'${FOUND_ZWEXASTC_AT}(${CIZT_ZSS_AUX_PROCLIB_MEMBER})'"
 fi
 echo
 
