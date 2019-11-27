@@ -36,8 +36,8 @@ const {
 let driver;
 
 const APP_TO_TEST = 'USS Explorer';
-const DIR_TO_TEST = 'bin';
-const FILE_TO_TEST = 'zowe-start.sh';
+const DIR_TO_TEST = 'scripts';
+const FILE_TO_TEST = 'instance.template.env';
 
 const MVD_EXPLORER_INPUT_SECTION = 'div.tree-card div.component-header';
 const MVD_EXPLORER_TREE_SECTION = 'div.tree-card div.node';
