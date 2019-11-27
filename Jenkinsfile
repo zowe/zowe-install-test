@@ -188,12 +188,6 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
     }
   )
 
-  // we need sonar scan
-  pipeline.sonarScan(
-    scannerTool     : lib.Constants.DEFAULT_SONARQUBE_SCANNER_TOOL,
-    scannerServer   : lib.Constants.DEFAULT_SONARQUBE_SERVER
-  )
-
   pipeline.createStage(
     name          : "Download Zowe",
     isSkippable   : true,
