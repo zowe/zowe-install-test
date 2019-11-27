@@ -292,13 +292,13 @@ echo "[${SCRIPT_NAME}]     - externalCertificate            : $CIZT_ZOWE_API_MED
 echo "[${SCRIPT_NAME}]     - externalCertificateAlias       : $CIZT_ZOWE_API_MEDIATION_EXT_CERT_ALIAS"
 echo "[${SCRIPT_NAME}]     - externalCertificateAuthorities : $CIZT_ZOWE_API_MEDIATION_EXT_CERT_AUTH"
 echo "[${SCRIPT_NAME}]     - verifyCertificatesOfServices   : $CIZT_ZOWE_API_MEDIATION_VERIFY_CERT"
-echo "[${SCRIPT_NAME}]   - explorer-server     :"
-echo "[${SCRIPT_NAME}]     - jobsPort          : $CIZT_ZOWE_EXPLORER_JOBS_PORT"
-echo "[${SCRIPT_NAME}]     - dataSetsPort      : $CIZT_ZOWE_EXPLORER_DATASETS_PORT"
-echo "[${SCRIPT_NAME}]   - explorer-ui         :"
-echo "[${SCRIPT_NAME}]     - explorerJESUI     : $CIZT_ZOWE_EXPLORER_UI_JES_PORT"
-echo "[${SCRIPT_NAME}]     - explorerMVSUI     : $CIZT_ZOWE_EXPLORER_UI_MVS_PORT"
-echo "[${SCRIPT_NAME}]     - explorerUSSUI     : $CIZT_ZOWE_EXPLORER_UI_USS_PORT"
+echo "[${SCRIPT_NAME}]   - zos-services        :"
+echo "[${SCRIPT_NAME}]     - jobsAPIPort       : $CIZT_ZOWE_EXPLORER_JOBS_PORT"
+echo "[${SCRIPT_NAME}]     - mvsAPIPort        : $CIZT_ZOWE_EXPLORER_DATASETS_PORT"
+echo "[${SCRIPT_NAME}]   - zowe-desktop-apps   :"
+echo "[${SCRIPT_NAME}]     - jobsExplorerPort  : $CIZT_ZOWE_EXPLORER_UI_JES_PORT"
+echo "[${SCRIPT_NAME}]     - mvsExplorerPort   : $CIZT_ZOWE_EXPLORER_UI_MVS_PORT"
+echo "[${SCRIPT_NAME}]     - ussExplorerPort   : $CIZT_ZOWE_EXPLORER_UI_USS_PORT"
 echo "[${SCRIPT_NAME}]   - zlux-server         :"
 echo "[${SCRIPT_NAME}]     - httpsPort         : $CIZT_ZOWE_ZLUX_HTTPS_PORT"
 echo "[${SCRIPT_NAME}]     - zssPort           : $CIZT_ZOWE_ZLUX_ZSS_PORT"
@@ -366,11 +366,11 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
     sed -e "/^api-mediation:/,\$s#externalCertificateAlias=.*\$#externalCertificateAlias=${CIZT_ZOWE_API_MEDIATION_EXT_CERT_ALIAS}#" | \
     sed -e "/^api-mediation:/,\$s#externalCertificateAuthorities=.*\$#externalCertificateAuthorities=${CIZT_ZOWE_API_MEDIATION_EXT_CERT_AUTH}#" | \
     sed -e "/^api-mediation:/,\$s#verifyCertificatesOfServices=.*\$#verifyCertificatesOfServices=${CIZT_ZOWE_API_MEDIATION_VERIFY_CERT}#" | \
-    sed -e "/^explorer-server:/,\$s#jobsPort=.*\$#jobsPort=${CIZT_ZOWE_EXPLORER_JOBS_PORT}#" | \
-    sed -e "/^explorer-server:/,\$s#dataSetsPort=.*\$#dataSetsPort=${CIZT_ZOWE_EXPLORER_DATASETS_PORT}#" | \
-    sed -e "/^explorer-ui:/,\$s#explorerJESUI=.*\$#explorerJESUI=${CIZT_ZOWE_EXPLORER_UI_JES_PORT}#" | \
-    sed -e "/^explorer-ui:/,\$s#explorerMVSUI=.*\$#explorerMVSUI=${CIZT_ZOWE_EXPLORER_UI_MVS_PORT}#" | \
-    sed -e "/^explorer-ui:/,\$s#explorerUSSUI=.*\$#explorerUSSUI=${CIZT_ZOWE_EXPLORER_UI_USS_PORT}#" | \
+    sed -e "/^zos-services:/,\$s#jobsAPIPort=.*\$#jobsAPIPort=${CIZT_ZOWE_EXPLORER_JOBS_PORT}#" | \
+    sed -e "/^zos-services:/,\$s#mvsAPIPort=.*\$#mvsAPIPort=${CIZT_ZOWE_EXPLORER_DATASETS_PORT}#" | \
+    sed -e "/^zowe-desktop-apps:/,\$s#jobsExplorerPort=.*\$#jobsExplorerPort=${CIZT_ZOWE_EXPLORER_UI_JES_PORT}#" | \
+    sed -e "/^zowe-desktop-apps:/,\$s#mvsExplorerPort=.*\$#mvsExplorerPort=${CIZT_ZOWE_EXPLORER_UI_MVS_PORT}#" | \
+    sed -e "/^zowe-desktop-apps:/,\$s#ussExplorerPort=.*\$#ussExplorerPort=${CIZT_ZOWE_EXPLORER_UI_USS_PORT}#" | \
     sed -e "/^zlux-server:/,\$s#httpsPort=.*\$#httpsPort=${CIZT_ZOWE_ZLUX_HTTPS_PORT}#" | \
     sed -e "/^zlux-server:/,\$s#zssPort=.*\$#zssPort=${CIZT_ZOWE_ZLUX_ZSS_PORT}#" | \
     sed -e "/^terminals:/,\$s#sshPort=.*\$#sshPort=${CIZT_ZOWE_MVD_SSH_PORT}#" | \
@@ -437,11 +437,11 @@ else
     sed -e "/^api-mediation:/,\$s#externalCertificateAlias=.*\$#externalCertificateAlias=${CIZT_ZOWE_API_MEDIATION_EXT_CERT_ALIAS}#" | \
     sed -e "/^api-mediation:/,\$s#externalCertificateAuthorities=.*\$#externalCertificateAuthorities=${CIZT_ZOWE_API_MEDIATION_EXT_CERT_AUTH}#" | \
     sed -e "/^api-mediation:/,\$s#verifyCertificatesOfServices=.*\$#verifyCertificatesOfServices=${CIZT_ZOWE_API_MEDIATION_VERIFY_CERT}#" | \
-    sed -e "/^explorer-server:/,\$s#jobsPort=.*\$#jobsPort=${CIZT_ZOWE_EXPLORER_JOBS_PORT}#" | \
-    sed -e "/^explorer-server:/,\$s#dataSetsPort=.*\$#dataSetsPort=${CIZT_ZOWE_EXPLORER_DATASETS_PORT}#" | \
-    sed -e "/^explorer-ui:/,\$s#explorerJESUI=.*\$#explorerJESUI=${CIZT_ZOWE_EXPLORER_UI_JES_PORT}#" | \
-    sed -e "/^explorer-ui:/,\$s#explorerMVSUI=.*\$#explorerMVSUI=${CIZT_ZOWE_EXPLORER_UI_MVS_PORT}#" | \
-    sed -e "/^explorer-ui:/,\$s#explorerUSSUI=.*\$#explorerUSSUI=${CIZT_ZOWE_EXPLORER_UI_USS_PORT}#" | \
+    sed -e "/^zos-services:/,\$s#jobsAPIPort=.*\$#jobsAPIPort=${CIZT_ZOWE_EXPLORER_JOBS_PORT}#" | \
+    sed -e "/^zos-services:/,\$s#mvsAPIPort=.*\$#mvsAPIPort=${CIZT_ZOWE_EXPLORER_DATASETS_PORT}#" | \
+    sed -e "/^zowe-desktop-apps:/,\$s#jobsExplorerPort=.*\$#jobsExplorerPort=${CIZT_ZOWE_EXPLORER_UI_JES_PORT}#" | \
+    sed -e "/^zowe-desktop-apps:/,\$s#mvsExplorerPort=.*\$#mvsExplorerPort=${CIZT_ZOWE_EXPLORER_UI_MVS_PORT}#" | \
+    sed -e "/^zowe-desktop-apps:/,\$s#ussExplorerPort=.*\$#ussExplorerPort=${CIZT_ZOWE_EXPLORER_UI_USS_PORT}#" | \
     sed -e "/^zlux-server:/,\$s#httpsPort=.*\$#httpsPort=${CIZT_ZOWE_ZLUX_HTTPS_PORT}#" | \
     sed -e "/^zlux-server:/,\$s#zssPort=.*\$#zssPort=${CIZT_ZOWE_ZLUX_ZSS_PORT}#" | \
     sed -e "/^terminals:/,\$s#sshPort=.*\$#sshPort=${CIZT_ZOWE_MVD_SSH_PORT}#" | \
