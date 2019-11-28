@@ -359,7 +359,7 @@ do
   do
     echo "[${SCRIPT_NAME}]   - ${member}"
     for XMEM_PROCLIB in $KNOWN_XMEM_PROCLIB_NAMES; do
-      if [ "${member}" = "${ZOWE_PROCLIB}" ]; then
+      if [ "${member}" = "${XMEM_PROCLIB}" ]; then
         echo "[${SCRIPT_NAME}] found ${XMEM_PROCLIB} in ${proclib}, deleting ..."
         wrap_call tsocmd DELETE "'${proclib}(${XMEM_PROCLIB})'"
         FOUND_ZWEXMSTC_AT=$proclib
@@ -392,7 +392,7 @@ do
   do
     echo "[${SCRIPT_NAME}]   - ${member}"
     for AUX_PROCLIB in $KNOWN_AUX_PROCLIB_NAMES; do
-      if [ "${member}" = "${ZOWE_PROCLIB}" ]; then
+      if [ "${member}" = "${AUX_PROCLIB}" ]; then
         echo "[${SCRIPT_NAME}] found ${AUX_PROCLIB} in ${proclib}, deleting ..."
         wrap_call tsocmd DELETE "'${proclib}(${AUX_PROCLIB})'"
         FOUND_ZWEXASTC_AT=$proclib
