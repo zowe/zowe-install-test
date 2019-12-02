@@ -565,8 +565,8 @@ if [ "$CI_SKIP_TEMP_FIXES" != "yes" ]; then
 fi
 
 # start cross memory server
-echo "[${SCRIPT_NAME}] start ZWESIS01 ..."
-(exec "$CIZT_ZOWE_ROOT_DIR/scripts/internal/opercmd" "S ZWESIS01")
+echo "[${SCRIPT_NAME}] start ZWEXMSTC ..."
+(exec "$CIZT_ZOWE_ROOT_DIR/scripts/internal/opercmd" "S ZWEXMSTC")
 sleep 10
 echo
 
