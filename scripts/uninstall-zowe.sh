@@ -169,6 +169,7 @@ if [ -f "${CIZT_INSTALL_DIR}/opercmd" ]; then
   # job name before 1.4.0: ZOWESVR
   # job name after 1.4.0: ZOWESV1
   # job name preparing for 1.5.0: ZOWE1SV
+  # job name preparing for 1.8.0: ZWE1SV
   for ZOWE_JOB_NANE in $KNOWN_ZOWE_JOB_NAMES; do
     echo "[${SCRIPT_NAME}] - ${ZOWE_JOB_NANE}"
     (exec "${CIZT_INSTALL_DIR}/opercmd" "C ${ZOWE_JOB_NANE}")
