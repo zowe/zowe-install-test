@@ -195,13 +195,13 @@ fi
 ################################################################################
 if [ "${CI_DEBUG}" = "yes" ]; then
   echo "[${SCRIPT_NAME}] installing/upgrading node-curl-cli ..."
-  npm install curl-cli
-  npm install jq2
+  npm install curl-cli --no-audit || true
+  npm install jq2 --no-audit || true
   echo
 else
   echo >/dev/null 2>&1
-  npm install curl-cli >/dev/null 2>&1
-  npm install jq2 >/dev/null 2>&1
+  npm install curl-cli --no-audit >/dev/null 2>&1
+  npm install jq2 --no-audit >/dev/null 2>&1
 fi
 
 ################################################################################

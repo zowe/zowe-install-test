@@ -71,7 +71,7 @@ describe(`test ${APP_TO_TEST}`, function() {
     debug('app iframe found');
 
     // wait for page is loaded
-    const appTitle = await waitUntilElement(driver, 'div.bottom-10 span.bigger-bold-text');
+    const appTitle = await waitUntilElement(driver, 'div.bottom-10 div.iframe-desktop-mode div.dataservice-test-panel textarea');
     expect(appTitle).to.be.an('object');
     debug('page is fully loaded');
 
@@ -93,12 +93,30 @@ describe(`test ${APP_TO_TEST}`, function() {
     debug(`input appId value is: ${appNameInputValue}`);
     expect(appNameInputValue).to.be.equal(APP_ID_TO_LAUNCH);
 
+    // click close "Iframe Plugin requests" accordion
+    const accordionRequests = await getElement(driver, 'div.bottom-10 > button.iframe-accordion');
+    expect(accordionRequests).to.be.an('object');
+    const accordionRequestsText = await accordionRequests.getText();
+    debug(`send request button text is: ${accordionRequestsText}`);
+    expect(accordionRequestsText).to.be.equal('Iframe Plugin requests:');
+    await accordionRequests.click();
+    debug('"Iframe Plugin requests:" button clicked');
+
+    // click open "App to App interaction:" accordion
+    const accordionApp2App = await getElement(driver, 'div.bottom-10 div.iframe-desktop-mode button.iframe-accordion');
+    expect(accordionApp2App).to.be.an('object');
+    const accordionApp2AppText = await accordionApp2App.getText();
+    debug(`send request button text is: ${accordionApp2AppText}`);
+    expect(accordionApp2AppText).to.be.equal('App to App interaction:');
+    await accordionApp2App.click();
+    debug('"App to App interaction:" button clicked');
+
     // click on "Send App Request" button
-    const appButton = await getElement(driver, 'div.bottom-10 button.iframe-button');
+    const appButton = await getElement(driver, 'div.bottom-10 div.iframe-desktop-mode div.panel button.iframe-button');
     expect(appButton).to.be.an('object');
     const appButtonText = await appButton.getText();
     debug(`send request button text is: ${appButtonText}`);
-    expect(appButtonText).to.be.equal('Send App Request');
+    expect(appButtonText).to.be.equal('Send App request');
     await appButton.click();
     debug('"Send App Request" button clicked');
 
