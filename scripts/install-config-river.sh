@@ -28,7 +28,7 @@ export CIZT_ZOWE_USER_DIR=/zaas1/.zowe
 export CIZT_INSTALL_DIR=/zaas1/zowe-install
 # proclib / job name
 export CIZT_PROCLIB_DS=auto
-export CIZT_PROCLIB_MEMBER=ZOWESVR
+export CIZT_PROCLIB_MEMBER=ZWESVSTC
 export CIZT_ZOWE_JOB_PREFIX=ZOWE
 # z/OSMF port
 export CIZT_ZOSMF_PORT=10443
