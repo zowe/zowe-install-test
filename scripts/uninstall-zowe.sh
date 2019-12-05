@@ -21,7 +21,7 @@
 SCRIPT_NAME=$(basename "$0")
 SCRIPT_PWD=$(cd $(dirname "$0") && pwd)
 # this should list all known Zowe job names we ever shipped separated by space
-KNOWN_ZOWE_JOB_NAMES="ZOWESVR ZOWESV1 ZOWE1SV ZWESVSTC"
+KNOWN_ZOWE_JOB_NAMES="ZOWESVR ZOWESV1 ZOWE1SV ZWE1SV"
 # this should list all known xmem Zowe job names we ever shipped separated by space
 KNOWN_XMEM_JOB_NAMES="ZWESIS01 ZWEXMSTC"
 if [[ $KNOWN_XMEM_JOB_NAMES != *"${CIZT_ZSS_PROCLIB_MEMBER}"* ]]
