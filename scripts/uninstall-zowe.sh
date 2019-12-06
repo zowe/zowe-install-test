@@ -21,8 +21,14 @@
 SCRIPT_NAME=$(basename "$0")
 SCRIPT_PWD=$(cd $(dirname "$0") && pwd)
 # this should list all known Zowe job names we ever shipped separated by space
-KNOWN_ZOWE_JOB_NAMES="ZOWESVR ZOWESV1 ZOWE1SV ZWESVSTC"
+# job name before 1.4.0: ZOWESVR
+# job name after 1.4.0: ZOWESV1
+# job name preparing for 1.5.0: ZOWE1SV
+# job name preparing for 1.8.0: ZWE1SV
+KNOWN_ZOWE_JOB_NAMES="ZOWESVR ZOWESV1 ZOWE1SV ZWE1SV"
 # this should list all known xmem Zowe job names we ever shipped separated by space
+# job name before 1.8.0: ZWESIS01
+# job name preparing for 1.8.0: ZWEXMSTC
 KNOWN_XMEM_JOB_NAMES="ZWESIS01 ZWEXMSTC"
 if [[ $KNOWN_XMEM_JOB_NAMES != *"${CIZT_ZSS_PROCLIB_MEMBER}"* ]]
 then
@@ -166,9 +172,6 @@ if [ -f "${CIZT_ZOWE_USER_DIR}/bin/zowe-stop.sh" ]; then
   (exec "${CIZT_ZOWE_USER_DIR}/bin/zowe-stop.sh")
 fi
 if [ -f "${CIZT_INSTALL_DIR}/opercmd" ]; then
-  # job name before 1.4.0: ZOWESVR
-  # job name after 1.4.0: ZOWESV1
-  # job name preparing for 1.5.0: ZOWE1SV
   for ZOWE_JOB_NANE in $KNOWN_ZOWE_JOB_NAMES; do
     echo "[${SCRIPT_NAME}] - ${ZOWE_JOB_NANE}"
     (exec "${CIZT_INSTALL_DIR}/opercmd" "C ${ZOWE_JOB_NANE}")

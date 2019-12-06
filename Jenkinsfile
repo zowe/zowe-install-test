@@ -372,7 +372,7 @@ EOF"""
 cd ${installDir}
 . install-config.sh
 (echo rm -fr node_modules | su) || true
-./show-job-logs.sh -d -H "${SSH_HOST}" -P "\\\${CIZT_ZOSMF_PORT}" -u "${USERNAME}" -p "${PASSWORD}" -n 'ZOWE*' -o IZUSVR -a file-contents
+./show-job-logs.sh -d -H "${SSH_HOST}" -P "\\\${CIZT_ZOSMF_PORT}" -u "${USERNAME}" -p "${PASSWORD}" -n 'ZWE*' -o IZUSVR -a file-contents
 exit 0
 EOF"""
       } // end of withCredentials
