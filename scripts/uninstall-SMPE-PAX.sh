@@ -55,7 +55,7 @@ echo $SCRIPT    pathprefix=$5
 echo $SCRIPT    download_path=$6
 echo $SCRIPT    zfs_path=$7
 echo $SCRIPT    FMID=$8
-echo $SCRIPT    PREFIX=$9
+echo $SCRIPT    PREFIX=$9 
 
 ################################################################################
 # Wrap call into $()

@@ -119,7 +119,7 @@ wrap_call tsocmd delete "'${dhlq}.AZWESAMP'"
 wrap_call tsocmd delete "'${dhlq}.AZWEZFS'"
 wrap_call tsocmd delete "'${thlq}.SZWEAUTH'"
 wrap_call tsocmd delete "'${thlq}.SZWESAMP'"
-wrap_call tsocmd free all
+wrap_call tsocmd free all 
 
 if [ -d "${pathprefix}usr/lpp/zowe" ]; then
   if [ "${pathprefix}" = "/" ]; then
