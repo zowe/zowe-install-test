@@ -376,8 +376,8 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
     sed -e "/^zlux-server:/,\$s#httpsPort=.*\$#httpsPort=${CIZT_ZOWE_ZLUX_HTTPS_PORT}#" | \
     sed -e "/^zlux-server:/,\$s#zssPort=.*\$#zssPort=${CIZT_ZOWE_ZLUX_ZSS_PORT}#" | \
     sed -e "/^terminals:/,\$s#sshPort=.*\$#sshPort=${CIZT_ZOWE_MVD_SSH_PORT}#" | \
-    sed -e "/^terminals:/,\$s#telnetPort=.*\$#telnetPort=${CIZT_ZOWE_MVD_TELNET_PORT}#" > "${CI_ZOWE_CONFIG_FILE}.tmp" | \
-    sed -e "/^keystore:/,\$s#keystoreDirectory=.*\$#keystoreDirectory=${CIZT_ZOWE_KEYSTORE_DIR}#"
+    sed -e "/^terminals:/,\$s#telnetPort=.*\$#telnetPort=${CIZT_ZOWE_MVD_TELNET_PORT}#" | \
+    sed -e "/^keystore:/,\$s#keystoreDirectory=.*\$#keystoreDirectory=${CIZT_ZOWE_KEYSTORE_DIR}#" > "${CI_ZOWE_CONFIG_FILE}.tmp"
   mv "${CI_ZOWE_CONFIG_FILE}.tmp" "${CI_ZOWE_CONFIG_FILE}"
   echo "[${SCRIPT_NAME}] current Zowe configuration is:"
   cat "${CI_ZOWE_CONFIG_FILE}"
@@ -448,8 +448,8 @@ else
     sed -e "/^zlux-server:/,\$s#httpsPort=.*\$#httpsPort=${CIZT_ZOWE_ZLUX_HTTPS_PORT}#" | \
     sed -e "/^zlux-server:/,\$s#zssPort=.*\$#zssPort=${CIZT_ZOWE_ZLUX_ZSS_PORT}#" | \
     sed -e "/^terminals:/,\$s#sshPort=.*\$#sshPort=${CIZT_ZOWE_MVD_SSH_PORT}#" | \
-    sed -e "/^terminals:/,\$s#telnetPort=.*\$#telnetPort=${CIZT_ZOWE_MVD_TELNET_PORT}#" > "${CI_ZOWE_CONFIG_FILE}.tmp" | \
-    sed -e "/^keystore:/,\$s#keystoreDirectory=.*\$#keystoreDirectory=${CIZT_ZOWE_KEYSTORE_DIR}#"
+    sed -e "/^terminals:/,\$s#telnetPort=.*\$#telnetPort=${CIZT_ZOWE_MVD_TELNET_PORT}#" | \
+    sed -e "/^keystore:/,\$s#keystoreDirectory=.*\$#keystoreDirectory=${CIZT_ZOWE_KEYSTORE_DIR}#" > "${CI_ZOWE_CONFIG_FILE}.tmp"
   mv "${CI_ZOWE_CONFIG_FILE}.tmp" "${CI_ZOWE_CONFIG_FILE}"
   echo "[${SCRIPT_NAME}] current Zowe configuration is:"
   cat "${CI_ZOWE_CONFIG_FILE}"
