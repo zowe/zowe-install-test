@@ -26,6 +26,7 @@ export CIZT_TMP=/ZOWE/tmp
 export CIZT_ZOWE_ROOT_DIR=/ZOWE/staging/zowe
 export CIZT_ZOWE_USER_DIR=/ZOWE/tmp/.zowe
 export CIZT_INSTALL_DIR=/ZOWE/zowe-installs
+export CIZT_ZOWE_KEYSTORE_DIR=/ZOWE/tmp/keystore
 # proclib / job name
 export CIZT_PROCLIB_DS=auto
 export CIZT_PROCLIB_MEMBER=ZWESVSTC
