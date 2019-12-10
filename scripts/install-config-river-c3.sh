@@ -26,6 +26,7 @@ export CIZT_TMP=/zaas1
 export CIZT_ZOWE_ROOT_DIR=/zaas1/zowe
 export CIZT_ZOWE_USER_DIR=/zaas1/.zowe
 export CIZT_INSTALL_DIR=/zaas1/zowe-install
+export CIZT_ZOWE_KEYSTORE_DIR=/zaas1/keystore
 # proclib / job name
 export CIZT_PROCLIB_DS=auto
 export CIZT_PROCLIB_MEMBER=ZWESVSTC
