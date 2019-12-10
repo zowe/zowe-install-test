@@ -321,7 +321,12 @@ echo
 
 ################################################################################
 # removing xmem PARMLIB(ZWESIP00)
-echo "[${SCRIPT_NAME}] deleting ${CIZT_ZSS_PARMLIB_DS_NAME}(${CIZT_ZSS_PARMLIB_MEMBER}) ..."
+KNOWN_XMEM_PARMLIB_NAMES="ZWESIP00 ZWEXMP00"
+if [[ ${KNOWN_XMEM_PARMLIB_NAMES} != *"${CIZT_ZSS_PARMLIB_MEMBER}"* ]]
+then
+  KNOWN_XMEM_PARMLIB_NAMES="${KNOWN_XMEM_PARMLIB_NAMES} ${CIZT_ZSS_PARMLIB_MEMBER}"
+fi
+echo "[${SCRIPT_NAME}] deleting ${CIZT_ZSS_PARMLIB_DS_NAME}(${KNOWN_XMEM_PARMLIB_NAMES}) ..."
 # listing all proclibs and members
 FOUND_DS_MEMBER_AT=
 echo "[${SCRIPT_NAME}] - finding in ${CIZT_ZSS_PARMLIB_DS_NAME} ..."
@@ -329,17 +334,17 @@ members=$(tsocmd listds "'${CIZT_ZSS_PARMLIB_DS_NAME}'" members | sed -e '1,/--M
 for member in $members
 do
   echo "[${SCRIPT_NAME}]   - ${member}"
-  if [ "${member}" = "${CIZT_ZSS_PARMLIB_MEMBER}" ]; then
-    FOUND_DS_MEMBER_AT=$CIZT_ZSS_PARMLIB_DS_NAME
-    break 2
-  fi
+  for XMEM_PARMLIB in $KNOWN_XMEM_PARMLIB_NAMES; do
+    if [ "${member}" = "${XMEM_PARMLIB}" ]; then
+      echo "[${SCRIPT_NAME}] found ${XMEM_PARMLIB} in ${CIZT_ZSS_PARMLIB_DS_NAME}, deleting ..."
+      wrap_call tsocmd DELETE "'${CIZT_ZSS_PARMLIB_DS_NAME}(${XMEM_PARMLIB})'"
+      FOUND_DS_MEMBER_AT=$CIZT_ZSS_PARMLIB_DS_NAME
+    fi
+  done
 done
 # do we find CIZT_ZSS_PARMLIB_MEMBER?
 if [ -z "$FOUND_DS_MEMBER_AT" ]; then
   echo "[${SCRIPT_NAME}][warn] cannot find ${CIZT_ZSS_PARMLIB_MEMBER} in ${CIZT_ZSS_PARMLIB_DS_NAME}, skipped."
-else
-  echo "[${SCRIPT_NAME}] found ${CIZT_ZSS_PARMLIB_MEMBER} in ${FOUND_DS_MEMBER_AT}, deleting ..."
-  wrap_call tsocmd DELETE "'${FOUND_DS_MEMBER_AT}(${CIZT_ZSS_PARMLIB_MEMBER})'"
 fi
 echo
 
