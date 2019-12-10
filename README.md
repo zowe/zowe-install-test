@@ -49,6 +49,7 @@ Example command:
 
 ```
 ZOWE_ROOT_DIR=/path/to/zowe \
+  ZOWE_INSTANCE_DIR=/path/to/zowe/instanceDir \
   SSH_HOST=test-server \
   SSH_PORT=12022 \
   SSH_USER=********* \
@@ -90,6 +91,7 @@ To show debugging information on your local, you can add `DEBUG=test:*` to the t
 
 ```
 ZOWE_ROOT_DIR=/path/to/zowe \
+  ZOWE_INSTANCE_DIR=/path/to/zowe/instanceDir \
   SSH_HOST=test-server \
   SSH_PORT=12022 \
   SSH_USER=********* \
@@ -409,7 +411,7 @@ When you start test on Windows, you may see this error: `'ZOWE_ROOT_DIR' is not 
 Run `npm install -g cross-env` and then run command
 
 ```
-cross-env ZOWE_ROOT_DIR=/path/to/zowe SSH_HOST=test-server SSH_PORT=12022 SSH_USER=********* SSH_PASSWD=********* ZOSMF_PORT=10443 ZOWE_DS_MEMBER=ZWESVSTC ZOWE_JOB_PREFIX=ZWE ZOWE_ZLUX_HTTPS_PORT=8544 ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT=7554 ZOWE_EXPLORER_JOBS_PORT=8545 ZOWE_EXPLORER_DATASETS_PORT=8547 npm test
+cross-env ZOWE_ROOT_DIR=/path/to/zowe ZOWE_INSTANCE_DIR=/path/to/zowe/instanceDir SSH_HOST=test-server SSH_PORT=12022 SSH_USER=********* SSH_PASSWD=********* ZOSMF_PORT=10443 ZOWE_DS_MEMBER=ZWESVSTC ZOWE_JOB_PREFIX=ZWE ZOWE_ZLUX_HTTPS_PORT=8544 ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT=7554 ZOWE_EXPLORER_JOBS_PORT=8545 ZOWE_EXPLORER_DATASETS_PORT=8547 npm test
 ```
 
 to start test.
