@@ -22,16 +22,16 @@ $SCRIPT Hlq Csihlq Thlq Dhlq Pathprefix download_path zfs_path FMID PREFIX
    ---------        ----------      -------
  1  hlq	            ZOE     	    DSN HLQ
  2  csihlq	        ZOE.SMPE	    HLQ for our CSI
- 3  thlq	        ZOE.SMPE	    TZONE HLQ
- 4  dhlq	        ZOE.SMPE	    DZONE HLQ
+ 3  thlq	          ZOE.SMPE	    TZONE HLQ
+ 4  dhlq	          ZOE.SMPE	    DZONE HLQ
  5  pathprefix	    /tmp/   	    Path Prefix of usr/lpp/zowe,
                                     where SMP/E will install zowe runtimes
 
  b.  For GIMUNZIP job:
  6  download_path   /tmp            where PAX and README are located
- 7  zfs_path 	    /tmp/zowe/smpe	SMPDIR where GIMUNZIP unzips the PAX file
- 8  FMID	        AZWE001	        The FMID for this release (omitted in archid of SMPMCS?)
- 9  PREFIX	        ZOE.ZOWE        RELFILE prefix?
+ 7  zfs_path 	      /tmp/zowe/smpe	SMPDIR where GIMUNZIP unzips the PAX file
+ 8  FMID	          AZWE001	        The FMID for this release (omitted in archid of SMPMCS?)
+ 9  PREFIX	        ZOE             RELFILE prefix?
 
 EndOfUsage
 exit
@@ -55,7 +55,7 @@ echo $SCRIPT    pathprefix=$5
 echo $SCRIPT    download_path=$6
 echo $SCRIPT    zfs_path=$7
 echo $SCRIPT    FMID=$8
-echo $SCRIPT    PREFIX=$9
+echo $SCRIPT    PREFIX=$9 
 
 ################################################################################
 # Wrap call into $()
@@ -82,31 +82,24 @@ if [ -d "${pathprefix}usr/lpp/zowe" ]; then
 fi
 
 # delete the datasets that install-SMPE-PAX.sh script creates
-wrap_call tsocmd DELETE "'${hlq}.${FMID}.F1'"
-wrap_call tsocmd DELETE "'${hlq}.${FMID}.F2'"
-wrap_call tsocmd DELETE "'${hlq}.${FMID}.F3'"
-wrap_call tsocmd DELETE "'${hlq}.${FMID}.F4'"
-wrap_call tsocmd DELETE "'${hlq}.${FMID}.smpmcs'"
-wrap_call tsocmd DELETE "'${hlq}.ZOWE.${FMID}.F1'"
-wrap_call tsocmd DELETE "'${hlq}.ZOWE.${FMID}.F2'"
-wrap_call tsocmd DELETE "'${hlq}.ZOWE.${FMID}.F3'"
-wrap_call tsocmd DELETE "'${hlq}.ZOWE.${FMID}.F4'"
-wrap_call tsocmd DELETE "'${hlq}.ZOWE.${FMID}.smpmcs'"
-wrap_call tsocmd DELETE "'${hlq}.SMPE.CSI'"
-wrap_call tsocmd DELETE "'${hlq}.SMPE.SMPLOG'"
-wrap_call tsocmd DELETE "'${hlq}.SMPE.SMPLOGA'"
-wrap_call tsocmd DELETE "'${hlq}.SMPE.SMPLTS'"
-wrap_call tsocmd DELETE "'${hlq}.SMPE.SMPMTS'"
-wrap_call tsocmd DELETE "'${hlq}.SMPE.SMPPTS'"
-wrap_call tsocmd DELETE "'${hlq}.SMPE.SMPSCDS'"
-wrap_call tsocmd DELETE "'${hlq}.SMPE.SMPSTS'"
-wrap_call tsocmd DELETE "'${hlq}.SMPE.AZWEAUTH'"
-wrap_call tsocmd DELETE "'${hlq}.SMPE.AZWESAMP'"
-wrap_call tsocmd DELETE "'${hlq}.SMPE.AZWEZFS'"
-wrap_call tsocmd DELETE "'${hlq}.SMPE.SZWEAUTH'"
-wrap_call tsocmd DELETE "'${hlq}.SMPE.SZWESAMP'"
-wrap_call tsocmd DELETE "'${hlq}.install.jcl'"
-wrap_call tsocmd DELETE "'TEST.jcl.*'"
+wrap_call tsocmd delete "'$PREFIX.ZOWE.${FMID}.F1'"
+wrap_call tsocmd delete "'$PREFIX.ZOWE.${FMID}.F2'"
+wrap_call tsocmd delete "'$PREFIX.ZOWE.${FMID}.F3'"
+wrap_call tsocmd delete "'$PREFIX.ZOWE.${FMID}.F4'"
+wrap_call tsocmd delete "'$PREFIX.ZOWE.${FMID}.smpmcs'"
+wrap_call tsocmd delete "'${csihlq}.CSI'"
+wrap_call tsocmd delete "'${csihlq}.SMPLOG'"
+wrap_call tsocmd delete "'${csihlq}.SMPLOGA'"
+wrap_call tsocmd delete "'${csihlq}.SMPLTS'"
+wrap_call tsocmd delete "'${csihlq}.SMPMTS'"
+wrap_call tsocmd delete "'${csihlq}.SMPPTS'"
+wrap_call tsocmd delete "'${csihlq}.SMPSCDS'"
+wrap_call tsocmd delete "'${csihlq}.SMPSTS'"
+wrap_call tsocmd delete "'${dhlq}.AZWEAUTH'"
+wrap_call tsocmd delete "'${dhlq}.AZWESAMP'"
+wrap_call tsocmd delete "'${dhlq}.AZWEZFS'"
+wrap_call tsocmd delete "'${thlq}.SZWEAUTH'"
+wrap_call tsocmd delete "'${thlq}.SZWESAMP'"
 wrap_call tsocmd free all
 
 echo script $SCRIPT ended from $SCRIPT_DIR
