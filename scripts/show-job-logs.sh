@@ -33,7 +33,8 @@ CI_JOBID=
 CI_FILEID=
 
 # allow to exit by ctrl+c
-function finish {
+finish()
+{
   echo "[${SCRIPT_NAME}] interrupted"
   exit 1
 }
@@ -42,7 +43,8 @@ trap finish SIGINT
 
 ################################################################################
 # parse parameters
-function usage {
+usage()
+{
   echo "Show z/OS job logs."
   echo
   echo "Usage: $SCRIPT_NAME [OPTIONS] action"
@@ -80,7 +82,8 @@ function usage {
   echo
 }
 
-function call_zosmf_api {
+call_zosmf_api()
+{
   ENDPOINT=$1
 
   npx ncc --insecure \
