@@ -151,10 +151,12 @@ until $(curl --output /dev/null --silent --show-error --insecure --request $CURL
       echo "${SCRIPT_NAME}][error] max retry reached"
       exit 1
     fi
-/bin/tsocmd status ZWE1SV 
-/bin/tsocmd status ZOWE1SV 
-/bin/tsocmd status ZWEXMSTC 
-/bin/tsocmd status ZWESIS01
+    for zjob in  ZWE1SV ZOWE1SV ZWEXMSTC ZWESIS01
+    do
+       echo tsocmd status $zjob > tjob.sh
+       sh tjob.sh
+    done
+
     echo '  .'
     TEST_COUNTER=$(($TEST_COUNTER+1))
     sleep $TEST_INTERVAL
