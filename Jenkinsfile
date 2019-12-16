@@ -114,11 +114,11 @@ node('ibm-jenkins-slave-dind') {
   pipeline.setup(
     github: [
       email                      : lib.Constants.DEFAULT_GITHUB_ROBOT_EMAIL,
-      usernamePasswordCredential : lib.Constants.DEFAULT_GITHUB_ROBOT_CREDENTIAL,
+      usernamePasswordCredential : 'zowe-oss-github-zowe-robot',
     ],
     artifactory: [
       url                        : lib.Constants.DEFAULT_ARTIFACTORY_URL,
-      usernamePasswordCredential : lib.Constants.DEFAULT_ARTIFACTORY_ROBOT_CREDENTIAL,
+      usernamePasswordCredential : 'zowe-oss-zowe-artifactory',
     ],
     // don't want audit failure blocks nightly test
     ignoreAuditFailure           : true,
