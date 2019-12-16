@@ -373,10 +373,10 @@ EOF"""
           } // end of timeout - post install verify script
 
           // pull job log
-          sh "./scripts/show-job-logs.sh -d -H "${SSH_HOST}" -P "${zOsmfPort}" -u "${USERNAME}" -p "${PASSWORD}" -n 'ZWE*' -o IZUSVR -a file-contents"
+          sh "./scripts/show-job-logs.sh -d -H '${SSH_HOST}' -P '${zOsmfPort}' -u '${USERNAME}' -p '${PASSWORD}' -n 'ZWE*' -o IZUSVR -a file-contents"
         } catch (e) {
           // pull job log
-          sh "./scripts/show-job-logs.sh -d -H "${SSH_HOST}" -P "${zOsmfPort}" -u "${USERNAME}" -p "${PASSWORD}" -n 'ZWE*' -o IZUSVR -a file-contents"
+          sh "./scripts/show-job-logs.sh -d -H '${SSH_HOST}' -P '${zOsmfPort}' -u '${USERNAME}' -p '${PASSWORD}' -n 'ZWE*' -o IZUSVR -a file-contents"
           throw e
         } // end of try/catch
       } // end of withCredentials
