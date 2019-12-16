@@ -121,7 +121,9 @@ node('ibm-jenkins-slave-dind') {
       usernamePasswordCredential : lib.Constants.DEFAULT_ARTIFACTORY_ROBOT_CREDENTIAL,
     ],
     // don't want audit failure blocks nightly test
-    ignoreAuditFailure           : true
+    ignoreAuditFailure           : true,
+    // checkout could be slow on internal network
+    checkout                     : [time: 5, unit: 'MINUTES']
   )
 
   pipeline.build(
