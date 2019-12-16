@@ -39,7 +39,7 @@ node('ibm-jenkins-slave-dind') {
   def testImageGuestSshHostPort = ''
   def testImageGuestSshCredential = ''
 
-  pipeline.admins.add("jackjia")
+  // pipeline.admins.add("jackjia")
 
   // we have extra parameters for integration test
   pipeline.addBuildParameters(
