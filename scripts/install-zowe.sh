@@ -264,9 +264,6 @@ fi
 if [ -f "opercmd" ]; then
   ensure_script_encoding opercmd "parse var command opercmd"
 fi
-if [ -f "show-job-logs.sh" ]; then
-  ensure_script_encoding show-job-logs.sh
-fi
 
 ################################################################################
 echo "[${SCRIPT_NAME}] installation script started ..."

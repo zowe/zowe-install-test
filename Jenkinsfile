@@ -30,10 +30,11 @@ node('ibm-jenkins-slave-dind') {
     "scripts/install-SMPE-PAX.sh",
     "scripts/uninstall-SMPE-PAX.sh",
     "scripts/opercmd",
-    "scripts/show-job-logs.sh",
   ]
   def zoweArtifact = ''
   def zoweRootDir = ''
+  def zoweInstanceDir = ''
+  def zOsmfPort = ''
   def installDir = ''
   def testImageGuestSshHostPort = ''
   def testImageGuestSshCredential = ''
@@ -168,8 +169,8 @@ node('ibm-jenkins-slave-dind') {
         script: ". scripts/install-config.sh && echo \$CIZT_ZOWE_USER_DIR",
         returnStdout: true
       ).trim()
-      zoweKeystoreDir = sh(
-        script: ". scripts/install-config.sh && echo \$CIZT_ZOWE_KEYSTORE_DIR",
+      zOsmfPort = sh(
+        script: ". scripts/install-config.sh && echo \$CIZT_ZOSMF_PORT",
         returnStdout: true
       ).trim()
       if (params.IS_SMPE_PACKAGE) {
@@ -316,69 +317,68 @@ cd ${installDir}
 ${allPuts}
 EOF"""
 
-        // run install-zowe.sh
-        timeout(90) {
-          def skipTempFixes = ""
-          if (params.SKIP_TEMP_FIXES) {
-            skipTempFixes = " -s"
-          }
-          sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${SSH_PORT} ${USERNAME}@${SSH_HOST} << EOF
+        try {
+          // run install-zowe.sh
+          timeout(90) {
+            def skipTempFixes = ""
+            if (params.SKIP_TEMP_FIXES) {
+              skipTempFixes = " -s"
+            }
+            sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${SSH_PORT} ${USERNAME}@${SSH_HOST} << EOF
 cd ${installDir} && \
   (iconv -f ISO8859-1 -t IBM-1047 install-zowe.sh > install-zowe.sh.new) && mv install-zowe.sh.new install-zowe.sh && chmod +x install-zowe.sh
 ./install-zowe.sh --uninstall -n ${SSH_HOST}${skipTempFixes} \
   ${installDir}/${zoweArtifact} || { echo "[install-zowe.sh] failed"; exit 1; }
 echo "[install-zowe.sh] succeeds" && exit 0
 EOF"""
-        } // end of timeout - run install-zowe.sh
+          } // end of timeout - run install-zowe.sh
 
-        // wait for Zowe to be fully started
-        timeout(60) {
-          def port = ''
-          // check if zLux is started
-          port = sh(
-            script: ". scripts/install-config.sh && echo \$CIZT_ZOWE_ZLUX_HTTPS_PORT",
-            returnStdout: true
-          ).trim()
-          sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 https://${SSH_HOST}:${port}/"
-          // check if explorer server is started
-          port = sh(
-            script: ". scripts/install-config.sh && echo \$CIZT_ZOWE_EXPLORER_JOBS_PORT",
-            returnStdout: true
-          ).trim()
-          sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 'https://${USERNAME}:${PASSWORD}@${SSH_HOST}:${port}/api/v1/jobs?prefix=ZOWE*&status=ACTIVE'"
-          // check if apiml gateway is started
-          port = sh(
-            script: ". scripts/install-config.sh && echo \$CIZT_ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT",
-            returnStdout: true
-          ).trim()
-          sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 https://${USERNAME}:${PASSWORD}@${SSH_HOST}:${port}/"
-          // check if apiml catalog is started
-          port = sh(
-            script: ". scripts/install-config.sh && echo \$CIZT_ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT",
-            returnStdout: true
-          ).trim()
-          sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 -d '{\"username\":\"${USERNAME}\",\"password\":\"${PASSWORD}\"}' 'https://${SSH_HOST}:${port}/api/v1/apicatalog/auth/login'"
-        } // end of timeout - wait for Zowe to be fully started
+          // wait for Zowe to be fully started
+          timeout(60) {
+            def port = ''
+            // check if zLux is started
+            port = sh(
+              script: ". scripts/install-config.sh && echo \$CIZT_ZOWE_ZLUX_HTTPS_PORT",
+              returnStdout: true
+            ).trim()
+            sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 https://${SSH_HOST}:${port}/"
+            // check if explorer server is started
+            port = sh(
+              script: ". scripts/install-config.sh && echo \$CIZT_ZOWE_EXPLORER_JOBS_PORT",
+              returnStdout: true
+            ).trim()
+            sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 'https://${USERNAME}:${PASSWORD}@${SSH_HOST}:${port}/api/v1/jobs?prefix=ZOWE*&status=ACTIVE'"
+            // check if apiml gateway is started
+            port = sh(
+              script: ". scripts/install-config.sh && echo \$CIZT_ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT",
+              returnStdout: true
+            ).trim()
+            sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 https://${USERNAME}:${PASSWORD}@${SSH_HOST}:${port}/"
+            // check if apiml catalog is started
+            port = sh(
+              script: ". scripts/install-config.sh && echo \$CIZT_ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT",
+              returnStdout: true
+            ).trim()
+            sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 -d '{\"username\":\"${USERNAME}\",\"password\":\"${PASSWORD}\"}' 'https://${SSH_HOST}:${port}/api/v1/apicatalog/auth/login'"
+          } // end of timeout - wait for Zowe to be fully started
 
-        // post install verify script
-        timeout(30) {
-          // always exit 0 to ignore failures in zowe-verify.sh
-          sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${SSH_PORT} ${USERNAME}@${SSH_HOST} << EOF
+          // post install verify script
+          timeout(30) {
+            // always exit 0 to ignore failures in zowe-verify.sh
+            sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${SSH_PORT} ${USERNAME}@${SSH_HOST} << EOF
 cd ${installDir} && \
   temp-fixes-after-started.sh "${SSH_HOST}" "${USERNAME}" "${PASSWORD}" || { echo "[temp-fixes-after-started.sh] failed"; exit 0; }
 echo "[temp-fixes-after-started.sh] succeeds" && exit 0
 EOF"""
-        } // end of timeout - post install verify script
+          } // end of timeout - post install verify script
 
-        // pull job log
-        // show-job-logs.sh encoding should have been converted
-        sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${SSH_PORT} ${USERNAME}@${SSH_HOST} << EOF
-cd ${installDir}
-. install-config.sh
-(echo rm -fr node_modules | su) || true
-./show-job-logs.sh -d -H "${SSH_HOST}" -P "\\\${CIZT_ZOSMF_PORT}" -u "${USERNAME}" -p "${PASSWORD}" -n 'ZWE*' -o IZUSVR -a file-contents
-exit 0
-EOF"""
+          // pull job log
+          sh "./scripts/show-job-logs.sh -d -H '${SSH_HOST}' -P '${zOsmfPort}' -u '${USERNAME}' -p '${PASSWORD}' -n 'ZWE*' -o IZUSVR -a file-contents"
+        } catch (e) {
+          // pull job log
+          sh "./scripts/show-job-logs.sh -d -H '${SSH_HOST}' -P '${zOsmfPort}' -u '${USERNAME}' -p '${PASSWORD}' -n 'ZWE*' -o IZUSVR -a file-contents"
+          throw e
+        } // end of try/catch
       } // end of withCredentials
       } // end of timestamps
       } // end of lock
