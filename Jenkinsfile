@@ -258,7 +258,7 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
             // extract tar file
             sh 'tar zxvf $(ls -1 zowe-smpe-*.tar)'
             // should get AZWE001.zip or AZWE001.TMP0001.zip, unzip it
-            sh 'unzip $(ls -1 AZWE*.zip)'
+            sh 'echo "after extracted:" && ls -l * && unzip $(ls -1 AZWE*.zip)'
             // should get AZWE001.pax.Z, AZWE001.readme.txt and AZWE001.htm for AZWE001.zip
             def smpePax = sh(script: "ls -1 AZWE*.pax.Z", returnStdout: true).trim()
             def smpeReadme = sh(script: "ls -1 AZWE*.readme.txt", returnStdout: true).trim()
