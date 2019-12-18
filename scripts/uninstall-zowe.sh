@@ -29,7 +29,7 @@ KNOWN_ZOWE_JOB_NAMES="ZOWESVR ZOWESV1 ZOWE1SV ZWE1SV"
 # this should list all known xmem Zowe job names we ever shipped separated by space
 # job name before 1.8.0: ZWESIS01
 # job name preparing for 1.8.0: ZWESISTC
-KNOWN_XMEM_JOB_NAMES="ZWESIS01 ZWESISTC"
+KNOWN_XMEM_JOB_NAMES="ZWESIS01 ZWEXMSTC ZWESISTC"
 if [[ $KNOWN_XMEM_JOB_NAMES != *"${CIZT_ZSS_PROCLIB_MEMBER}"* ]]
 then
   KNOWN_XMEM_JOB_NAMES="${KNOWN_XMEM_JOB_NAMES} ${CIZT_ZSS_PROCLIB_MEMBER}"
