@@ -256,7 +256,7 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
           )
           dir('.tmp') {
             // extract tar file
-            sh 'tar zxvf $(ls -1 zowe-smpe-*.tar)'
+            sh 'tar xvf $(ls -1 zowe-smpe-*.tar)'
             // should get AZWE001.zip or AZWE001.TMP0001.zip, unzip it
             sh 'echo "after extracted:" && ls -l * && unzip $(ls -1 AZWE*.zip)'
             // should get AZWE001.pax.Z, AZWE001.readme.txt and AZWE001.htm for AZWE001.zip
