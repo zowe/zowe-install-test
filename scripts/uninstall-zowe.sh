@@ -224,7 +224,7 @@ PROCLIBS=$("${CIZT_INSTALL_DIR}/opercmd" '$d proclib' | grep 'DSNAME=.*\.PROCLIB
 
 ################################################################################
 # removing old versions of Zowe proclib + current if they exists
-KNOWN_ZOWE_PROCLIB_NAMES="ZOWESVR ZWESVSTC"
+KNOWN_ZOWE_PROCLIB_NAMES="ZOWESVR ZOWESTC ZWESVSTC"
 if [[ ${KNOWN_ZOWE_PROCLIB_NAMES} != *"${CIZT_PROCLIB_MEMBER}"* ]]
 then
   KNOWN_ZOWE_PROCLIB_NAMES="${KNOWN_ZOWE_PROCLIB_NAMES} ${CIZT_PROCLIB_MEMBER}"
@@ -350,7 +350,7 @@ echo
 
 ################################################################################
 # removing old versions of xmem proclib + current if they exists
-KNOWN_XMEM_PROCLIB_NAMES="ZWESIS01 ZWESISTC"
+KNOWN_XMEM_PROCLIB_NAMES="ZWESIS01 ZWEXMSTC ZWESISTC"
 if [[ ${KNOWN_XMEM_PROCLIB_NAMES} != *"${CIZT_ZSS_PROCLIB_MEMBER}"* ]]
 then
   KNOWN_XMEM_PROCLIB_NAMES="${KNOWN_XMEM_PROCLIB_NAMES} ${CIZT_ZSS_PROCLIB_MEMBER}"
@@ -383,7 +383,7 @@ echo
 
 ################################################################################
 # removing old versions of xmem aux proclib + current if they exists
-KNOWN_AUX_PROCLIB_NAMES="ZWESAUX ZWESASTC"
+KNOWN_AUX_PROCLIB_NAMES="ZWESAUX ZWEXASTC ZWESASTC"
 if [[ ${KNOWN_AUX_PROCLIB_NAMES} != *"${CIZT_ZSS_AUX_PROCLIB_MEMBER}"* ]]
 then
   KNOWN_AUX_PROCLIB_NAMES="${KNOWN_AUX_PROCLIB_NAMES} ${CIZT_ZSS_AUX_PROCLIB_MEMBER}"
