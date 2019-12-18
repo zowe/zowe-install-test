@@ -92,7 +92,7 @@ node('ibm-jenkins-slave-dind') {
     string(
       name: 'ZOWE_CLI_ARTIFACTORY_BUILD',
       description: 'Zowe artifactory download build',
-      defaultValue: 'Zowe CLI Bundle :: master',
+      defaultValue: '',
       trim: true
     ),
     // >>>>>>>> parameters of installation config
@@ -206,7 +206,10 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
     "target": ".tmp/",
     "flat": "true",
     "build": "${params.ZOWE_CLI_ARTIFACTORY_BUILD}",
-    "explode": "true"
+    "explode": "true",
+    "sortBy": ["created"],
+    "sortOrder": "desc",
+    "limit": 1
   }]
 }
 """,
@@ -230,18 +233,27 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
     "pattern": "${params.ZOWE_ARTIFACTORY_PATTERN}",
     "target": ".tmp/",
     "flat": "true",
-    "build": "${params.ZOWE_ARTIFACTORY_BUILD}"
+    "build": "${params.ZOWE_ARTIFACTORY_BUILD}",
+    "sortBy": ["created"],
+    "sortOrder": "desc",
+    "limit": 1
   }, {
     "pattern": "${smpeReadmePattern}",
     "target": ".tmp/",
     "flat": "true",
-    "build": "${params.ZOWE_ARTIFACTORY_BUILD}"
+    "build": "${params.ZOWE_ARTIFACTORY_BUILD}",
+    "sortBy": ["created"],
+    "sortOrder": "desc",
+    "limit": 1
   }, {
     "pattern": "${params.ZOWE_CLI_ARTIFACTORY_PATTERN}",
     "target": ".tmp/",
     "flat": "true",
     "build": "${params.ZOWE_CLI_ARTIFACTORY_BUILD}",
-    "explode": "true"
+    "explode": "true",
+    "sortBy": ["created"],
+    "sortOrder": "desc",
+    "limit": 1
   }]
 }
 """,
