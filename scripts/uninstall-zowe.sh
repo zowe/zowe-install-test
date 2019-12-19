@@ -190,6 +190,15 @@ wrap_call tsocmd 'SETR RACLIST(STARTED) REFRESH'
 echo
 
 ################################################################################
+# delete facility profiles
+echo "[${SCRIPT_NAME}] deleting facility profiles ..."
+wrap_call tsocmd 'RDELETE FACILITY ZWES.IS'
+# this profile was used shortly by some testing versions of 1.7.1
+wrap_call tsocmd 'RDELETE FACILITY ZWEX.IS'
+wrap_call tsocmd 'SETR RACLIST(FACILITY) REF'
+echo
+
+################################################################################
 # removing environment viarables from .profile
 touch "${PROFILE}"
 echo "[${SCRIPT_NAME}] cleaning $PROFILE ..."
