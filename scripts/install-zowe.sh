@@ -265,6 +265,15 @@ if [ -f "opercmd" ]; then
   ensure_script_encoding opercmd "parse var command opercmd"
 fi
 
+/u/tstradm:>submit <<eof
+//JOB1     JOB
+//STEP1    EXEC PGM=ADRDSSU
+//SYSPRINT DD   SYSOUT=A
+//TEST     DD DSN=ZOWEAD3.PARMLIB,DISP=SHR
+ COMPRESS INC('ZOWEAD3.PARMLIB') DDN(TEST)
+/*
+eof
+
 ################################################################################
 echo "[${SCRIPT_NAME}] installation script started ..."
 echo "[${SCRIPT_NAME}]   - package file        : $CI_ZOWE_PAX"
@@ -384,7 +393,7 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
 
   # insert call zowe setup certificates ... soon
 # for SMP/E
-  echo "for non-SMP/E"
+  echo "for SMP/E"
   echo "call zowe-install-proc.sh here instead of inside configure/zowe-configure.sh ..."
   echo "CIZT_ZOWE_ROOT_DIR=$CIZT_ZOWE_ROOT_DIR"
   cd ${CIZT_ZOWE_ROOT_DIR}/scripts/utils
@@ -469,19 +478,6 @@ else
   cat "${CI_ZOWE_CONFIG_FILE}"
   echo
 
-  # insert call zowe setup certificates ... soon
-# for NON-SMP/E (same code)
-  echo "for non-SMP/E"
-  echo "call zowe-install-proc.sh here instead of inside configure/zowe-configure.sh ..."
-  echo "CIZT_ZOWE_ROOT_DIR=$CIZT_ZOWE_ROOT_DIR"
-  cd ${CIZT_ZOWE_ROOT_DIR}/scripts/utils
-  ls -l 
-  chmod +x ./zowe-install-proc.sh
-  echo "calling zowe-install-proc.sh with"
-  echo "    ZOWE_DSN_PREFIX=$USER.ZWE"
-  echo "    ZOWE_SERVER_PROCLIB_DSNAME=$CIZT_PROCLIB_DS"
-  ./zowe-install-proc.sh $USER.ZWE $CIZT_PROCLIB_DS
-  echo "    rc=$?"
 
   # run temp fixes
   if [ "$CI_SKIP_TEMP_FIXES" != "yes" ]; then
@@ -548,6 +544,21 @@ else
   fi
   echo
 fi
+
+  # insert call zowe setup certificates ... soon
+# for NON-SMP/E (same code)
+  echo "for non-SMP/E"
+  echo "call zowe-install-proc.sh here instead of inside configure/zowe-configure.sh ..."
+  echo "CIZT_ZOWE_ROOT_DIR=$CIZT_ZOWE_ROOT_DIR"
+  cd ${CIZT_ZOWE_ROOT_DIR}/scripts/utils
+  ls -l 
+  chmod +x ./zowe-install-proc.sh
+  echo "calling zowe-install-proc.sh with"
+  echo "    ZOWE_DSN_PREFIX=$USER.ZWE"
+  echo "    ZOWE_SERVER_PROCLIB_DSNAME=$CIZT_PROCLIB_DS"
+  ./zowe-install-proc.sh $USER.ZWE $CIZT_PROCLIB_DS
+  echo "    rc=$?"
+
 
 # execute scripts/zowe-runtime-authorize.sh
 echo "[${SCRIPT_NAME}] executing scripts/zowe-runtime-authorize.sh ..."
