@@ -29,7 +29,7 @@ KNOWN_ZOWE_JOB_NAMES="ZOWESVR ZOWESV1 ZOWE1SV ZWE1SV"
 # this should list all known xmem Zowe job names we ever shipped separated by space
 # job name before 1.8.0: ZWESIS01
 # job name preparing for 1.8.0: ZWESISTC
-KNOWN_XMEM_JOB_NAMES="ZWESIS01 ZWESISTC"
+KNOWN_XMEM_JOB_NAMES="ZWESIS01 ZWEXMSTC ZWESISTC"
 if [[ $KNOWN_XMEM_JOB_NAMES != *"${CIZT_ZSS_PROCLIB_MEMBER}"* ]]
 then
   KNOWN_XMEM_JOB_NAMES="${KNOWN_XMEM_JOB_NAMES} ${CIZT_ZSS_PROCLIB_MEMBER}"
@@ -190,6 +190,15 @@ wrap_call tsocmd 'SETR RACLIST(STARTED) REFRESH'
 echo
 
 ################################################################################
+# delete facility profiles
+echo "[${SCRIPT_NAME}] deleting facility profiles ..."
+wrap_call tsocmd 'RDELETE FACILITY ZWES.IS'
+# this profile was used shortly by some testing versions of 1.7.1
+wrap_call tsocmd 'RDELETE FACILITY ZWEX.IS'
+wrap_call tsocmd 'SETR RACLIST(FACILITY) REF'
+echo
+
+################################################################################
 # removing environment viarables from .profile
 touch "${PROFILE}"
 echo "[${SCRIPT_NAME}] cleaning $PROFILE ..."
@@ -224,7 +233,7 @@ PROCLIBS=$("${CIZT_INSTALL_DIR}/opercmd" '$d proclib' | grep 'DSNAME=.*\.PROCLIB
 
 ################################################################################
 # removing old versions of Zowe proclib + current if they exists
-KNOWN_ZOWE_PROCLIB_NAMES="ZOWESVR ZWESVSTC"
+KNOWN_ZOWE_PROCLIB_NAMES="ZOWESVR ZOWESTC ZWESVSTC"
 if [[ ${KNOWN_ZOWE_PROCLIB_NAMES} != *"${CIZT_PROCLIB_MEMBER}"* ]]
 then
   KNOWN_ZOWE_PROCLIB_NAMES="${KNOWN_ZOWE_PROCLIB_NAMES} ${CIZT_PROCLIB_MEMBER}"
@@ -350,7 +359,7 @@ echo
 
 ################################################################################
 # removing old versions of xmem proclib + current if they exists
-KNOWN_XMEM_PROCLIB_NAMES="ZWESIS01 ZWESISTC"
+KNOWN_XMEM_PROCLIB_NAMES="ZWESIS01 ZWEXMSTC ZWESISTC"
 if [[ ${KNOWN_XMEM_PROCLIB_NAMES} != *"${CIZT_ZSS_PROCLIB_MEMBER}"* ]]
 then
   KNOWN_XMEM_PROCLIB_NAMES="${KNOWN_XMEM_PROCLIB_NAMES} ${CIZT_ZSS_PROCLIB_MEMBER}"
@@ -383,7 +392,7 @@ echo
 
 ################################################################################
 # removing old versions of xmem aux proclib + current if they exists
-KNOWN_AUX_PROCLIB_NAMES="ZWESAUX ZWESASTC"
+KNOWN_AUX_PROCLIB_NAMES="ZWESAUX ZWEXASTC ZWESASTC"
 if [[ ${KNOWN_AUX_PROCLIB_NAMES} != *"${CIZT_ZSS_AUX_PROCLIB_MEMBER}"* ]]
 then
   KNOWN_AUX_PROCLIB_NAMES="${KNOWN_AUX_PROCLIB_NAMES} ${CIZT_ZSS_AUX_PROCLIB_MEMBER}"
