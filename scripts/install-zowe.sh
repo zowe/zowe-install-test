@@ -265,14 +265,16 @@ if [ -f "opercmd" ]; then
   ensure_script_encoding opercmd "parse var command opercmd"
 fi
 
-/u/tstradm:>submit <<eof
-//JOB1     JOB
+echo "running job to compress ZOWEAD3.PARMLIB"
+submit <<eof
+//CMPRPARM JOB
 //STEP1    EXEC PGM=ADRDSSU
 //SYSPRINT DD   SYSOUT=A
 //TEST     DD DSN=ZOWEAD3.PARMLIB,DISP=SHR
  COMPRESS INC('ZOWEAD3.PARMLIB') DDN(TEST)
 /*
 eof
+echo "submitted job to compress ZOWEAD3.PARMLIB"
 
 ################################################################################
 echo "[${SCRIPT_NAME}] installation script started ..."
