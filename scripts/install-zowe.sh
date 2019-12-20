@@ -548,17 +548,17 @@ else
 
   # insert call zowe setup certificates ... soon
 # for NON-SMP/E (same code)
-  echo "for non-SMP/E"
-  echo "call zowe-install-proc.sh here instead of inside configure/zowe-configure.sh ..."
-  echo "CIZT_ZOWE_ROOT_DIR=$CIZT_ZOWE_ROOT_DIR"
-  cd ${CIZT_ZOWE_ROOT_DIR}/scripts/utils
-  ls -l 
-  chmod +x ./zowe-install-proc.sh
-  echo "calling zowe-install-proc.sh with"
-  echo "    ZOWE_DSN_PREFIX=$USER.ZWE"
-  echo "    ZOWE_SERVER_PROCLIB_DSNAME=$CIZT_PROCLIB_DS"
-  ./zowe-install-proc.sh $USER.ZWE $CIZT_PROCLIB_DS
-  echo "    rc=$?"
+  # echo "for non-SMP/E"
+  # echo "call zowe-install-proc.sh here instead of inside configure/zowe-configure.sh ..."
+  # echo "CIZT_ZOWE_ROOT_DIR=$CIZT_ZOWE_ROOT_DIR"
+  # cd ${CIZT_ZOWE_ROOT_DIR}/scripts/utils
+  # ls -l 
+  # chmod +x ./zowe-install-proc.sh
+  # echo "calling zowe-install-proc.sh with"
+  # echo "    ZOWE_DSN_PREFIX=$USER.ZWE"
+  # echo "    ZOWE_SERVER_PROCLIB_DSNAME=$CIZT_PROCLIB_DS"
+  # ./zowe-install-proc.sh $USER.ZWE $CIZT_PROCLIB_DS
+  # echo "    rc=$?"
 fi
 
 # execute scripts/zowe-runtime-authorize.sh
