@@ -557,7 +557,7 @@ else
   echo "calling zowe-install-proc.sh with"
   echo "    ZOWE_DSN_PREFIX=$USER.ZWE"
   echo "    ZOWE_SERVER_PROCLIB_DSNAME=$CIZT_PROCLIB_DS"
-  RUN_SCRIPT=./zowe-install-proc.sh $USER.ZWE $CIZT_PROCLIB_DS
+  RUN_SCRIPT="./zowe-install-proc.sh $USER.ZWE $CIZT_PROCLIB_DS"
   run_script_with_timeout $RUN_SCRIPT 3600
   EXIT_CODE=$?
   if [[ "$EXIT_CODE" != "0" ]]; then
