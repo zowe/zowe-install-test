@@ -379,6 +379,19 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   echo "[${SCRIPT_NAME}] current Zowe configuration is:"
   cat "${CI_ZOWE_CONFIG_FILE}"
 
+  # insert call zowe setup certificates ... soon
+
+  # call zowe-install-proc.sh here instead of inside configure/zowe-configure.sh ...
+  echo "CIZT_ZOWE_ROOT_DIR=$CIZT_ZOWE_ROOT_DIR"
+  cd ${CIZT_ZOWE_ROOT_DIR}/scripts/utils
+  ls -l 
+  chmod +x ./zowe-install-proc.sh
+  echo "calling zowe-install-proc.sh with"
+  echo "    ZOWE_DSN_PREFIX=$USER.ZWE"
+  echo "    ZOWE_SERVER_PROCLIB_DSNAME=$CIZT_PROCLIB_DS"
+  ./zowe-install-proc.sh $USER.ZWE $CIZT_PROCLIB_DS
+  echo "    rc=$?"
+  
   # configure Zowe
   cd ${CIZT_ZOWE_ROOT_DIR}/scripts
   echo "[${SCRIPT_NAME}] installation is done, start configuring ..."
