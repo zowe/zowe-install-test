@@ -545,7 +545,6 @@ else
     echo
   fi
   echo
-fi
 
   # insert call zowe setup certificates ... soon
 # for NON-SMP/E (same code)
@@ -560,7 +559,7 @@ fi
   echo "    ZOWE_SERVER_PROCLIB_DSNAME=$CIZT_PROCLIB_DS"
   ./zowe-install-proc.sh $USER.ZWE $CIZT_PROCLIB_DS
   echo "    rc=$?"
-
+fi
 
 # execute scripts/zowe-runtime-authorize.sh
 echo "[${SCRIPT_NAME}] executing scripts/zowe-runtime-authorize.sh ..."
