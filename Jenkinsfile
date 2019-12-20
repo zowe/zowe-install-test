@@ -117,8 +117,8 @@ node('ibm-jenkins-slave-dind') {
       usernamePasswordCredential : lib.Constants.DEFAULT_GITHUB_ROBOT_CREDENTIAL,
     ],
     artifactory: [
-      url                        : lib.Constants.DEFAULT_ARTIFACTORY_URL,
-      usernamePasswordCredential : lib.Constants.DEFAULT_ARTIFACTORY_ROBOT_CREDENTIAL,
+      url                        : lib.Constants.DEFAULT_LFJ_ARTIFACTORY_URL,
+      usernamePasswordCredential : lib.Constants.DEFAULT_LFJ_ARTIFACTORY_ROBOT_CREDENTIAL,
     ],
     // don't want audit failure blocks nightly test
     ignoreAuditFailure           : true
