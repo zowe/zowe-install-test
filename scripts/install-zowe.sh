@@ -557,6 +557,34 @@ else
   echo "calling zowe-install-proc.sh with"
   echo "    ZOWE_DSN_PREFIX=$USER.ZWE"
   echo "    ZOWE_SERVER_PROCLIB_DSNAME=$CIZT_PROCLIB_DS"
+  RUN_SCRIPT=./zowe-install-proc.sh $USER.ZWE $CIZT_PROCLIB_DS
+  run_script_with_timeout $RUN_SCRIPT 3600
+  EXIT_CODE=$?
+  if [[ "$EXIT_CODE" != "0" ]]; then
+    echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
+    echo "[${SCRIPT_NAME}][error] here is log file >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    echo "[${SCRIPT_NAME}][error] - $FULL_EXTRACTED_ZOWE_FOLDER/log/*"
+    cat $FULL_EXTRACTED_ZOWE_FOLDER/log/* || true
+    echo "[${SCRIPT_NAME}][error] - $CIZT_ZOWE_ROOT_DIR/configure_log/*"
+    cat $CIZT_ZOWE_ROOT_DIR/configure_log/* || true
+    echo "[${SCRIPT_NAME}][error] - $CIZT_ZOWE_ROOT_DIR/scripts/configure/log/*"
+    cat $CIZT_ZOWE_ROOT_DIR/scripts/configure/log/* || true
+    echo "[${SCRIPT_NAME}][error] log end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+    echo
+    exit 1
+  else
+    echo "[${SCRIPT_NAME}] ${RUN_SCRIPT} succeeds."
+    echo "[${SCRIPT_NAME}] here is log file >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    echo "[${SCRIPT_NAME}] - $FULL_EXTRACTED_ZOWE_FOLDER/log/*"
+    cat $FULL_EXTRACTED_ZOWE_FOLDER/log/* || true
+    echo "[${SCRIPT_NAME}] - $CIZT_ZOWE_ROOT_DIR/configure_log/*"
+    cat $CIZT_ZOWE_ROOT_DIR/configure_log/* || true
+    echo "[${SCRIPT_NAME}] - $CIZT_ZOWE_ROOT_DIR/scripts/configure/log/*"
+    cat $CIZT_ZOWE_ROOT_DIR/scripts/configure/log/* || true
+    echo "[${SCRIPT_NAME}] log end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+    echo
+  fi
+
   # ./zowe-install-proc.sh $USER.ZWE $CIZT_PROCLIB_DS
   # echo "    rc=$?"
 fi
