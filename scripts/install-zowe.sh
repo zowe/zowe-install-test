@@ -265,17 +265,6 @@ if [ -f "opercmd" ]; then
   ensure_script_encoding opercmd "parse var command opercmd"
 fi
 
-# echo "running job to compress ZOWEAD3.PARMLIB"
-# submit <<eof
-# //CMPRPARM JOB
-# //STEP1    EXEC PGM=ADRDSSU
-# //SYSPRINT DD   SYSOUT=*
-# //TEST     DD DSN=ZOWEAD3.PARMLIB,DISP=SHR
-#  COMPRESS INC('ZOWEAD3.PARMLIB') DDN(TEST)
-# /*
-# eof
-# echo "submitted job to compress ZOWEAD3.PARMLIB"
-
 ################################################################################
 echo "[${SCRIPT_NAME}] installation script started ..."
 echo "[${SCRIPT_NAME}]   - package file        : $CI_ZOWE_PAX"
@@ -329,9 +318,6 @@ if [[ "$CI_UNINSTALL" = "yes" ]]; then
     fi
   fi
 fi
-
-
-
 
 rm -fr ${CIZT_INSTALL_DIR}/extracted && mkdir -p ${CIZT_INSTALL_DIR}/extracted
 if [[ "$CI_IS_SMPE" = "yes" ]]; then
@@ -394,18 +380,15 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   cat "${CI_ZOWE_CONFIG_FILE}"
 
   # insert call zowe setup certificates ... soon
-# for SMP/E
-  echo "for SMP/E"
-  echo "call zowe-install-proc.sh here instead of inside configure/zowe-configure.sh ..."
-  echo "CIZT_ZOWE_ROOT_DIR=$CIZT_ZOWE_ROOT_DIR"
-  cd ${CIZT_ZOWE_ROOT_DIR}/scripts/utils
-  ls -l 
-  chmod +x ./zowe-install-proc.sh
   echo "calling zowe-install-proc.sh with"
   echo "    ZOWE_DSN_PREFIX=$USER.ZWE"
   echo "    ZOWE_SERVER_PROCLIB_DSNAME=$CIZT_PROCLIB_DS"
-  ./zowe-install-proc.sh $USER.ZWE $CIZT_PROCLIB_DS
-  echo "    rc=$?"
+  RUN_SCRIPT="./zowe-install-proc.sh $USER.ZWE $CIZT_PROCLIB_DS"
+  run_script_with_timeout "$RUN_SCRIPT" 3600
+  EXIT_CODE=$?
+  if [[ "$EXIT_CODE" != "0" ]]; then
+    echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
+  fi
   
   # configure Zowe
   cd ${CIZT_ZOWE_ROOT_DIR}/scripts
@@ -480,7 +463,6 @@ else
   cat "${CI_ZOWE_CONFIG_FILE}"
   echo
 
-
   # run temp fixes
   if [ "$CI_SKIP_TEMP_FIXES" != "yes" ]; then
     cd $CIZT_INSTALL_DIR
@@ -549,11 +531,6 @@ else
   # insert call zowe setup certificates ... soon
 # for NON-SMP/E (same code)
   echo "for non-SMP/E"
-  echo "call zowe-install-proc.sh here instead of inside configure/zowe-configure.sh ..."
-  echo "CIZT_ZOWE_ROOT_DIR=$CIZT_ZOWE_ROOT_DIR"
-  cd ${CIZT_ZOWE_ROOT_DIR}/scripts/utils
-  ls -l 
-  chmod +x ./zowe-install-proc.sh
   echo "calling zowe-install-proc.sh with"
   echo "    ZOWE_DSN_PREFIX=$USER.ZWE"
   echo "    ZOWE_SERVER_PROCLIB_DSNAME=$CIZT_PROCLIB_DS"
@@ -562,31 +539,7 @@ else
   EXIT_CODE=$?
   if [[ "$EXIT_CODE" != "0" ]]; then
     echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
-    echo "[${SCRIPT_NAME}][error] here is log file >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    echo "[${SCRIPT_NAME}][error] - $FULL_EXTRACTED_ZOWE_FOLDER/log/*"
-    cat $FULL_EXTRACTED_ZOWE_FOLDER/log/* || true
-    echo "[${SCRIPT_NAME}][error] - $CIZT_ZOWE_ROOT_DIR/configure_log/*"
-    cat $CIZT_ZOWE_ROOT_DIR/configure_log/* || true
-    echo "[${SCRIPT_NAME}][error] - $CIZT_ZOWE_ROOT_DIR/scripts/configure/log/*"
-    cat $CIZT_ZOWE_ROOT_DIR/scripts/configure/log/* || true
-    echo "[${SCRIPT_NAME}][error] log end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
-    echo
-    exit 1
-  else
-    echo "[${SCRIPT_NAME}] ${RUN_SCRIPT} succeeds."
-    echo "[${SCRIPT_NAME}] here is log file >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    echo "[${SCRIPT_NAME}] - $FULL_EXTRACTED_ZOWE_FOLDER/log/*"
-    cat $FULL_EXTRACTED_ZOWE_FOLDER/log/* || true
-    echo "[${SCRIPT_NAME}] - $CIZT_ZOWE_ROOT_DIR/configure_log/*"
-    cat $CIZT_ZOWE_ROOT_DIR/configure_log/* || true
-    echo "[${SCRIPT_NAME}] - $CIZT_ZOWE_ROOT_DIR/scripts/configure/log/*"
-    cat $CIZT_ZOWE_ROOT_DIR/scripts/configure/log/* || true
-    echo "[${SCRIPT_NAME}] log end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
-    echo
   fi
-
-  # ./zowe-install-proc.sh $USER.ZWE $CIZT_PROCLIB_DS
-  # echo "    rc=$?"
 fi
 
 # execute scripts/zowe-runtime-authorize.sh
