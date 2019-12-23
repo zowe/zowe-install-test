@@ -383,6 +383,7 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   echo "calling zowe-install-proc.sh with"
   echo "    ZOWE_DSN_PREFIX=$USER.ZWE"
   echo "    ZOWE_SERVER_PROCLIB_DSNAME=$CIZT_PROCLIB_DS"
+  cd $CIZT_ZOWE_ROOT_DIR/scripts/utils
   RUN_SCRIPT="./zowe-install-proc.sh $USER.ZWE $CIZT_PROCLIB_DS"
   run_script_with_timeout "$RUN_SCRIPT" 3600
   EXIT_CODE=$?
@@ -534,6 +535,7 @@ else
   echo "calling zowe-install-proc.sh with"
   echo "    ZOWE_DSN_PREFIX=$USER.ZWE"
   echo "    ZOWE_SERVER_PROCLIB_DSNAME=$CIZT_PROCLIB_DS"
+  cd $CIZT_ZOWE_ROOT_DIR/scripts/utils
   RUN_SCRIPT="./zowe-install-proc.sh $USER.ZWE $CIZT_PROCLIB_DS"
   run_script_with_timeout "$RUN_SCRIPT" 3600
   EXIT_CODE=$?
