@@ -379,6 +379,18 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   echo "[${SCRIPT_NAME}] current Zowe configuration is:"
   cat "${CI_ZOWE_CONFIG_FILE}"
 
+  # insert call zowe setup certificates ... soon
+  echo "calling zowe-install-proc.sh with"
+  echo "    ZOWE_DSN_PREFIX=$USER.SMPE"
+  echo "    ZOWE_SERVER_PROCLIB_DSNAME=$CIZT_PROCLIB_DS"
+  cd $CIZT_ZOWE_ROOT_DIR/scripts/utils
+  RUN_SCRIPT="./zowe-install-proc.sh $USER.SMPE $CIZT_PROCLIB_DS"
+  run_script_with_timeout "$RUN_SCRIPT" 3600
+  EXIT_CODE=$?
+  if [[ "$EXIT_CODE" != "0" ]]; then
+    echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
+  fi
+  
   # configure Zowe
   cd ${CIZT_ZOWE_ROOT_DIR}/scripts
   echo "[${SCRIPT_NAME}] installation is done, start configuring ..."
@@ -516,6 +528,20 @@ else
     echo
   fi
   echo
+
+  # insert call zowe setup certificates ... soon
+# for NON-SMP/E (same code)
+  echo "for non-SMP/E"
+  echo "calling zowe-install-proc.sh with"
+  echo "    ZOWE_DSN_PREFIX=$USER.ZWE"
+  echo "    ZOWE_SERVER_PROCLIB_DSNAME=$CIZT_PROCLIB_DS"
+  cd $CIZT_ZOWE_ROOT_DIR/scripts/utils
+  RUN_SCRIPT="./zowe-install-proc.sh $USER.ZWE $CIZT_PROCLIB_DS"
+  run_script_with_timeout "$RUN_SCRIPT" 3600
+  EXIT_CODE=$?
+  if [[ "$EXIT_CODE" != "0" ]]; then
+    echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
+  fi
 fi
 
 # execute scripts/zowe-runtime-authorize.sh
