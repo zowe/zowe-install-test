@@ -159,7 +159,9 @@ fi
 echo
 
 echo "[${SCRIPT_NAME}] finish ZSS installation ... use new script"
+chmod a+x ../scripts/utils/zowe-install-xmem.sh 
 ls -l ../scripts/utils/zowe-install-xmem.sh # debug
+
 RUN_SCRIPT=../scripts/utils/zowe-install-xmem.sh
 echo "[${SCRIPT_NAME}] calling $RUN_SCRIPT from directory $(pwd)"
 run_script_with_timeout "$RUN_SCRIPT \
