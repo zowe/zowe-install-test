@@ -159,14 +159,14 @@ fi
 echo
 
 echo "[${SCRIPT_NAME}] finish ZSS installation ... use new script"
-cd $CIZT_ZOWE_ROOT_DIR/scripts/utils
-RUN_SCRIPT="./zowe-install-xmem.sh \
-  $USER.SMPE \
+ls -l ../scripts/utils/zowe-install-xmem.sh # debug
+RUN_SCRIPT=../scripts/utils/zowe-install-xmem.sh
+echo "[${SCRIPT_NAME}] calling $RUN_SCRIPT from directory $(pwd)"
+run_script_with_timeout "$RUN_SCRIPT \
+  $USER.ZWE \
   ${CIZT_ZSS_LOADLIB_DS_NAME} \
   ${CIZT_ZSS_PARMLIB_DS_NAME} \
-  ${CIZT_ZSS_PROCLIB_DS_NAME}"
-echo "[${SCRIPT_NAME}] calling $RUN_SCRIPT from directory $(pwd)"
-run_script_with_timeout $RUN_SCRIPT 1800
+  ${CIZT_ZSS_PROCLIB_DS_NAME}" 1800
 EXIT_CODE=$?
 if [[ "$EXIT_CODE" != "0" ]]; then
   echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
