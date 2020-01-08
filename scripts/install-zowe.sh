@@ -542,6 +542,32 @@ else
   if [[ "$EXIT_CODE" != "0" ]]; then
     echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
   fi
+
+  echo "calling zowe-install-xmem.sh with"
+  echo "  datasetprefix $USER.ZWE"
+  echo "  zss loadlib   ${CIZT_ZSS_LOADLIB_DS_NAME}"
+  echo "  zss parmlib   ${CIZT_ZSS_PARMLIB_DS_NAME}"
+  echo "  zss proclib   ${CIZT_ZSS_PROCLIB_DS_NAME}"
+
+  chmod a+x ./zowe-install-xmem.sh 
+  ls -l     ./zowe-install-xmem.sh # debug
+
+  RUN_SCRIPT=./zowe-install-xmem.sh
+  echo "[${SCRIPT_NAME}] calling $RUN_SCRIPT from directory $(pwd)"
+  run_script_with_timeout "$RUN_SCRIPT \
+    $USER.ZWE \
+    ${CIZT_ZSS_LOADLIB_DS_NAME} \
+    ${CIZT_ZSS_PARMLIB_DS_NAME} \
+    ${CIZT_ZSS_PROCLIB_DS_NAME}" 1800
+  EXIT_CODE=$?
+  if [[ "$EXIT_CODE" != "0" ]]; then
+    echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
+    echo
+    exit 1
+  else
+    echo "[${SCRIPT_NAME}] ${RUN_SCRIPT} succeeds."
+    echo
+  fi
 fi
 
 # execute scripts/zowe-runtime-authorize.sh

@@ -158,26 +158,26 @@ else
 fi
 echo
 
-echo "[${SCRIPT_NAME}] finish ZSS installation ... use new script"
-chmod a+x ../scripts/utils/zowe-install-xmem.sh 
-ls -l ../scripts/utils/zowe-install-xmem.sh # debug
+# echo "[${SCRIPT_NAME}] finish ZSS installation ... use new script"
+# chmod a+x ../scripts/utils/zowe-install-xmem.sh 
+# ls -l ../scripts/utils/zowe-install-xmem.sh # debug
 
-RUN_SCRIPT=../scripts/utils/zowe-install-xmem.sh
-echo "[${SCRIPT_NAME}] calling $RUN_SCRIPT from directory $(pwd)"
-run_script_with_timeout "$RUN_SCRIPT \
-  $USER.ZWE \
-  ${CIZT_ZSS_LOADLIB_DS_NAME} \
-  ${CIZT_ZSS_PARMLIB_DS_NAME} \
-  ${CIZT_ZSS_PROCLIB_DS_NAME}" 1800
-EXIT_CODE=$?
-if [[ "$EXIT_CODE" != "0" ]]; then
-  echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
-  echo
-  exit 1
-else
-  echo "[${SCRIPT_NAME}] ${RUN_SCRIPT} succeeds."
-  echo
-fi
+# RUN_SCRIPT=../scripts/utils/zowe-install-xmem.sh
+# echo "[${SCRIPT_NAME}] calling $RUN_SCRIPT from directory $(pwd)"
+# run_script_with_timeout "$RUN_SCRIPT \
+#   $USER.ZWE \
+#   ${CIZT_ZSS_LOADLIB_DS_NAME} \
+#   ${CIZT_ZSS_PARMLIB_DS_NAME} \
+#   ${CIZT_ZSS_PROCLIB_DS_NAME}" 1800
+# EXIT_CODE=$?
+# if [[ "$EXIT_CODE" != "0" ]]; then
+#   echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
+#   echo
+#   exit 1
+# else
+#   echo "[${SCRIPT_NAME}] ${RUN_SCRIPT} succeeds."
+#   echo
+# fi
 echo
 ################################################################################
 echo
