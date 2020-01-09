@@ -319,6 +319,11 @@ if [[ "$CI_UNINSTALL" = "yes" ]]; then
   fi
 fi
 
+DATA_SET_PREFIX=$USER.ZWE
+if [[ "$CI_IS_SMPE" = "yes" ]]; then
+  DATA_SET_PREFIX=$USER.SMPE
+fi
+
 rm -fr ${CIZT_INSTALL_DIR}/extracted && mkdir -p ${CIZT_INSTALL_DIR}/extracted
 if [[ "$CI_IS_SMPE" = "yes" ]]; then
   cd $CIZT_INSTALL_DIR
@@ -382,10 +387,10 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   # insert call zowe setup certificates ... soon
   echo "Type of install is SMP/E"
   echo "calling zowe-install-proc.sh with"
-  echo "    ZOWE_DSN_PREFIX=$USER.SMPE"
+  echo "    ZOWE_DSN_PREFIX=${DATA_SET_PREFIX}"
   echo "    ZOWE_SERVER_PROCLIB_DSNAME=$CIZT_PROCLIB_DS"
   cd $CIZT_ZOWE_ROOT_DIR/scripts/utils
-  RUN_SCRIPT="./zowe-install-proc.sh $USER.SMPE $CIZT_PROCLIB_DS"
+  RUN_SCRIPT="./zowe-install-proc.sh ${DATA_SET_PREFIX} $CIZT_PROCLIB_DS"
   run_script_with_timeout "$RUN_SCRIPT" 3600
   EXIT_CODE=$?
   if [[ "$EXIT_CODE" != "0" ]]; then
@@ -438,7 +443,7 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
 
   echo "[${SCRIPT_NAME}] all SMP/e install/config are done."
   echo
-else
+else #not SMPE
   # extract Zowe
   echo "[${SCRIPT_NAME}] extracting $CI_ZOWE_PAX to $CIZT_INSTALL_DIR/extracted ..."
   cd $CIZT_INSTALL_DIR/extracted
@@ -559,16 +564,17 @@ else
     echo
   fi
   echo
+fi #End SMPE if
 
   # insert call zowe setup certificates ... soon
 # for NON-SMP/E (same code)
 # Copy xmem server PROCLIB, PARMLIB and LOADLIB memers into targets
   echo "Type of install is non-SMP/E"
   echo "calling zowe-install-proc.sh with"
-  echo "    ZOWE_DSN_PREFIX=$USER.ZWE"
+  echo "    ZOWE_DSN_PREFIX=${DATA_SET_PREFIX}"
   echo "    ZOWE_SERVER_PROCLIB_DSNAME=$CIZT_PROCLIB_DS"
   cd $CIZT_ZOWE_ROOT_DIR/scripts/utils
-  RUN_SCRIPT="./zowe-install-proc.sh $USER.ZWE $CIZT_PROCLIB_DS"
+  RUN_SCRIPT="./zowe-install-proc.sh ${DATA_SET_PREFIX} $CIZT_PROCLIB_DS"
   run_script_with_timeout "$RUN_SCRIPT" 3600
   EXIT_CODE=$?
   if [[ "$EXIT_CODE" != "0" ]]; then
@@ -600,7 +606,6 @@ else
     echo "[${SCRIPT_NAME}] ${RUN_SCRIPT} succeeds."
     echo
   fi
-fi
 
 # execute scripts/zowe-runtime-authorize.sh
 echo "[${SCRIPT_NAME}] executing scripts/zowe-runtime-authorize.sh ..."
