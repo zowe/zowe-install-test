@@ -319,9 +319,9 @@ if [[ "$CI_UNINSTALL" = "yes" ]]; then
   fi
 fi
 
-DATA_SET_PREFIX=$USER.ZWE
+DATA_SET_PREFIX=${DATA_SET_PREFIX}
 if [[ "$CI_IS_SMPE" = "yes" ]]; then
-  DATA_SET_PREFIX=$USER.SMPE
+  DATA_SET_PREFIX=${DATA_SET_PREFIX}
 fi
 
 rm -fr ${CIZT_INSTALL_DIR}/extracted && mkdir -p ${CIZT_INSTALL_DIR}/extracted
@@ -414,7 +414,7 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
 
   # Copy xmem server PROCLIB, PARMLIB and LOADLIB members into targets
   echo "calling zowe-install-xmem.sh with"
-  echo "  datasetprefix $USER.SMPE"
+  echo "  datasetprefix ${DATA_SET_PREFIX}"
   echo "  zss loadlib   ${CIZT_ZSS_LOADLIB_DS_NAME}"
   echo "  zss parmlib   ${CIZT_ZSS_PARMLIB_DS_NAME}"
   echo "  zss proclib   ${CIZT_ZSS_PROCLIB_DS_NAME}"
@@ -425,7 +425,7 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   RUN_SCRIPT=./zowe-install-xmem.sh
   echo "[${SCRIPT_NAME}] calling $RUN_SCRIPT from directory $(pwd)"
   run_script_with_timeout "$RUN_SCRIPT \
-    $USER.SMPE \
+    ${DATA_SET_PREFIX} \
     ${CIZT_ZSS_LOADLIB_DS_NAME} \
     ${CIZT_ZSS_PARMLIB_DS_NAME} \
     ${CIZT_ZSS_PROCLIB_DS_NAME}" 1800
@@ -582,7 +582,7 @@ fi #End SMPE if
   fi
 
   echo "calling zowe-install-xmem.sh with"
-  echo "  datasetprefix $USER.ZWE"
+  echo "  datasetprefix ${DATA_SET_PREFIX}"
   echo "  zss loadlib   ${CIZT_ZSS_LOADLIB_DS_NAME}"
   echo "  zss parmlib   ${CIZT_ZSS_PARMLIB_DS_NAME}"
   echo "  zss proclib   ${CIZT_ZSS_PROCLIB_DS_NAME}"
@@ -593,7 +593,7 @@ fi #End SMPE if
   RUN_SCRIPT=./zowe-install-xmem.sh
   echo "[${SCRIPT_NAME}] calling $RUN_SCRIPT from directory $(pwd)"
   run_script_with_timeout "$RUN_SCRIPT \
-    $USER.ZWE \
+    ${DATA_SET_PREFIX} \
     ${CIZT_ZSS_LOADLIB_DS_NAME} \
     ${CIZT_ZSS_PARMLIB_DS_NAME} \
     ${CIZT_ZSS_PROCLIB_DS_NAME}" 1800
