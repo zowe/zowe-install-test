@@ -503,7 +503,7 @@ fi
 echo "Setting up certificate..."
 # Create a copy of the default environment
 TEMP_CERTIFICATE_ENV_LOCATION="/ZOWE/tmp/zowe-setup-certificates.env"
-cp ${CIZT_ZOWE_ROOT_DIR}bin/zowe-setup-certificates.env ${TEMP_CERTIFICATE_ENV_LOCATION}
+cp ${CIZT_ZOWE_ROOT_DIR}/bin/zowe-setup-certificates.env ${TEMP_CERTIFICATE_ENV_LOCATION}
 # Inject new keystore location
 cat "${TEMP_CERTIFICATE_ENV_LOCATION}" | \
   sed -e "s%EXTERNAL_CERTIFICATE=%EXTERNAL_CERTIFICATE=${CIZT_ZOWE_API_MEDIATION_EXT_CERT}%" | \
