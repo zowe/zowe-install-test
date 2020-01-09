@@ -518,6 +518,12 @@ ${CIZT_ZOWE_ROOT_DIR}/bin/zowe-setup-certificates.sh -p ${TEMP_CERTIFICATE_ENV_L
 ls ${CIZT_ZOWE_KEYSTORE_DIR}
 rm ${TEMP_CERTIFICATE_ENV_LOCATION}
 
+# Update the instance.env with the custom parameters
+INSTANCE_ENV=${CIZT_ZOWE_USER_DIR}/instance.env
+cat "${INSTANCE_ENV}" | \
+  sed -e "s%KEYSTORE_DIRECTORY=/global/zowe/keystore%KEYSTORE_DIRECTORY=${CIZT_ZOWE_KEYSTORE_DIR}%" > "${INSTANCE_ENV}.tmp"
+mv ${INSTANCE_ENV}.tmp ${INSTANCE_ENV}
+
 echo "calling zowe-install-proc.sh with"
 echo "    ZOWE_DSN_PREFIX=${DATA_SET_PREFIX}}"
 echo "    ZOWE_SERVER_PROCLIB_DSNAME=$CIZT_PROCLIB_DS"
