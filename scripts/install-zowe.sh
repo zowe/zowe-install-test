@@ -519,17 +519,17 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   DATA_SET_PREFIX=$USER.SMPE
 fi
 
-echo "Doing certificate setup..."
+echo "Setting up certificate..."
 # Create a copy of the default environment
-TEMP_CERTIFICATE_ENV_LOCATION = 
+TEMP_CERTIFICATE_ENV_LOCATION="/ZOWE/tmp/zowe-setup-certificates.env"
 cp ${CIZT_ZOWE_ROOT_DIR}bin/zowe-setup-certificates.env ${TEMP_CERTIFICATE_ENV_LOCATION}
 # Inject new keystore location
-
 cat "${TEMP_CERTIFICATE_ENV_LOCATION}" | \
   sed -e "s%KEYSTORE_DIRECTORY=/global/zowe/keystore%KEYSTORE_DIRECTORY=${CIZT_ZOWE_KEYSTORE_DIR}%" > "${TEMP_CERTIFICATE_ENV_LOCATION}.tmp"
 mv ${TEMP_CERTIFICATE_ENV_LOCATION}.tmp ${TEMP_CERTIFICATE_ENV_LOCATION}
 # Run the setup scripts
 ${CIZT_ZOWE_ROOT_DIR}/bin/zowe-setup-certificates.sh -p ${TEMP_CERTIFICATE_ENV_LOCATION}
+rm $TEMP_CERTIFICATE_ENV_LOCATION}
 
 echo "calling zowe-install-proc.sh with"
 echo "    ZOWE_DSN_PREFIX=${DATA_SET_PREFIX}}"
