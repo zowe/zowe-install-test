@@ -302,8 +302,6 @@ echo "[${SCRIPT_NAME}]     - zssPort           : $CIZT_ZOWE_ZLUX_ZSS_PORT"
 echo "[${SCRIPT_NAME}]   - terminals           :"
 echo "[${SCRIPT_NAME}]     - sshPort           : $CIZT_ZOWE_MVD_SSH_PORT"
 echo "[${SCRIPT_NAME}]     - telnetPort        : $CIZT_ZOWE_MVD_TELNET_PORT"
-echo "[${SCRIPT_NAME}]   - keystore           :"
-echo "[${SCRIPT_NAME}]     - keystoreDirectory           : $CIZT_ZOWE_KEYSTORE_DIR"
 echo
 
 if [[ "$CI_UNINSTALL" = "yes" ]]; then
@@ -373,8 +371,7 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
     sed -e "/^zlux-server:/,\$s#httpsPort=.*\$#httpsPort=${CIZT_ZOWE_ZLUX_HTTPS_PORT}#" | \
     sed -e "/^zlux-server:/,\$s#zssPort=.*\$#zssPort=${CIZT_ZOWE_ZLUX_ZSS_PORT}#" | \
     sed -e "/^terminals:/,\$s#sshPort=.*\$#sshPort=${CIZT_ZOWE_MVD_SSH_PORT}#" | \
-    sed -e "/^terminals:/,\$s#telnetPort=.*\$#telnetPort=${CIZT_ZOWE_MVD_TELNET_PORT}#" | \
-    sed -e "/^keystore:/,\$s#keystoreDirectory=.*\$#keystoreDirectory=${CIZT_ZOWE_KEYSTORE_DIR}#" > "${CI_ZOWE_CONFIG_FILE}.tmp"
+    sed -e "/^terminals:/,\$s#telnetPort=.*\$#telnetPort=${CIZT_ZOWE_MVD_TELNET_PORT}#" > "${CI_ZOWE_CONFIG_FILE}.tmp"
   mv "${CI_ZOWE_CONFIG_FILE}.tmp" "${CI_ZOWE_CONFIG_FILE}"
   echo "[${SCRIPT_NAME}] current Zowe configuration is:"
   cat "${CI_ZOWE_CONFIG_FILE}"
@@ -445,8 +442,7 @@ else #not SMPE
     sed -e "/^zlux-server:/,\$s#httpsPort=.*\$#httpsPort=${CIZT_ZOWE_ZLUX_HTTPS_PORT}#" | \
     sed -e "/^zlux-server:/,\$s#zssPort=.*\$#zssPort=${CIZT_ZOWE_ZLUX_ZSS_PORT}#" | \
     sed -e "/^terminals:/,\$s#sshPort=.*\$#sshPort=${CIZT_ZOWE_MVD_SSH_PORT}#" | \
-    sed -e "/^terminals:/,\$s#telnetPort=.*\$#telnetPort=${CIZT_ZOWE_MVD_TELNET_PORT}#" | \
-    sed -e "/^keystore:/,\$s#keystoreDirectory=.*\$#keystoreDirectory=${CIZT_ZOWE_KEYSTORE_DIR}#" > "${CI_ZOWE_CONFIG_FILE}.tmp"
+    sed -e "/^terminals:/,\$s#telnetPort=.*\$#telnetPort=${CIZT_ZOWE_MVD_TELNET_PORT}#" > "${CI_ZOWE_CONFIG_FILE}.tmp"
   mv "${CI_ZOWE_CONFIG_FILE}.tmp" "${CI_ZOWE_CONFIG_FILE}"
   echo "[${SCRIPT_NAME}] current Zowe configuration is:"
   cat "${CI_ZOWE_CONFIG_FILE}"
@@ -523,7 +519,18 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   DATA_SET_PREFIX=$USER.SMPE
 fi
 
-# insert call zowe setup certificates ... soon
+echo "Doing certificate setup..."
+# Create a copy of the default environment
+TEMP_CERTIFICATE_ENV_LOCATION = 
+cp ${CIZT_ZOWE_ROOT_DIR}bin/zowe-setup-certificates.env ${TEMP_CERTIFICATE_ENV_LOCATION}
+# Inject new keystore location
+
+cat "${TEMP_CERTIFICATE_ENV_LOCATION}" | \
+  sed -e "s%KEYSTORE_DIRECTORY=/global/zowe/keystore%KEYSTORE_DIRECTORY=${CIZT_ZOWE_KEYSTORE_DIR}%" > "${TEMP_CERTIFICATE_ENV_LOCATION}.tmp"
+mv ${TEMP_CERTIFICATE_ENV_LOCATION}.tmp ${TEMP_CERTIFICATE_ENV_LOCATION}
+# Run the setup scripts
+${CIZT_ZOWE_ROOT_DIR}/bin/zowe-setup-certificates.sh -p ${TEMP_CERTIFICATE_ENV_LOCATION}
+
 echo "calling zowe-install-proc.sh with"
 echo "    ZOWE_DSN_PREFIX=${DATA_SET_PREFIX}}"
 echo "    ZOWE_SERVER_PROCLIB_DSNAME=$CIZT_PROCLIB_DS"
