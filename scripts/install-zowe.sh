@@ -380,7 +380,7 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   cat "${CI_ZOWE_CONFIG_FILE}"
 
   # insert call zowe setup certificates ... soon
-  echo "for SMP/E"
+  echo "Type of install is SMP/E"
   echo "calling zowe-install-proc.sh with"
   echo "    ZOWE_DSN_PREFIX=$USER.SMPE"
   echo "    ZOWE_SERVER_PROCLIB_DSNAME=$CIZT_PROCLIB_DS"
@@ -563,7 +563,7 @@ else
   # insert call zowe setup certificates ... soon
 # for NON-SMP/E (same code)
 # Copy xmem server PROCLIB, PARMLIB and LOADLIB memers into targets
-  echo "for non-SMP/E"
+  echo "Type of install is non-SMP/E"
   echo "calling zowe-install-proc.sh with"
   echo "    ZOWE_DSN_PREFIX=$USER.ZWE"
   echo "    ZOWE_SERVER_PROCLIB_DSNAME=$CIZT_PROCLIB_DS"
