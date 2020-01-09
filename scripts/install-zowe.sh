@@ -413,7 +413,7 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   echo "  zss loadlib   ${CIZT_ZSS_LOADLIB_DS_NAME}"
   echo "  zss parmlib   ${CIZT_ZSS_PARMLIB_DS_NAME}"
   echo "  zss proclib   ${CIZT_ZSS_PROCLIB_DS_NAME}"
-
+  cd $CIZT_ZOWE_ROOT_DIR/scripts/utils
   chmod a+x ./zowe-install-xmem.sh 
   ls -l     ./zowe-install-xmem.sh # debug
 
