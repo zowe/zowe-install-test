@@ -278,17 +278,10 @@ echo "[${SCRIPT_NAME}]   - install             :"
 echo "[${SCRIPT_NAME}]     - rootDir           : $CIZT_ZOWE_ROOT_DIR"
 echo "[${SCRIPT_NAME}]     - instanceDir       : $CIZT_ZOWE_USER_DIR"
 echo "[${SCRIPT_NAME}]     - prefix            : $CIZT_ZOWE_JOB_PREFIX"
-echo "[${SCRIPT_NAME}]   - zowe-server-proclib :"
-echo "[${SCRIPT_NAME}]     - dsName            : $CIZT_PROCLIB_DS"
-echo "[${SCRIPT_NAME}]     - memberName        : $CIZT_PROCLIB_MEMBER"
 echo "[${SCRIPT_NAME}]   - api-mediation       :"
 echo "[${SCRIPT_NAME}]     - catalogPort       : $CIZT_ZOWE_API_MEDIATION_CATALOG_HTTP_PORT"
 echo "[${SCRIPT_NAME}]     - discoveryPort     : $CIZT_ZOWE_API_MEDIATION_DISCOVERY_HTTP_PORT"
 echo "[${SCRIPT_NAME}]     - gatewayPort       : $CIZT_ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT"
-echo "[${SCRIPT_NAME}]     - externalCertificate            : $CIZT_ZOWE_API_MEDIATION_EXT_CERT"
-echo "[${SCRIPT_NAME}]     - externalCertificateAlias       : $CIZT_ZOWE_API_MEDIATION_EXT_CERT_ALIAS"
-echo "[${SCRIPT_NAME}]     - externalCertificateAuthorities : $CIZT_ZOWE_API_MEDIATION_EXT_CERT_AUTH"
-echo "[${SCRIPT_NAME}]     - verifyCertificatesOfServices   : $CIZT_ZOWE_API_MEDIATION_VERIFY_CERT"
 echo "[${SCRIPT_NAME}]   - explorer-server     :"
 echo "[${SCRIPT_NAME}]     - jobsPort          : $CIZT_ZOWE_EXPLORER_JOBS_PORT"
 echo "[${SCRIPT_NAME}]     - dataSetsPort      : $CIZT_ZOWE_EXPLORER_DATASETS_PORT"
@@ -354,15 +347,9 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
     sed -e "/^install:/,\$s#rootDir=.*\$#rootDir=${CIZT_ZOWE_ROOT_DIR}#" | \
     sed -e "/^install:/,\$s#instanceDir=.*\$#instanceDir=${CIZT_ZOWE_USER_DIR}#" | \
     sed -e "/^install:/,\$s#prefix=.*\$#prefix=${CIZT_ZOWE_JOB_PREFIX}#" | \
-    sed -e "/^zowe-server-proclib:/,\$s#dsName=.*\$#dsName=${CIZT_PROCLIB_DS}#" | \
-    sed -e "/^zowe-server-proclib:/,\$s#memberName=.*\$#memberName=${CIZT_PROCLIB_MEMBER}#" | \
     sed -e "/^api-mediation:/,\$s#catalogPort=.*\$#catalogPort=${CIZT_ZOWE_API_MEDIATION_CATALOG_HTTP_PORT}#" | \
     sed -e "/^api-mediation:/,\$s#discoveryPort=.*\$#discoveryPort=${CIZT_ZOWE_API_MEDIATION_DISCOVERY_HTTP_PORT}#" | \
     sed -e "/^api-mediation:/,\$s#gatewayPort=.*\$#gatewayPort=${CIZT_ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT}#" | \
-    sed -e "/^api-mediation:/,\$s#externalCertificate=.*\$#externalCertificate=${CIZT_ZOWE_API_MEDIATION_EXT_CERT}#" | \
-    sed -e "/^api-mediation:/,\$s#externalCertificateAlias=.*\$#externalCertificateAlias=${CIZT_ZOWE_API_MEDIATION_EXT_CERT_ALIAS}#" | \
-    sed -e "/^api-mediation:/,\$s#externalCertificateAuthorities=.*\$#externalCertificateAuthorities=${CIZT_ZOWE_API_MEDIATION_EXT_CERT_AUTH}#" | \
-    sed -e "/^api-mediation:/,\$s#verifyCertificatesOfServices=.*\$#verifyCertificatesOfServices=${CIZT_ZOWE_API_MEDIATION_VERIFY_CERT}#" | \
     sed -e "/^explorer-server:/,\$s#jobsPort=.*\$#jobsPort=${CIZT_ZOWE_EXPLORER_JOBS_PORT}#" | \
     sed -e "/^explorer-server:/,\$s#dataSetsPort=.*\$#dataSetsPort=${CIZT_ZOWE_EXPLORER_DATASETS_PORT}#" | \
     sed -e "/^explorer-ui:/,\$s#explorerJESUI=.*\$#explorerJESUI=${CIZT_ZOWE_EXPLORER_UI_JES_PORT}#" | \
@@ -425,15 +412,9 @@ else #not SMPE
     sed -e "/^install:/,\$s#rootDir=.*\$#rootDir=${CIZT_ZOWE_ROOT_DIR}#" | \
     sed -e "/^install:/,\$s#instanceDir=.*\$#instanceDir=${CIZT_ZOWE_USER_DIR}#" | \
     sed -e "/^install:/,\$s#prefix=.*\$#prefix=${CIZT_ZOWE_JOB_PREFIX}#" | \
-    sed -e "/^zowe-server-proclib:/,\$s#dsName=.*\$#dsName=${CIZT_PROCLIB_DS}#" | \
-    sed -e "/^zowe-server-proclib:/,\$s#memberName=.*\$#memberName=${CIZT_PROCLIB_MEMBER}#" | \
     sed -e "/^api-mediation:/,\$s#catalogPort=.*\$#catalogPort=${CIZT_ZOWE_API_MEDIATION_CATALOG_HTTP_PORT}#" | \
     sed -e "/^api-mediation:/,\$s#discoveryPort=.*\$#discoveryPort=${CIZT_ZOWE_API_MEDIATION_DISCOVERY_HTTP_PORT}#" | \
     sed -e "/^api-mediation:/,\$s#gatewayPort=.*\$#gatewayPort=${CIZT_ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT}#" | \
-    sed -e "/^api-mediation:/,\$s#externalCertificate=.*\$#externalCertificate=${CIZT_ZOWE_API_MEDIATION_EXT_CERT}#" | \
-    sed -e "/^api-mediation:/,\$s#externalCertificateAlias=.*\$#externalCertificateAlias=${CIZT_ZOWE_API_MEDIATION_EXT_CERT_ALIAS}#" | \
-    sed -e "/^api-mediation:/,\$s#externalCertificateAuthorities=.*\$#externalCertificateAuthorities=${CIZT_ZOWE_API_MEDIATION_EXT_CERT_AUTH}#" | \
-    sed -e "/^api-mediation:/,\$s#verifyCertificatesOfServices=.*\$#verifyCertificatesOfServices=${CIZT_ZOWE_API_MEDIATION_VERIFY_CERT}#" | \
     sed -e "/^explorer-server:/,\$s#jobsPort=.*\$#jobsPort=${CIZT_ZOWE_EXPLORER_JOBS_PORT}#" | \
     sed -e "/^explorer-server:/,\$s#dataSetsPort=.*\$#dataSetsPort=${CIZT_ZOWE_EXPLORER_DATASETS_PORT}#" | \
     sed -e "/^explorer-ui:/,\$s#explorerJESUI=.*\$#explorerJESUI=${CIZT_ZOWE_EXPLORER_UI_JES_PORT}#" | \
@@ -525,6 +506,10 @@ TEMP_CERTIFICATE_ENV_LOCATION="/ZOWE/tmp/zowe-setup-certificates.env"
 cp ${CIZT_ZOWE_ROOT_DIR}bin/zowe-setup-certificates.env ${TEMP_CERTIFICATE_ENV_LOCATION}
 # Inject new keystore location
 cat "${TEMP_CERTIFICATE_ENV_LOCATION}" | \
+  sed -e "s%EXTERNAL_CERTIFICATE=%EXTERNAL_CERTIFICATE=${CIZT_ZOWE_API_MEDIATION_EXT_CERT}%" | \
+  sed -e "s%EXTERNAL_CERTIFICATE_ALIAS=%EXTERNAL_CERTIFICATE_ALIAS=${CIZT_ZOWE_API_MEDIATION_EXT_CERT_ALIAS}%" | \
+  sed -e "s%EXTERNAL_CERTIFICATE_AUTHORITIES=%EXTERNAL_CERTIFICATE_AUTHORITIES=${CIZT_ZOWE_API_MEDIATION_EXT_CERT_AUTH}%" | \
+  sed -e "s%VERIFY_CERTIFICATES=true%VERIFY_CERTIFICATES=${CIZT_ZOWE_API_MEDIATION_VERIFY_CERT}%" | \
   sed -e "s%KEYSTORE_DIRECTORY=/global/zowe/keystore%KEYSTORE_DIRECTORY=${CIZT_ZOWE_KEYSTORE_DIR}%" > "${TEMP_CERTIFICATE_ENV_LOCATION}.tmp"
 mv ${TEMP_CERTIFICATE_ENV_LOCATION}.tmp ${TEMP_CERTIFICATE_ENV_LOCATION}
 # Run the setup scripts
