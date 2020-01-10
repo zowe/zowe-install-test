@@ -543,29 +543,6 @@ else #not SMPE
   echo
 
 
-echo "Setting up certificate..."
-# Create a copy of the default environment
-TEMP_CERTIFICATE_ENV_LOCATION="/ZOWE/tmp/zowe-setup-certificates.env"
-cp ${CIZT_ZOWE_ROOT_DIR}/bin/zowe-setup-certificates.env ${TEMP_CERTIFICATE_ENV_LOCATION}
-# Inject new keystore location
-cat "${TEMP_CERTIFICATE_ENV_LOCATION}" | \
-  sed -e "s%EXTERNAL_CERTIFICATE=%EXTERNAL_CERTIFICATE=${CIZT_ZOWE_API_MEDIATION_EXT_CERT}%" | \
-  sed -e "s%EXTERNAL_CERTIFICATE_ALIAS=%EXTERNAL_CERTIFICATE_ALIAS=${CIZT_ZOWE_API_MEDIATION_EXT_CERT_ALIAS}%" | \
-  sed -e "s%EXTERNAL_CERTIFICATE_AUTHORITIES=%EXTERNAL_CERTIFICATE_AUTHORITIES=${CIZT_ZOWE_API_MEDIATION_EXT_CERT_AUTH}%" | \
-  sed -e "s%VERIFY_CERTIFICATES=true%VERIFY_CERTIFICATES=${CIZT_ZOWE_API_MEDIATION_VERIFY_CERT}%" | \
-  sed -e "s%KEYSTORE_DIRECTORY=/global/zowe/keystore%KEYSTORE_DIRECTORY=${CIZT_ZOWE_KEYSTORE_DIR}%" > "${TEMP_CERTIFICATE_ENV_LOCATION}.tmp"
-mv ${TEMP_CERTIFICATE_ENV_LOCATION}.tmp ${TEMP_CERTIFICATE_ENV_LOCATION}
-# Run the setup scripts
-cat ${TEMP_CERTIFICATE_ENV_LOCATION}
-${CIZT_ZOWE_ROOT_DIR}/bin/zowe-setup-certificates.sh -p ${TEMP_CERTIFICATE_ENV_LOCATION}
-ls ${CIZT_ZOWE_KEYSTORE_DIR}
-rm ${TEMP_CERTIFICATE_ENV_LOCATION}
-
-# Update the instance.env with the custom parameters
-INSTANCE_ENV=${CIZT_ZOWE_USER_DIR}/instance.env
-cat "${INSTANCE_ENV}" | \
-  sed -e "s%KEYSTORE_DIRECTORY=/global/zowe/keystore%KEYSTORE_DIRECTORY=${CIZT_ZOWE_KEYSTORE_DIR}%" > "${INSTANCE_ENV}.tmp"
-mv ${INSTANCE_ENV}.tmp ${INSTANCE_ENV}
 
 # for NON-SMP/E (same code)
 # Copy xmem server PROCLIB, PARMLIB and LOADLIB memers into targets
@@ -607,6 +584,30 @@ mv ${INSTANCE_ENV}.tmp ${INSTANCE_ENV}
     echo
   fi
 fi #End SMPE if
+
+echo "Setting up certificate..."
+# Create a copy of the default environment
+TEMP_CERTIFICATE_ENV_LOCATION="/ZOWE/tmp/zowe-setup-certificates.env"
+cp ${CIZT_ZOWE_ROOT_DIR}/bin/zowe-setup-certificates.env ${TEMP_CERTIFICATE_ENV_LOCATION}
+# Inject new keystore location
+cat "${TEMP_CERTIFICATE_ENV_LOCATION}" | \
+  sed -e "s%EXTERNAL_CERTIFICATE=%EXTERNAL_CERTIFICATE=${CIZT_ZOWE_API_MEDIATION_EXT_CERT}%" | \
+  sed -e "s%EXTERNAL_CERTIFICATE_ALIAS=%EXTERNAL_CERTIFICATE_ALIAS=${CIZT_ZOWE_API_MEDIATION_EXT_CERT_ALIAS}%" | \
+  sed -e "s%EXTERNAL_CERTIFICATE_AUTHORITIES=%EXTERNAL_CERTIFICATE_AUTHORITIES=${CIZT_ZOWE_API_MEDIATION_EXT_CERT_AUTH}%" | \
+  sed -e "s%VERIFY_CERTIFICATES=true%VERIFY_CERTIFICATES=${CIZT_ZOWE_API_MEDIATION_VERIFY_CERT}%" | \
+  sed -e "s%KEYSTORE_DIRECTORY=/global/zowe/keystore%KEYSTORE_DIRECTORY=${CIZT_ZOWE_KEYSTORE_DIR}%" > "${TEMP_CERTIFICATE_ENV_LOCATION}.tmp"
+mv ${TEMP_CERTIFICATE_ENV_LOCATION}.tmp ${TEMP_CERTIFICATE_ENV_LOCATION}
+# Run the setup scripts
+cat ${TEMP_CERTIFICATE_ENV_LOCATION}
+${CIZT_ZOWE_ROOT_DIR}/bin/zowe-setup-certificates.sh -p ${TEMP_CERTIFICATE_ENV_LOCATION}
+ls ${CIZT_ZOWE_KEYSTORE_DIR}
+rm ${TEMP_CERTIFICATE_ENV_LOCATION}
+
+# Update the instance.env with the custom parameters
+INSTANCE_ENV=${CIZT_ZOWE_USER_DIR}/instance.env
+cat "${INSTANCE_ENV}" | \
+  sed -e "s%KEYSTORE_DIRECTORY=/global/zowe/keystore%KEYSTORE_DIRECTORY=${CIZT_ZOWE_KEYSTORE_DIR}%" > "${INSTANCE_ENV}.tmp"
+mv ${INSTANCE_ENV}.tmp ${INSTANCE_ENV}
 
 # execute scripts/zowe-runtime-authorize.sh
 echo "[${SCRIPT_NAME}] executing scripts/zowe-runtime-authorize.sh ..."
