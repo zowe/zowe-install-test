@@ -564,7 +564,7 @@ else #not SMPE
     echo
   fi
   echo
-fi #End SMPE if
+
 
   # insert call zowe setup certificates ... soon
 # for NON-SMP/E (same code)
@@ -606,6 +606,7 @@ fi #End SMPE if
     echo "[${SCRIPT_NAME}] ${RUN_SCRIPT} succeeds."
     echo
   fi
+fi #End SMPE if
 
 # execute scripts/zowe-runtime-authorize.sh
 echo "[${SCRIPT_NAME}] executing scripts/zowe-runtime-authorize.sh ..."
