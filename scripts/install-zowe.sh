@@ -319,9 +319,9 @@ if [[ "$CI_UNINSTALL" = "yes" ]]; then
   fi
 fi
 
-DATA_SET_PREFIX=${DATA_SET_PREFIX}
+DATA_SET_PREFIX=$USER.ZWE
 if [[ "$CI_IS_SMPE" = "yes" ]]; then
-  DATA_SET_PREFIX=${DATA_SET_PREFIX}
+  DATA_SET_PREFIX=$USER.SMPE
 fi
 
 rm -fr ${CIZT_INSTALL_DIR}/extracted && mkdir -p ${CIZT_INSTALL_DIR}/extracted
