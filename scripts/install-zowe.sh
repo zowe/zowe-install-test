@@ -446,8 +446,6 @@ else
   ${CIZT_INSTALL_DIR}/install-xmem-server.sh
 fi
 
-
-
 echo "Setting up certificate..."
 # Create a copy of the default environment
 TEMP_CERTIFICATE_ENV_LOCATION="/ZOWE/tmp/zowe-setup-certificates.env"
@@ -467,6 +465,7 @@ ls ${CIZT_ZOWE_KEYSTORE_DIR}
 rm ${TEMP_CERTIFICATE_ENV_LOCATION}
 
 echo "Creating zowe-instance..."
+${CIZT_ZOWE_ROOT_DIR}/bin/zowe-configure-instance.sh -c ${CIZT_ZOWE_USER_DIR}
 # Update the instance.env with the custom parameters
 INSTANCE_ENV=${CIZT_ZOWE_USER_DIR}/instance.env
 cat "${INSTANCE_ENV}" | \
@@ -492,7 +491,7 @@ cat "${INSTANCE_ENV}" | \
 mv ${INSTANCE_ENV}.tmp ${INSTANCE_ENV}
 
 echo "calling zowe-install-proc.sh with"
-echo "    ZOWE_DSN_PREFIX=${DATA_SET_PREFIX}}"
+echo "    ZOWE_DSN_PREFIX=${DATA_SET_PREFIX}"
 echo "    ZOWE_SERVER_PROCLIB_DSNAME=$CIZT_PROCLIB_DS"
 cd $CIZT_ZOWE_ROOT_DIR/scripts/utils
 RUN_SCRIPT="./zowe-install-proc.sh ${DATA_SET_PREFIX} $CIZT_PROCLIB_DS"
