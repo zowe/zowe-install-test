@@ -368,19 +368,6 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   echo "[${SCRIPT_NAME}] current Zowe configuration is:"
   cat "${CI_ZOWE_CONFIG_FILE}"
 
-  # insert call zowe setup certificates ... soon
-  echo "Type of install is SMP/E"
-  echo "calling zowe-install-proc.sh with"
-  echo "    ZOWE_DSN_PREFIX=${DATA_SET_PREFIX}"
-  echo "    ZOWE_SERVER_PROCLIB_DSNAME=$CIZT_PROCLIB_DS"
-  cd $CIZT_ZOWE_ROOT_DIR/scripts/utils
-  RUN_SCRIPT="./zowe-install-proc.sh ${DATA_SET_PREFIX} $CIZT_PROCLIB_DS"
-  run_script_with_timeout "$RUN_SCRIPT" 3600
-  EXIT_CODE=$?
-  if [[ "$EXIT_CODE" != "0" ]]; then
-    echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
-  fi
-  
   # configure Zowe
   cd ${CIZT_ZOWE_ROOT_DIR}/scripts
   echo "[${SCRIPT_NAME}] installation is done, start configuring ..."
@@ -395,34 +382,6 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   echo "[${SCRIPT_NAME}] Zowe configuration is done, start installing xmem server ..."
   cd ${CIZT_SMPE_PATH_PREFIX}${CIZT_SMPE_PATH_DEFAULT}/xmem-server
   ${CIZT_INSTALL_DIR}/install-xmem-server.sh
-
-  # Copy xmem server PROCLIB, PARMLIB and LOADLIB members into targets
-  echo "calling zowe-install-xmem.sh with"
-  echo "  datasetprefix ${DATA_SET_PREFIX}"
-  echo "  zss loadlib   ${CIZT_ZSS_LOADLIB_DS_NAME}"
-  echo "  zss parmlib   ${CIZT_ZSS_PARMLIB_DS_NAME}"
-  echo "  zss proclib   ${CIZT_ZSS_PROCLIB_DS_NAME}"
-  cd $CIZT_ZOWE_ROOT_DIR/scripts/utils
-  chmod a+x ./zowe-install-xmem.sh 
-  ls -l     ./zowe-install-xmem.sh # debug
-
-  RUN_SCRIPT=./zowe-install-xmem.sh
-  echo "[${SCRIPT_NAME}] calling $RUN_SCRIPT from directory $(pwd)"
-  run_script_with_timeout "$RUN_SCRIPT \
-    ${DATA_SET_PREFIX} \
-    ${CIZT_ZSS_LOADLIB_DS_NAME} \
-    ${CIZT_ZSS_PARMLIB_DS_NAME} \
-    ${CIZT_ZSS_PROCLIB_DS_NAME}" 1800
-  EXIT_CODE=$?
-  if [[ "$EXIT_CODE" != "0" ]]; then
-    echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
-    echo
-    exit 1
-  else
-    echo "[${SCRIPT_NAME}] ${RUN_SCRIPT} succeeds."
-    echo
-  fi
-
 
 
   echo "[${SCRIPT_NAME}] all SMP/e install/config are done."
@@ -542,48 +501,46 @@ else #not SMPE
   fi
   echo
 
-
-
-# for NON-SMP/E (same code)
-# Copy xmem server PROCLIB, PARMLIB and LOADLIB memers into targets
-  echo "Type of install is non-SMP/E"
-  echo "calling zowe-install-proc.sh with"
-  echo "    ZOWE_DSN_PREFIX=${DATA_SET_PREFIX}"
-  echo "    ZOWE_SERVER_PROCLIB_DSNAME=$CIZT_PROCLIB_DS"
-  cd $CIZT_ZOWE_ROOT_DIR/scripts/utils
-  RUN_SCRIPT="./zowe-install-proc.sh ${DATA_SET_PREFIX} $CIZT_PROCLIB_DS"
-  run_script_with_timeout "$RUN_SCRIPT" 3600
-  EXIT_CODE=$?
-  if [[ "$EXIT_CODE" != "0" ]]; then
-    echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
-  fi
-
-  echo "calling zowe-install-xmem.sh with"
-  echo "  datasetprefix ${DATA_SET_PREFIX}"
-  echo "  zss loadlib   ${CIZT_ZSS_LOADLIB_DS_NAME}"
-  echo "  zss parmlib   ${CIZT_ZSS_PARMLIB_DS_NAME}"
-  echo "  zss proclib   ${CIZT_ZSS_PROCLIB_DS_NAME}"
-
-  chmod a+x ./zowe-install-xmem.sh 
-  ls -l     ./zowe-install-xmem.sh # debug
-
-  RUN_SCRIPT=./zowe-install-xmem.sh
-  echo "[${SCRIPT_NAME}] calling $RUN_SCRIPT from directory $(pwd)"
-  run_script_with_timeout "$RUN_SCRIPT \
-    ${DATA_SET_PREFIX} \
-    ${CIZT_ZSS_LOADLIB_DS_NAME} \
-    ${CIZT_ZSS_PARMLIB_DS_NAME} \
-    ${CIZT_ZSS_PROCLIB_DS_NAME}" 1800
-  EXIT_CODE=$?
-  if [[ "$EXIT_CODE" != "0" ]]; then
-    echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
-    echo
-    exit 1
-  else
-    echo "[${SCRIPT_NAME}] ${RUN_SCRIPT} succeeds."
-    echo
-  fi
 fi #End SMPE if
+
+# Copy xmem server PROCLIB, PARMLIB and LOADLIB memers into targets
+echo "calling zowe-install-proc.sh with"
+echo "    ZOWE_DSN_PREFIX=${DATA_SET_PREFIX}"
+echo "    ZOWE_SERVER_PROCLIB_DSNAME=$CIZT_PROCLIB_DS"
+cd $CIZT_ZOWE_ROOT_DIR/scripts/utils
+RUN_SCRIPT="./zowe-install-proc.sh ${DATA_SET_PREFIX} $CIZT_PROCLIB_DS"
+run_script_with_timeout "$RUN_SCRIPT" 3600
+EXIT_CODE=$?
+if [[ "$EXIT_CODE" != "0" ]]; then
+  echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
+fi
+
+echo "calling zowe-install-xmem.sh with"
+echo "  datasetprefix ${DATA_SET_PREFIX}"
+echo "  zss loadlib   ${CIZT_ZSS_LOADLIB_DS_NAME}"
+echo "  zss parmlib   ${CIZT_ZSS_PARMLIB_DS_NAME}"
+echo "  zss proclib   ${CIZT_ZSS_PROCLIB_DS_NAME}"
+
+ls -l     ./zowe-install-xmem.sh # check
+chmod a+x ./zowe-install-xmem.sh 
+
+RUN_SCRIPT=./zowe-install-xmem.sh
+echo "[${SCRIPT_NAME}] calling $RUN_SCRIPT from directory $(pwd)"
+run_script_with_timeout "$RUN_SCRIPT \
+  ${DATA_SET_PREFIX} \
+  ${CIZT_ZSS_LOADLIB_DS_NAME} \
+  ${CIZT_ZSS_PARMLIB_DS_NAME} \
+  ${CIZT_ZSS_PROCLIB_DS_NAME}" 1800
+EXIT_CODE=$?
+if [[ "$EXIT_CODE" != "0" ]]; then
+  echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
+  echo
+  exit 1
+else
+  echo "[${SCRIPT_NAME}] ${RUN_SCRIPT} succeeds."
+  echo
+fi
+
 
 echo "Setting up certificate..."
 # Create a copy of the default environment
