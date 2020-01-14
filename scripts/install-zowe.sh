@@ -310,6 +310,19 @@ if [[ "$CI_UNINSTALL" = "yes" ]]; then
   fi
 fi
 
+# Run security job to create the SAF definitions for Zowe
+cd $CIZT_INSTALL_DIR
+# 
+echo "[${SCRIPT_NAME}] create the SAF definitions for Zowe ..."
+RUN_SCRIPT="./create-security-defn.sh "
+run_script_with_timeout "${RUN_SCRIPT}" 1800
+
+if [ $? -ne 0 ]; then
+  echo "[${SCRIPT_NAME}][error] create the SAF definitions failed"
+  exit 1
+fi
+echo
+
 rm -fr ${CIZT_INSTALL_DIR}/extracted && mkdir -p ${CIZT_INSTALL_DIR}/extracted
 if [[ "$CI_IS_SMPE" = "yes" ]]; then
   cd $CIZT_INSTALL_DIR
