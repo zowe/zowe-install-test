@@ -521,9 +521,6 @@ echo "  zss loadlib   ${CIZT_ZSS_LOADLIB_DS_NAME}"
 echo "  zss parmlib   ${CIZT_ZSS_PARMLIB_DS_NAME}"
 echo "  zss proclib   ${CIZT_ZSS_PROCLIB_DS_NAME}"
 
-ls -l     ./zowe-install-xmem.sh # check
-chmod a+x ./zowe-install-xmem.sh 
-
 RUN_SCRIPT=./zowe-install-xmem.sh
 echo "[${SCRIPT_NAME}] calling $RUN_SCRIPT from directory $(pwd)"
 run_script_with_timeout "$RUN_SCRIPT \
