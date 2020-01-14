@@ -102,6 +102,12 @@ node('ibm-jenkins-slave-dind') {
       description: 'Choose which server to run test',
       trim: true
     ),
+    choice(
+      name: 'NODE_VERSION',
+      choices: ['v8.16.0', 'v6.17.0', 'v8.16.1', 'v8.16.2', 'v12.13.0'],
+      description: 'This option is only valid for Marist server. The installation will set NODE_HOME to /ZOWE/node/node-{{version}}-os390-s390x.',
+      trim: true
+    ),
     // >>>>>>>> parametters for test cases
     string(
       name: 'TEST_CASE_DEBUG_INFORMATION',
@@ -144,6 +150,14 @@ node('ibm-jenkins-slave-dind') {
         error "Cannot find installation config file [${params.TARGET_SERVER}]"
       }
       sh "cp scripts/${configFile} scripts/install-config.sh"
+      // write node_home
+      if (params.TARGET_SERVER == 'marist') {
+        sh """
+echo  >> scripts/install-config.sh
+echo "# customize NODE_HOME with build pipeline parameter" >> scripts/install-config.sh
+echo "export NODE_HOME=/ZOWE/node/node-${params.NODE_VERSION}-os390-s390x" >> scripts/install-config.sh
+"""
+      }
       installDir = sh(
         script: ". scripts/install-config.sh && echo \$CIZT_INSTALL_DIR",
         returnStdout: true

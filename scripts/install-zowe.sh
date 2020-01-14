@@ -331,6 +331,7 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
 
   FULL_EXTRACTED_ZOWE_FOLDER=$CIZT_INSTALL_DIR/extracted
 
+  #TODO - does this have to happen before install as this is after? refactor with below
   # run temp fixes
   if [ "$CI_SKIP_TEMP_FIXES" != "yes" ]; then
     cd $CIZT_INSTALL_DIR
@@ -345,46 +346,7 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
     fi
   fi
 
-  # configure installation
-  echo "[${SCRIPT_NAME}] configure installation yaml ..."
-  cd $CIZT_ZOWE_ROOT_DIR/scripts/configure
-  cat "${CI_ZOWE_CONFIG_FILE}" | \
-    sed -e "/^install:/,\$s#rootDir=.*\$#rootDir=${CIZT_ZOWE_ROOT_DIR}#" | \
-    sed -e "/^install:/,\$s#instanceDir=.*\$#instanceDir=${CIZT_ZOWE_USER_DIR}#" | \
-    sed -e "/^install:/,\$s#prefix=.*\$#prefix=${CIZT_ZOWE_JOB_PREFIX}#" | \
-    sed -e "/^api-mediation:/,\$s#catalogPort=.*\$#catalogPort=${CIZT_ZOWE_API_MEDIATION_CATALOG_HTTP_PORT}#" | \
-    sed -e "/^api-mediation:/,\$s#discoveryPort=.*\$#discoveryPort=${CIZT_ZOWE_API_MEDIATION_DISCOVERY_HTTP_PORT}#" | \
-    sed -e "/^api-mediation:/,\$s#gatewayPort=.*\$#gatewayPort=${CIZT_ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT}#" | \
-    sed -e "/^explorer-server:/,\$s#jobsPort=.*\$#jobsPort=${CIZT_ZOWE_EXPLORER_JOBS_PORT}#" | \
-    sed -e "/^explorer-server:/,\$s#dataSetsPort=.*\$#dataSetsPort=${CIZT_ZOWE_EXPLORER_DATASETS_PORT}#" | \
-    sed -e "/^explorer-ui:/,\$s#explorerJESUI=.*\$#explorerJESUI=${CIZT_ZOWE_EXPLORER_UI_JES_PORT}#" | \
-    sed -e "/^explorer-ui:/,\$s#explorerMVSUI=.*\$#explorerMVSUI=${CIZT_ZOWE_EXPLORER_UI_MVS_PORT}#" | \
-    sed -e "/^explorer-ui:/,\$s#explorerUSSUI=.*\$#explorerUSSUI=${CIZT_ZOWE_EXPLORER_UI_USS_PORT}#" | \
-    sed -e "/^zlux-server:/,\$s#httpsPort=.*\$#httpsPort=${CIZT_ZOWE_ZLUX_HTTPS_PORT}#" | \
-    sed -e "/^zlux-server:/,\$s#zssPort=.*\$#zssPort=${CIZT_ZOWE_ZLUX_ZSS_PORT}#" | \
-    sed -e "/^terminals:/,\$s#sshPort=.*\$#sshPort=${CIZT_ZOWE_MVD_SSH_PORT}#" | \
-    sed -e "/^terminals:/,\$s#telnetPort=.*\$#telnetPort=${CIZT_ZOWE_MVD_TELNET_PORT}#" > "${CI_ZOWE_CONFIG_FILE}.tmp"
-  mv "${CI_ZOWE_CONFIG_FILE}.tmp" "${CI_ZOWE_CONFIG_FILE}"
-  echo "[${SCRIPT_NAME}] current Zowe configuration is:"
-  cat "${CI_ZOWE_CONFIG_FILE}"
-
-  # configure Zowe
-  cd ${CIZT_ZOWE_ROOT_DIR}/scripts
-  echo "[${SCRIPT_NAME}] installation is done, start configuring ..."
-  ./configure/zowe-configure.sh < /dev/null
-  if [ ! -f ${CIZT_ZOWE_USER_DIR}"/bin/zowe-start.sh" ]; then
-    echo "[${SCRIPT_NAME}][error] installation is not successfully, cannot find zowe-start.sh."
-    exit 1
-  fi
-  echo
-
-  # update xmem installation config file
-  echo "[${SCRIPT_NAME}] Zowe configuration is done, start installing xmem server ..."
-  cd ${CIZT_SMPE_PATH_PREFIX}${CIZT_SMPE_PATH_DEFAULT}/xmem-server
-  ${CIZT_INSTALL_DIR}/install-xmem-server.sh
-
-
-  echo "[${SCRIPT_NAME}] all SMP/e install/config are done."
+  echo "[${SCRIPT_NAME}] all SMP/e install is done."
   echo
 else #not SMPE
   # extract Zowe
@@ -412,30 +374,7 @@ else #not SMPE
     FULL_EXTRACTED_ZOWE_FOLDER=$CIZT_INSTALL_DIR/extracted/$EXTRACTED_ZOWE_FOLDER
   fi
 
-  # configure zowe installation
-  echo "[${SCRIPT_NAME}] configure installation yaml ..."
-  cd $FULL_EXTRACTED_ZOWE_FOLDER/install
-  cat "${CI_ZOWE_CONFIG_FILE}" | \
-    sed -e "/^install:/,\$s#rootDir=.*\$#rootDir=${CIZT_ZOWE_ROOT_DIR}#" | \
-    sed -e "/^install:/,\$s#instanceDir=.*\$#instanceDir=${CIZT_ZOWE_USER_DIR}#" | \
-    sed -e "/^install:/,\$s#prefix=.*\$#prefix=${CIZT_ZOWE_JOB_PREFIX}#" | \
-    sed -e "/^api-mediation:/,\$s#catalogPort=.*\$#catalogPort=${CIZT_ZOWE_API_MEDIATION_CATALOG_HTTP_PORT}#" | \
-    sed -e "/^api-mediation:/,\$s#discoveryPort=.*\$#discoveryPort=${CIZT_ZOWE_API_MEDIATION_DISCOVERY_HTTP_PORT}#" | \
-    sed -e "/^api-mediation:/,\$s#gatewayPort=.*\$#gatewayPort=${CIZT_ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT}#" | \
-    sed -e "/^explorer-server:/,\$s#jobsPort=.*\$#jobsPort=${CIZT_ZOWE_EXPLORER_JOBS_PORT}#" | \
-    sed -e "/^explorer-server:/,\$s#dataSetsPort=.*\$#dataSetsPort=${CIZT_ZOWE_EXPLORER_DATASETS_PORT}#" | \
-    sed -e "/^explorer-ui:/,\$s#explorerJESUI=.*\$#explorerJESUI=${CIZT_ZOWE_EXPLORER_UI_JES_PORT}#" | \
-    sed -e "/^explorer-ui:/,\$s#explorerMVSUI=.*\$#explorerMVSUI=${CIZT_ZOWE_EXPLORER_UI_MVS_PORT}#" | \
-    sed -e "/^explorer-ui:/,\$s#explorerUSSUI=.*\$#explorerUSSUI=${CIZT_ZOWE_EXPLORER_UI_USS_PORT}#" | \
-    sed -e "/^zlux-server:/,\$s#httpsPort=.*\$#httpsPort=${CIZT_ZOWE_ZLUX_HTTPS_PORT}#" | \
-    sed -e "/^zlux-server:/,\$s#zssPort=.*\$#zssPort=${CIZT_ZOWE_ZLUX_ZSS_PORT}#" | \
-    sed -e "/^terminals:/,\$s#sshPort=.*\$#sshPort=${CIZT_ZOWE_MVD_SSH_PORT}#" | \
-    sed -e "/^terminals:/,\$s#telnetPort=.*\$#telnetPort=${CIZT_ZOWE_MVD_TELNET_PORT}#" > "${CI_ZOWE_CONFIG_FILE}.tmp"
-  mv "${CI_ZOWE_CONFIG_FILE}.tmp" "${CI_ZOWE_CONFIG_FILE}"
-  echo "[${SCRIPT_NAME}] current Zowe configuration is:"
-  cat "${CI_ZOWE_CONFIG_FILE}"
-  echo
-
+  #TODO - does this have to happen before install as this is after? refactor with below
   # run temp fixes
   if [ "$CI_SKIP_TEMP_FIXES" != "yes" ]; then
     cd $CIZT_INSTALL_DIR
@@ -463,17 +402,12 @@ else #not SMPE
   fi
   echo
 
-  # configure and install cross memory server
-  cd $FULL_EXTRACTED_ZOWE_FOLDER/install
-  ${CIZT_INSTALL_DIR}/install-xmem-server.sh
-  echo
-
   # start Zowe installation
   echo "[${SCRIPT_NAME}] start Zowe installation ..."
   cd $FULL_EXTRACTED_ZOWE_FOLDER/install
   # FIXME: zowe-install.sh should exit by itself, not depends on timeout
-  RUN_SCRIPT=zowe-install.sh
-  run_script_with_timeout $RUN_SCRIPT 3600
+  RUN_SCRIPT="zowe-install.sh -i ${CIZT_ZOWE_ROOT_DIR} -h ${USER}.ZWE"
+  run_script_with_timeout "$RUN_SCRIPT" 3600
   EXIT_CODE=$?
   if [[ "$EXIT_CODE" != "0" ]]; then
     echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
@@ -539,6 +473,16 @@ else
 fi
 
 
+#TODO - refactor
+echo "[${SCRIPT_NAME}] Starting installing xmem server ..."
+if [[ "$CI_IS_SMPE" = "yes" ]]; then
+  cd ${CIZT_SMPE_PATH_PREFIX}${CIZT_SMPE_PATH_DEFAULT}/xmem-server
+  ${CIZT_INSTALL_DIR}/install-xmem-server.sh
+else
+  cd $FULL_EXTRACTED_ZOWE_FOLDER/install
+  ${CIZT_INSTALL_DIR}/install-xmem-server.sh
+fi
+
 echo "Setting up certificate..."
 # Create a copy of the default environment
 TEMP_CERTIFICATE_ENV_LOCATION="/ZOWE/tmp/zowe-setup-certificates.env"
@@ -549,7 +493,7 @@ cat "${TEMP_CERTIFICATE_ENV_LOCATION}" | \
   sed -e "s%EXTERNAL_CERTIFICATE_ALIAS=%EXTERNAL_CERTIFICATE_ALIAS=${CIZT_ZOWE_API_MEDIATION_EXT_CERT_ALIAS}%" | \
   sed -e "s%EXTERNAL_CERTIFICATE_AUTHORITIES=%EXTERNAL_CERTIFICATE_AUTHORITIES=${CIZT_ZOWE_API_MEDIATION_EXT_CERT_AUTH}%" | \
   sed -e "s%VERIFY_CERTIFICATES=true%VERIFY_CERTIFICATES=${CIZT_ZOWE_API_MEDIATION_VERIFY_CERT}%" | \
-  sed -e "s%KEYSTORE_DIRECTORY=/global/zowe/keystore%KEYSTORE_DIRECTORY=${CIZT_ZOWE_KEYSTORE_DIR}%" > "${TEMP_CERTIFICATE_ENV_LOCATION}.tmp"
+  sed -e "s%KEYSTORE_DIRECTORY=.*\$%KEYSTORE_DIRECTORY=${CIZT_ZOWE_KEYSTORE_DIR}%" > "${TEMP_CERTIFICATE_ENV_LOCATION}.tmp"
 mv ${TEMP_CERTIFICATE_ENV_LOCATION}.tmp ${TEMP_CERTIFICATE_ENV_LOCATION}
 # Run the setup scripts
 cat ${TEMP_CERTIFICATE_ENV_LOCATION}
@@ -557,10 +501,30 @@ ${CIZT_ZOWE_ROOT_DIR}/bin/zowe-setup-certificates.sh -p ${TEMP_CERTIFICATE_ENV_L
 ls ${CIZT_ZOWE_KEYSTORE_DIR}
 rm ${TEMP_CERTIFICATE_ENV_LOCATION}
 
+echo "Creating zowe-instance..."
+${CIZT_ZOWE_ROOT_DIR}/bin/zowe-configure-instance.sh -c ${CIZT_ZOWE_USER_DIR}
 # Update the instance.env with the custom parameters
 INSTANCE_ENV=${CIZT_ZOWE_USER_DIR}/instance.env
 cat "${INSTANCE_ENV}" | \
-  sed -e "s%KEYSTORE_DIRECTORY=/global/zowe/keystore%KEYSTORE_DIRECTORY=${CIZT_ZOWE_KEYSTORE_DIR}%" > "${INSTANCE_ENV}.tmp"
+  sed -e "s%ZOWE_PREFIX=.*\$%ZOWE_PREFIX=${CIZT_ZOWE_JOB_PREFIX}%" | \
+  # default sed -e "s%ZOWE_INSTANCE=.*\$%ZOWE_INSTANCE=?%" | \
+  sed -e "s%ZOWE_SERVER_PROCLIB_MEMBER=.*\$%ZOWE_SERVER_PROCLIB_MEMBER=${CIZT_PROCLIB_MEMBER}%" | \
+  sed -e "s%KEYSTORE_DIRECTORY=.*\$%KEYSTORE_DIRECTORY=${CIZT_ZOWE_KEYSTORE_DIR}%" | \
+  sed -e "s%CATALOG_PORT=.*\$%CATALOG_PORT=${CIZT_ZOWE_API_MEDIATION_CATALOG_HTTP_PORT}%" | \
+  sed -e "s%DISCOVERY_PORT=.*\$%DISCOVERY_PORT=${CIZT_ZOWE_API_MEDIATION_DISCOVERY_HTTP_PORT}%" | \
+  sed -e "s%GATEWAY_PORT=.*\$%GATEWAY_PORT=${CIZT_ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT}%" | \
+  # default sed -e "s%APIML_ENABLE_SSO=.*\$%APIML_ENABLE_SSO=?%" | \
+  sed -e "s%JOBS_API_PORT=.*\$%JOBS_API_PORT=${CIZT_ZOWE_EXPLORER_JOBS_PORT}%" | \
+  sed -e "s%FILES_API_PORT=.*\$%FILES_API_PORT=${CIZT_ZOWE_EXPLORER_DATASETS_PORT}%" | \
+  sed -e "s%JES_EXPLORER_UI_PORT=.*\$%JES_EXPLORER_UI_PORT=${CIZT_ZOWE_EXPLORER_UI_JES_PORT}%" | \
+  sed -e "s%MVS_EXPLORER_UI_PORT=.*\$%MVS_EXPLORER_UI_PORT=${CIZT_ZOWE_EXPLORER_UI_MVS_PORT}%" | \
+  sed -e "s%USS_EXPLORER_UI_PORT=.*\$%USS_EXPLORER_UI_PORT=${CIZT_ZOWE_EXPLORER_UI_USS_PORT}%" | \
+  sed -e "s%ZOWE_ZLUX_SERVER_HTTPS_PORT=.*\$%ZOWE_ZLUX_SERVER_HTTPS_PORT=${CIZT_ZOWE_ZLUX_HTTPS_PORT}%" | \
+  sed -e "s%ZOWE_ZSS_SERVER_PORT=.*\$%ZOWE_ZSS_SERVER_PORT=${CIZT_ZOWE_ZLUX_ZSS_PORT}%" | \
+  sed -e "s%ZOWE_ZSS_XMEM_SERVER_NAME=.*\$%ZOWE_ZSS_XMEM_SERVER_NAME=${CIZT_ZOWE_ZLUX_ZSS_PORT}%" | \
+  sed -e "s%ZOWE_ZLUX_SSH_PORT=.*\$%ZOWE_ZLUX_SSH_PORT=${CIZT_ZOWE_MVD_SSH_PORT}%" | \
+  sed -e "s%ZOWE_ZLUX_TELNET_PORT=.*\$%ZOWE_ZLUX_TELNET_PORT=${CIZT_ZOWE_MVD_TELNET_PORT}%" | \
+  sed -e "s%ZOWE_ZLUX_SECURITY_TYPE=.*\$%ZOWE_ZLUX_SECURITY_TYPE=%" > "${INSTANCE_ENV}.tmp"
 mv ${INSTANCE_ENV}.tmp ${INSTANCE_ENV}
 
 # execute scripts/zowe-runtime-authorize.sh
@@ -577,9 +541,8 @@ if [ -f "${CIZT_ZOWE_ROOT_DIR}/scripts/zowe-runtime-authorize.sh" ]; then
 else
   echo "[${SCRIPT_NAME}][warning] not found."
 fi
-echo
 
-# execute scripts/configure/zowe-config-stc.sh
+# execute scripts/configure/zowe-config-stc.sh TODO - replace with ZWESECUR
 echo "[${SCRIPT_NAME}] executing scripts/configure/zowe-config-stc.sh ..."
 if [ -f "${CIZT_ZOWE_ROOT_DIR}/scripts/configure/zowe-config-stc.sh" ]; then
   RUN_SCRIPT="${CIZT_ZOWE_ROOT_DIR}/scripts/configure/zowe-config-stc.sh"
@@ -594,7 +557,6 @@ else
   echo "[${SCRIPT_NAME}][warning] not found."
 fi
 echo
-
 
 # run temp fixes
 if [ "$CI_SKIP_TEMP_FIXES" != "yes" ]; then
