@@ -44,13 +44,13 @@ function runJob {
     echo; echo $SCRIPT function runJob started
     jclname=$1
 
-    echo $SCRIPT jclname=$jclname #jobname=$jobname
-    ls -l $jclname
+    # echo $SCRIPT jclname=$jclname
+    # ls -l $jclname
 
-    # show JCL for debugging purpose
-    echo $SCRIPT ====================== content start ======================
-    cat $jclname
-    echo $SCRIPT ====================== content end ========================
+    # # show JCL for debugging purpose
+    # echo $SCRIPT ====================== content start ======================
+    # cat $jclname
+    # echo $SCRIPT ====================== content end ========================
 
     # submit the job using the USS submit command
     submit $jclname > $CIZT_TMP/submit.job.$$.out
@@ -67,7 +67,7 @@ function runJob {
         | sed "s/.*JOB JOB\([0-9]*\) submitted.*/\1/"`
     rm $CIZT_TMP/submit.job.$$.out 2> /dev/null 
 
-    # echo; echo $SCRIPT JOBID=$jobid
+    echo $SCRIPT JOBID=$jobid
 
     # wait for job to finish
     jobdone=0
@@ -107,7 +107,7 @@ function runJob {
         rm $CIZT_TMP/dj.$$.cc 2> /dev/null 
         return 2
     else
-        : # echo; echo $SCRIPT job JOB$jobid completed
+        echo $SCRIPT job JOB$jobid completed
     fi
 
     grep RC= $CIZT_TMP/dj.$$.cc > /dev/null
@@ -121,37 +121,46 @@ function runJob {
     fi
     
     rc=`sed -n 's/.*RC=\([0-9]*\))/\1/p' $CIZT_TMP/dj.$$.cc`
-    # echo; echo $SCRIPT return code for JOB$jobid is $rc
+    echo $SCRIPT return code for JOB$jobid is $rc
     rm $CIZT_TMP/dj.$$.cc 2> /dev/null 
     if [[ $rc -gt 4 ]]
     then
         echo $SCRIPT ERROR: job "$jobname(JOB$jobid)" failed, RC=$rc 
         return 4
     fi
-    # echo; echo $SCRIPT function runJob ended
+    echo $SCRIPT function runJob ended
+    echo
 }
 
+# Tailor ZWESECUR.jcl for execution in our test environment
+# Nullify ADDGROUP, ALTGROUP and ADDUSER
+sed \
+    -e "s+ADMINGRP=ZWEADMIN+ADMINGRP=${CIZT_ZSS_STC_GROUP}+" \
+    -e "s+ZOWEUSER=ZWESVUSR+ZOWEUSER=$CIZT_ZSS_ZOWE_USER+" \
+    -e "s+ZSSUSER=ZWESIUSR+ZSSUSER=$CIZT_ZSS_ZOWE_USER+" \
+    -e "s+ZOWESTC=ZWESVSTC+ZOWESTC=${CIZT_PROCLIB_MEMBER}+" \
+    -e "s+ZSSSTC=ZWESISTC+ZSSSTC=${CIZT_ZSS_PROCLIB_MEMBER}+" \
+    -e "s+AUXSTC=ZWESASTC+AUXSTC=${CIZT_ZSS_AUX_PROCLIB_MEMBER}+" \
+    -e "s+ADDGROUP+NOADDGROUP+" \
+    -e "s+ALTGROUP+NOALTGROUP+" \
+    -e "s+ADDUSER+NOADDUSER+" \
+    $CIZT_INSTALL_DIR/../files/ZWESECUR.jcl > $CIZT_TMP/ZWESECUR.jcl
 
+echo check edit ===
+grep -e "^// *SET " \
+    -e ADDGROUP \
+    -e ALTGROUP \
+    -e ADDUSER \
+    $CIZT_TMP/ZWESECUR.jcl
+echo check edit ===
 
-# sed \
-#     -e "s+@zfs_path@+${zfs_path}+" \
-#     -e "s+&FMID\.+${FMID}+" \
-#     -e "s+@PREFIX@+${PREFIX}+" \
-#     -e "/<GIMUNZIP>/ a\\
-#     <TEMPDS volume=\"$CUSTOMIZED_VOLSER\"></TEMPDS>"\
-#     -e "/archid=/ a\\
-#     \ \ \ \ \ \ \ \ \ volume=\"$CUSTOMIZED_VOLSER\""\
-#     $zfs_path/gimunzip.jcl0 > $zfs_path/gimunzip.jcl1
-
-
-
-# Run the GIMUNZIP job
-runJob $CIZT_INSTALL_DIR/../files/ZWESECUR.jcl
-if [[ $? -ne 0 ]]
+# Run the ZWESECUR job
+runJob $CIZT_TMP/ZWESECUR.jcl
+rc=$?
+if [[ $rc -ne 0 ]]
 then
     echo $SCRIPT ERROR: ZWESECUR JOB failed
-    exit 1
+    exit $rc
 fi
-
 
 echo script $SCRIPT ended from $SCRIPT_DIR
