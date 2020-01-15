@@ -314,6 +314,8 @@ fi
 cd $CIZT_INSTALL_DIR
 # 
 echo "[${SCRIPT_NAME}] create the SAF definitions for Zowe ..."
+ls -l
+chmod +x create-security-defn.sh
 RUN_SCRIPT="./create-security-defn.sh "
 run_script_with_timeout "${RUN_SCRIPT}" 1800
 
