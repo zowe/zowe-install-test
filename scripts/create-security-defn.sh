@@ -133,7 +133,8 @@ function runJob {
 }
 
 echo Tailor ZWESECUR.jcl for execution in our test environment
-head $CIZT_INSTALL_DIR/extracted/files/jcl/ZWESECUR.jcl
+cd $FULL_EXTRACTED_ZOWE_FOLDER/files/jcl
+head ZWESECUR.jcl
 # Nullify ADDGROUP, ALTGROUP and ADDUSER
 sed \
     -e "s+ADMINGRP=ZWEADMIN+ADMINGRP=${CIZT_ZSS_STC_GROUP}+" \
@@ -145,7 +146,7 @@ sed \
     -e "s+ADDGROUP+NOADDGROUP+" \
     -e "s+ALTGROUP+NOALTGROUP+" \
     -e "s+ADDUSER+NOADDUSER+" \
-    $CIZT_INSTALL_DIR/extracted/files/jcl/ZWESECUR.jcl > $CIZT_TMP/ZWESECUR.jcl
+    ZWESECUR.jcl > $CIZT_TMP/ZWESECUR.jcl
     
 echo check edit start ===
 grep -e "^// *SET " \

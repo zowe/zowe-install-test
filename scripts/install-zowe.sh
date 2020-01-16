@@ -327,7 +327,7 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   fi
   echo
 
-  FULL_EXTRACTED_ZOWE_FOLDER=$CIZT_INSTALL_DIR/extracted
+  export FULL_EXTRACTED_ZOWE_FOLDER=$CIZT_INSTALL_DIR/extracted
 
   #TODO - does this have to happen before install as this is after? refactor with below
   # run temp fixes
@@ -363,13 +363,13 @@ else #not SMPE
   # check extracted folder
   # - old version will have several folders like files, install, licenses, scripts, etc
   # - new version will only have one folder of zowe-{version}
-  FULL_EXTRACTED_ZOWE_FOLDER=$CIZT_INSTALL_DIR/extracted
+  export FULL_EXTRACTED_ZOWE_FOLDER=$CIZT_INSTALL_DIR/extracted
   EXTRACTED_FILES=$(ls -1 $CIZT_INSTALL_DIR/extracted | wc -l | awk '{print $1}')
   HAS_EXTRA_ZOWE_FOLDER=0
   if [ "$EXTRACTED_FILES" = "1" ]; then
     HAS_EXTRA_ZOWE_FOLDER=1
     EXTRACTED_ZOWE_FOLDER=$(ls -1 $CIZT_INSTALL_DIR/extracted)
-    FULL_EXTRACTED_ZOWE_FOLDER=$CIZT_INSTALL_DIR/extracted/$EXTRACTED_ZOWE_FOLDER
+    export FULL_EXTRACTED_ZOWE_FOLDER=$CIZT_INSTALL_DIR/extracted/$EXTRACTED_ZOWE_FOLDER
   fi
 
   #TODO - does this have to happen before install as this is after? refactor with below
@@ -435,7 +435,7 @@ else #not SMPE
 fi #End SMPE if
 
 echo looking at ZWESECUR.jcl
-cd $CIZT_INSTALL_DIR/extracted/files/jcl
+cd $FULL_EXTRACTED_ZOWE_FOLDER/files/jcl
 ls -l ZWESECUR.jcl
 od -xc ZWESECUR.jcl | head
 if [ -f "ZWESECUR.jcl" ]; then
