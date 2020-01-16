@@ -20,6 +20,7 @@ node('ibm-jenkins-slave-dind') {
   def pipeline = lib.pipelines.nodejs.NodeJSPipeline.new(this)
 
   def artifactsForUploadAndInstallation = [
+    "scripts/create-security-defn.sh",
     "scripts/temp-fixes-before-install.sh",
     "scripts/temp-fixes-after-install.sh",
     "scripts/temp-fixes-after-started.sh",

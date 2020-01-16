@@ -252,6 +252,9 @@ fi
 if [ -f "temp-fixes-before-install.sh" ]; then
   ensure_script_encoding temp-fixes-before-install.sh
 fi
+if [ -f "create-security-defn.sh" ]; then
+  ensure_script_encoding create-security-defn.sh
+fi
 if [ -f "uninstall-zowe.sh" ]; then
   ensure_script_encoding uninstall-zowe.sh
 fi
@@ -312,12 +315,11 @@ fi
 
 # Run security job to create the SAF definitions for Zowe
 cd $CIZT_INSTALL_DIR
-# 
 echo "[${SCRIPT_NAME}] create the SAF definitions for Zowe ..."
 ls -l
 chmod +x create-security-defn.sh
 RUN_SCRIPT="./create-security-defn.sh "
-run_script_with_timeout "${RUN_SCRIPT}" 1800
+run_script_with_timeout "${RUN_SCRIPT}" 300
 
 if [ $? -ne 0 ]; then
   echo "[${SCRIPT_NAME}][error] create the SAF definitions failed"
