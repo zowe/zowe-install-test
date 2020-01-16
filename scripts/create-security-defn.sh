@@ -132,9 +132,8 @@ function runJob {
     echo
 }
 
-echo See if jcl is in this directory
-ls -lR $CIZT_INSTALL_DIR/extracted
-# Tailor ZWESECUR.jcl for execution in our test environment
+echo Tailor ZWESECUR.jcl for execution in our test environment
+head $CIZT_INSTALL_DIR/extracted/files/jcl/ZWESECUR.jcl
 # Nullify ADDGROUP, ALTGROUP and ADDUSER
 sed \
     -e "s+ADMINGRP=ZWEADMIN+ADMINGRP=${CIZT_ZSS_STC_GROUP}+" \
@@ -148,13 +147,16 @@ sed \
     -e "s+ADDUSER+NOADDUSER+" \
     $CIZT_INSTALL_DIR/extracted/files/jcl/ZWESECUR.jcl > $CIZT_TMP/ZWESECUR.jcl
     
-echo check edit ===
+echo check edit start ===
 grep -e "^// *SET " \
     -e ADDGROUP \
     -e ALTGROUP \
     -e ADDUSER \
     $CIZT_TMP/ZWESECUR.jcl
-echo check edit ===
+echo check edit end ===
+
+echo "//A JOB" > $CIZT_TMP/ZWESECUR.jcl
+echo "// EXEC PGM=IEFBR14" >> $CIZT_TMP/ZWESECUR.jcl
 
 # Run the ZWESECUR job
 runJob $CIZT_TMP/ZWESECUR.jcl
