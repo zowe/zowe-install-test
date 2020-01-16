@@ -155,8 +155,8 @@ grep -e "^// *SET " \
     $CIZT_TMP/ZWESECUR.jcl
 echo check edit end ===
 
-echo "//A JOB" > $CIZT_TMP/ZWESECUR.jcl
-echo "// EXEC PGM=IEFBR14" >> $CIZT_TMP/ZWESECUR.jcl
+# echo "//A JOB" > $CIZT_TMP/ZWESECUR.jcl
+# echo "// EXEC PGM=IEFBR14" >> $CIZT_TMP/ZWESECUR.jcl
 
 # Run the ZWESECUR job
 runJob $CIZT_TMP/ZWESECUR.jcl

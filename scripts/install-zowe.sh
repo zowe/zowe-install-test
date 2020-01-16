@@ -241,7 +241,7 @@ if [ -z "$CI_HOSTNAME" ]; then
   echo "[${SCRIPT_NAME}][error] server hostname/IP is required."
   exit 1
 fi
-# convert encoding if those files uploaded
+echo "convert encoding if those files uploaded"
 cd $CIZT_INSTALL_DIR
 if [ -f "temp-fixes-after-install.sh" ]; then
   ensure_script_encoding temp-fixes-after-install.sh
@@ -433,6 +433,11 @@ else #not SMPE
   fi
   echo
 fi #End SMPE if
+
+cd $CIZT_INSTALL_DIR/extracted/files/jcl
+if [ -f "ZWESECUR.jcl" ]; then
+  ensure_script_encoding ZWESECUR.jcl
+fi
 
 # Run security job to create the SAF definitions for Zowe
 cd $CIZT_INSTALL_DIR
