@@ -434,14 +434,6 @@ else #not SMPE
   echo
 fi #End SMPE if
 
-echo looking at ZWESECUR.jcl
-cd $FULL_EXTRACTED_ZOWE_FOLDER/files/jcl
-ls -l ZWESECUR.jcl
-od -xc ZWESECUR.jcl | head
-if [ -f "ZWESECUR.jcl" ]; then
-  ensure_script_encoding ZWESECUR.jcl "//"
-fi
-
 # Run security job to create the SAF definitions for Zowe
 cd $CIZT_INSTALL_DIR
 echo "[${SCRIPT_NAME}] create the SAF definitions for Zowe ..."

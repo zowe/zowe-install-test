@@ -132,9 +132,11 @@ function runJob {
     echo
 }
 
-echo Tailor ZWESECUR.jcl for execution in our test environment
+echo "$SCRIPT Tailor ZWESECUR.jcl for execution in our test environment"
 cd $FULL_EXTRACTED_ZOWE_FOLDER/files/jcl
+echo "check ZWESECUR.jcl start ==="
 head ZWESECUR.jcl
+echo "check ZWESECUR.jcl end   ==="
 # Nullify ADDGROUP, ALTGROUP and ADDUSER
 sed \
     -e "s+ADMINGRP=ZWEADMIN+ADMINGRP=${CIZT_ZSS_STC_GROUP}+" \
@@ -148,16 +150,13 @@ sed \
     -e "s+ADDUSER+NOADDUSER+" \
     ZWESECUR.jcl > $CIZT_TMP/ZWESECUR.jcl
     
-echo check edit start ===
+echo "check tailoring start ==="
 grep -e "^// *SET " \
     -e ADDGROUP \
     -e ALTGROUP \
     -e ADDUSER \
     $CIZT_TMP/ZWESECUR.jcl
-echo check edit end ===
-
-# echo "//A JOB" > $CIZT_TMP/ZWESECUR.jcl
-# echo "// EXEC PGM=IEFBR14" >> $CIZT_TMP/ZWESECUR.jcl
+echo "check tailoring end   ==="
 
 # Run the ZWESECUR job
 runJob $CIZT_TMP/ZWESECUR.jcl
