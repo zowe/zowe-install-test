@@ -327,6 +327,9 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   fi
   echo
 
+  echo CIZT_INSTALL_DIR is $CIZT_INSTALL_DIR #debug
+  ls -R $CIZT_INSTALL_DIR # debug
+
   export FULL_EXTRACTED_ZOWE_FOLDER=$CIZT_INSTALL_DIR/extracted
 
   #TODO - does this have to happen before install as this is after? refactor with below
@@ -344,19 +347,19 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
     fi
   fi
 
-# EXTRACTED_ZOWE_FOLDER is also needed for SMP/E ...
+# # EXTRACTED_ZOWE_FOLDER is also needed for SMP/E ...
 
-  # check extracted folder
-  # - old version will have several folders like files, install, licenses, scripts, etc
-  # - new version will only have one folder of zowe-{version}
-  export FULL_EXTRACTED_ZOWE_FOLDER=$CIZT_INSTALL_DIR/extracted
-  EXTRACTED_FILES=$(ls -1 $CIZT_INSTALL_DIR/extracted | wc -l | awk '{print $1}')
-  HAS_EXTRA_ZOWE_FOLDER=0
-  if [ "$EXTRACTED_FILES" = "1" ]; then
-    HAS_EXTRA_ZOWE_FOLDER=1
-    EXTRACTED_ZOWE_FOLDER=$(ls -1 $CIZT_INSTALL_DIR/extracted)
-    export FULL_EXTRACTED_ZOWE_FOLDER=$CIZT_INSTALL_DIR/extracted/$EXTRACTED_ZOWE_FOLDER
-  fi
+#   # check extracted folder
+#   # - old version will have several folders like files, install, licenses, scripts, etc
+#   # - new version will only have one folder of zowe-{version}
+#   export FULL_EXTRACTED_ZOWE_FOLDER=$CIZT_INSTALL_DIR/extracted
+#   EXTRACTED_FILES=$(ls -1 $CIZT_INSTALL_DIR/extracted | wc -l | awk '{print $1}')
+#   HAS_EXTRA_ZOWE_FOLDER=0
+#   if [ "$EXTRACTED_FILES" = "1" ]; then
+#     HAS_EXTRA_ZOWE_FOLDER=1
+#     EXTRACTED_ZOWE_FOLDER=$(ls -1 $CIZT_INSTALL_DIR/extracted)
+#     export FULL_EXTRACTED_ZOWE_FOLDER=$CIZT_INSTALL_DIR/extracted/$EXTRACTED_ZOWE_FOLDER
+#   fi
 
   echo "[${SCRIPT_NAME}] all SMP/e install is done."
   echo
