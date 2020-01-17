@@ -92,7 +92,7 @@ node('ibm-jenkins-slave-dind') {
     string(
       name: 'ZOWE_CLI_ARTIFACTORY_BUILD',
       description: 'Zowe artifactory download build',
-      defaultValue: '',
+      defaultValue: 'Zowe CLI Bundle :: master',
       trim: true
     ),
     // >>>>>>>> parameters of installation config
@@ -345,7 +345,10 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
     "target": ".tmp/",
     "flat": "true",
     "build": "${params.ZOWE_CLI_ARTIFACTORY_BUILD}",
-    "explode": "true"
+    "explode": "true",
+    "sortBy": ["created"],
+    "sortOrder": "desc",
+    "limit": 1
   }]
 }
 """,
