@@ -344,6 +344,20 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
     fi
   fi
 
+# EXTRACTED_ZOWE_FOLDER is also needed for SMP/E ...
+
+  # check extracted folder
+  # - old version will have several folders like files, install, licenses, scripts, etc
+  # - new version will only have one folder of zowe-{version}
+  export FULL_EXTRACTED_ZOWE_FOLDER=$CIZT_INSTALL_DIR/extracted
+  EXTRACTED_FILES=$(ls -1 $CIZT_INSTALL_DIR/extracted | wc -l | awk '{print $1}')
+  HAS_EXTRA_ZOWE_FOLDER=0
+  if [ "$EXTRACTED_FILES" = "1" ]; then
+    HAS_EXTRA_ZOWE_FOLDER=1
+    EXTRACTED_ZOWE_FOLDER=$(ls -1 $CIZT_INSTALL_DIR/extracted)
+    export FULL_EXTRACTED_ZOWE_FOLDER=$CIZT_INSTALL_DIR/extracted/$EXTRACTED_ZOWE_FOLDER
+  fi
+
   echo "[${SCRIPT_NAME}] all SMP/e install is done."
   echo
 else #not SMPE
@@ -437,8 +451,11 @@ fi #End SMPE if
 # Run security job to create the SAF definitions for Zowe
 cd $CIZT_INSTALL_DIR
 echo "[${SCRIPT_NAME}] create the SAF definitions for Zowe ..."
-ls -l
-chmod +x create-security-defn.sh
+# ls -l
+# chmod +x create-security-defn.sh
+echo   FULL_EXTRACTED_ZOWE_FOLDER contains
+ls -l $FULL_EXTRACTED_ZOWE_FOLDER
+
 RUN_SCRIPT="./create-security-defn.sh "
 run_script_with_timeout "${RUN_SCRIPT}" 300
 
