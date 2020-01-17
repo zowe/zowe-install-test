@@ -349,6 +349,8 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
 
 # # EXTRACTED_ZOWE_FOLDER is also needed for SMP/E ...
 # temporary workaround ...
+# 17:32:23 /ZOWE/zowe-installs/a:
+# 17:32:23 zowe-1.8.0
 # 17:32:23 /ZOWE/zowe-installs/a/zowe-1.8.0/files/jcl:
 # 17:32:23 ZWESECUR.jcl  ZWESVSTC.jcl
   export FULL_EXTRACTED_ZOWE_FOLDER=$CIZT_INSTALL_DIR/a
