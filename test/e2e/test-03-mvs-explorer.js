@@ -40,7 +40,7 @@ const TEST_DATASET_PATTERN = 'SYS1.LINKLIB*';
 const TEST_DATASET_NAME = 'SYS1.LINKLIB';
 const TEST_DATASET_MEMBER_NAME = 'ACCOUNT';
 
-const MVD_EXPLORER_TREE_SECTION = 'div.tree-card > div > div';
+const MVD_EXPLORER_TREE_SECTION = 'div.tree-card > div';
 
 let appLaunched = false;
 let testDsIndex = -1;
@@ -101,7 +101,7 @@ describe(`test ${APP_TO_TEST}`, function() {
     expect(treeContent).to.be.an('object');
     // the loading icon is not there right after page is loaded, so wait a little
     await driver.sleep(1000);
-    await waitUntilElementIsGone(driver, 'div[mode=indeterminate]', treeContent);
+    await waitUntilElementIsGone(driver, 'div[role=progressbar]', treeContent);
     debug('page is fully loaded');
 
     // save screenshot
@@ -126,7 +126,7 @@ describe(`test ${APP_TO_TEST}`, function() {
 
     // wait for results
     await driver.sleep(1000);
-    await waitUntilElementIsGone(driver, 'div[mode=indeterminate]', treeContent);
+    await waitUntilElementIsGone(driver, 'div[role=progressbar]', treeContent);
     debug('page reloaded');
 
     // save screenshot

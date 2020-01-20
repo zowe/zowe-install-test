@@ -446,6 +446,12 @@ echo "[${SCRIPT_NAME}] removing user folder $CIZT_ZOWE_USER_DIR ..."
 (echo rm -fr $CIZT_ZOWE_USER_DIR | su) || true
 echo "[${SCRIPT_NAME}] removing user folder $CIZT_ZOWE_KEYSTORE_DIR ..."
 (echo rm -fr $CIZT_ZOWE_KEYSTORE_DIR | su) || true
+echo "[${SCRIPT_NAME}] removing user folder ~/zowe-*.log ..."
+(echo rm -fr ~/zowe-*.log | su) || true
+echo "[${SCRIPT_NAME}] removing user folder ~/zowe_certificate_setup_log ..."
+(echo rm -fr ~/zowe_certificate_setup_log | su) || true
+echo "[${SCRIPT_NAME}] removing user folder ~/zowe-instance-dir ..."
+(echo rm -fr ~/zowe-instance-dir | su) || true
 echo
 
 ################################################################################
