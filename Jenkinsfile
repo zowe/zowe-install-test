@@ -98,7 +98,7 @@ node('ibm-jenkins-slave-dind') {
     // >>>>>>>> parameters of installation config
     choice(
       name: 'TARGET_SERVER',
-      choices: ['marist', 'river', 'river-c3'],
+      choices: ['marist', 'marist-2', 'river', 'river-c3'],
       description: 'Choose which server to run test',
       trim: true
     ),
