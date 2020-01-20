@@ -313,6 +313,11 @@ if [[ "$CI_UNINSTALL" = "yes" ]]; then
   fi
 fi
 
+DATA_SET_PREFIX=$USER.ZWE
+if [[ "$CI_IS_SMPE" = "yes" ]]; then
+  DATA_SET_PREFIX=$USER.SMPE
+fi
+
 rm -fr ${CIZT_INSTALL_DIR}/extracted && mkdir -p ${CIZT_INSTALL_DIR}/extracted
 if [[ "$CI_IS_SMPE" = "yes" ]]; then
   cd $CIZT_INSTALL_DIR
@@ -452,7 +457,44 @@ else #not SMPE
     echo
   fi
   echo
+
 fi #End SMPE if
+
+# Copy xmem server PROCLIB, PARMLIB and LOADLIB memers into targets
+echo "calling zowe-install-proc.sh with"
+echo "    ZOWE_DSN_PREFIX=${DATA_SET_PREFIX}"
+echo "    ZOWE_SERVER_PROCLIB_DSNAME=$CIZT_PROCLIB_DS"
+cd $CIZT_ZOWE_ROOT_DIR/scripts/utils
+RUN_SCRIPT="./zowe-install-proc.sh ${DATA_SET_PREFIX} $CIZT_PROCLIB_DS"
+run_script_with_timeout "$RUN_SCRIPT" 3600
+EXIT_CODE=$?
+if [[ "$EXIT_CODE" != "0" ]]; then
+  echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
+fi
+
+echo "calling zowe-install-xmem.sh with"
+echo "  datasetprefix ${DATA_SET_PREFIX}"
+echo "  zss loadlib   ${CIZT_ZSS_LOADLIB_DS_NAME}"
+echo "  zss parmlib   ${CIZT_ZSS_PARMLIB_DS_NAME}"
+echo "  zss proclib   ${CIZT_ZSS_PROCLIB_DS_NAME}"
+
+RUN_SCRIPT=./zowe-install-xmem.sh
+echo "[${SCRIPT_NAME}] calling $RUN_SCRIPT from directory $(pwd)"
+run_script_with_timeout "$RUN_SCRIPT \
+  ${DATA_SET_PREFIX} \
+  ${CIZT_ZSS_LOADLIB_DS_NAME} \
+  ${CIZT_ZSS_PARMLIB_DS_NAME} \
+  ${CIZT_ZSS_PROCLIB_DS_NAME}" 1800
+EXIT_CODE=$?
+if [[ "$EXIT_CODE" != "0" ]]; then
+  echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
+  echo
+  exit 1
+else
+  echo "[${SCRIPT_NAME}] ${RUN_SCRIPT} succeeds."
+  echo
+fi
+
 
 # Run security job to create the SAF definitions for Zowe
 cd $CIZT_INSTALL_DIR
@@ -469,12 +511,7 @@ if [ $? -ne 0 ]; then
   echo "[${SCRIPT_NAME}][error] create the SAF definitions failed"
   exit 1
 fi
-echo
 
-DATA_SET_PREFIX=$USER.ZWE
-if [[ "$CI_IS_SMPE" = "yes" ]]; then
-  DATA_SET_PREFIX=$USER.SMPE
-fi
 
 #TODO - refactor
 echo "[${SCRIPT_NAME}] Starting installing xmem server ..."
@@ -532,16 +569,6 @@ mv ${INSTANCE_ENV}.tmp ${INSTANCE_ENV}
 
 cat ${INSTANCE_ENV}
 
-echo "calling zowe-install-proc.sh with"
-echo "    ZOWE_DSN_PREFIX=${DATA_SET_PREFIX}"
-echo "    ZOWE_SERVER_PROCLIB_DSNAME=$CIZT_PROCLIB_DS"
-cd $CIZT_ZOWE_ROOT_DIR/scripts/utils
-RUN_SCRIPT="./zowe-install-proc.sh ${DATA_SET_PREFIX} $CIZT_PROCLIB_DS"
-run_script_with_timeout "$RUN_SCRIPT" 3600
-EXIT_CODE=$?
-if [[ "$EXIT_CODE" != "0" ]]; then
-  echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
-fi
 
 if [ ! -f ${CIZT_ZOWE_USER_DIR}"/bin/zowe-start.sh" ]; then
   echo "[${SCRIPT_NAME}][error] installation is not successfully, cannot find zowe-start.sh."
