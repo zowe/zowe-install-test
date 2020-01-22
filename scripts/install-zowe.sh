@@ -332,9 +332,6 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   fi
   echo
 
-  echo CIZT_INSTALL_DIR is $CIZT_INSTALL_DIR #debug
-  ls -R $CIZT_INSTALL_DIR # debug
-
   export FULL_EXTRACTED_ZOWE_FOLDER=$CIZT_INSTALL_DIR/extracted
 
   #TODO - does this have to happen before install as this is after? refactor with below
@@ -499,10 +496,6 @@ fi
 # Run security job to create the SAF definitions for Zowe
 cd $CIZT_INSTALL_DIR
 echo "[${SCRIPT_NAME}] create the SAF definitions for Zowe ..."
-# ls -l
-# chmod +x create-security-defn.sh
-echo   FULL_EXTRACTED_ZOWE_FOLDER contains
-ls -l $FULL_EXTRACTED_ZOWE_FOLDER
 
 RUN_SCRIPT="./create-security-defn.sh "
 run_script_with_timeout "${RUN_SCRIPT}" 300
