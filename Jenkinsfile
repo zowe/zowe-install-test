@@ -31,6 +31,8 @@ node('ibm-jenkins-slave-dind') {
     "scripts/install-SMPE-PAX.sh",
     "scripts/uninstall-SMPE-PAX.sh",
     "scripts/opercmd",
+    "scripts/zss/zowe-xmem-apf.sh",
+    "scripts/zss/zowe-xmem-ppt.sh",
   ]
   def zoweArtifact = ''
   def zoweRootDir = ''
