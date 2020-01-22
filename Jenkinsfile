@@ -237,8 +237,10 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
           smpeReadmePattern = params.ZOWE_ARTIFACTORY_PATTERN.replaceAll(/\/([^\/]+)\.pax\.Z$/, "/\$1.txt")
         } else if (params.ZOWE_ARTIFACTORY_PATTERN =~ /\/[^\/]+\.tar$/) {
           smpeReadmePattern = 'tarball'
+        } else if (params.ZOWE_ARTIFACTORY_PATTERN =~ /\/[^\/]+\.zip$/) {
+          smpeReadmePattern = 'zip'
         } else {
-          error "The Zowe SMP/e package pattern (ZOWE_ARTIFACTORY_PATTERN) should end with .pax.Z or .tar"
+          error "The Zowe SMP/e package pattern (ZOWE_ARTIFACTORY_PATTERN) should end with .pax.Z, .tar or .zip"
         }
         if (smpeReadmePattern == 'tarball') {
           pipeline.artifactory.download(
@@ -266,6 +268,43 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
             // should get AZWE001.zip or AZWE001.TMP0001.zip, unzip it
             sh 'echo "after extracted:" && ls -l * && unzip $(ls -1 AZWE*.zip)'
             // should get AZWE001.pax.Z, AZWE001.readme.txt and AZWE001.htm for AZWE001.zip
+            def smpePax = sh(script: "ls -1 AZWE*.pax.Z", returnStdout: true).trim()
+            def smpeReadme = sh(script: "ls -1 AZWE*.readme.txt", returnStdout: true).trim()
+            if (!smpePax) {
+              error "Failed to extract SMPE pax file from ${params.ZOWE_ARTIFACTORY_PATTERN}"
+            }
+            if (!smpeReadme) {
+              error "Failed to extract SMPE readme file from ${params.ZOWE_ARTIFACTORY_PATTERN}"
+            }
+            artifactsForUploadAndInstallation.add(".tmp/${smpePax}")
+            artifactsForUploadAndInstallation.add(".tmp/${smpeReadme}")
+            zoweArtifact = "${smpePax}"
+          }
+        } else if (smpeReadmePattern == 'zip') {
+          pipeline.artifactory.download(
+            specContent : """
+{
+  "files": [{
+    "pattern": "${params.ZOWE_ARTIFACTORY_PATTERN}",
+    "target": ".tmp/",
+    "flat": "true",
+    "build": "${params.ZOWE_ARTIFACTORY_BUILD}"
+  }, {
+    "pattern": "${params.ZOWE_CLI_ARTIFACTORY_PATTERN}",
+    "target": ".tmp/",
+    "flat": "true",
+    "build": "${params.ZOWE_CLI_ARTIFACTORY_BUILD}",
+    "explode": "true"
+  }]
+}
+""",
+            expected    : 2
+          )
+          dir('.tmp') {
+            // extract zip file
+            sh 'unzip $(ls -1 zowe-smpe-*.zip)'
+            // should get AZWE001.pax.Z, AZWE001.readme.txt and AZWE001.htm for AZWE001.zip
+            sh 'echo "after extracted:" && ls -l *'
             def smpePax = sh(script: "ls -1 AZWE*.pax.Z", returnStdout: true).trim()
             def smpeReadme = sh(script: "ls -1 AZWE*.readme.txt", returnStdout: true).trim()
             if (!smpePax) {
