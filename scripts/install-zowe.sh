@@ -512,7 +512,6 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-
 #TODO - refactor
 echo "[${SCRIPT_NAME}] Starting installing xmem server ..."
 if [[ "$CI_IS_SMPE" = "yes" ]]; then
@@ -548,7 +547,6 @@ INSTANCE_ENV=${CIZT_ZOWE_USER_DIR}/instance.env
 cat "${INSTANCE_ENV}" | \
   sed -e "s%ZOWE_PREFIX=.*\$%ZOWE_PREFIX=${CIZT_ZOWE_JOB_PREFIX}%" | \
   # default sed -e "s%ZOWE_INSTANCE=.*\$%ZOWE_INSTANCE=?%" | \
-  sed -e "s%ZOWE_SERVER_PROCLIB_MEMBER=.*\$%ZOWE_SERVER_PROCLIB_MEMBER=${CIZT_PROCLIB_MEMBER}%" | \
   sed -e "s%KEYSTORE_DIRECTORY=.*\$%KEYSTORE_DIRECTORY=${CIZT_ZOWE_KEYSTORE_DIR}%" | \
   sed -e "s%CATALOG_PORT=.*\$%CATALOG_PORT=${CIZT_ZOWE_API_MEDIATION_CATALOG_HTTP_PORT}%" | \
   sed -e "s%DISCOVERY_PORT=.*\$%DISCOVERY_PORT=${CIZT_ZOWE_API_MEDIATION_DISCOVERY_HTTP_PORT}%" | \
@@ -568,7 +566,6 @@ cat "${INSTANCE_ENV}" | \
 mv ${INSTANCE_ENV}.tmp ${INSTANCE_ENV}
 
 cat ${INSTANCE_ENV}
-
 
 if [ ! -f ${CIZT_ZOWE_USER_DIR}"/bin/zowe-start.sh" ]; then
   echo "[${SCRIPT_NAME}][error] installation is not successfully, cannot find zowe-start.sh."
