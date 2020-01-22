@@ -144,20 +144,24 @@ cat "${CI_ZSS_CONFIG_FILE}"
 # start ZSS installation
 echo "[${SCRIPT_NAME}] start ZSS installation ..."
 
-
 SCRIPT_DIR=${FULL_EXTRACTED_ZOWE_FOLDER}/scripts/zss
 OPERCMD=${CIZT_INSTALL_DIR}/opercmd
-ls -l $SCRIPT_DIR #debug
 apfOk=false
 pptOk=false
 # 2. APF-authorize loadlib
 echo
 echo "************************ Install step 'APF-auth' start *************************"
 apfCmd1="sh $SCRIPT_DIR/zowe-xmem-apf.sh ${OPERCMD} ${CIZT_ZSS_LOADLIB_DS_NAME}"
-$apfCmd1
-if [[ $? -eq 0 ]]; then
+
+RUN_SCRIPT="$apfCmd1"
+run_script_with_timeout "${RUN_SCRIPT}" 10
+EXIT_CODE=$?
+if [[ "$EXIT_CODE" != "0" ]]; then
+  echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
+else
   apfOk=true
 fi
+
 echo "************************ Install step 'APF-auth' end ***************************"
 
 # 5. Check PPT-entry
@@ -165,12 +169,23 @@ echo
 echo "************************ Install step 'PPT-entry' start ************************"
 XMEM_KEY=4
 pptCmd1="sh $SCRIPT_DIR/zowe-xmem-ppt.sh ${OPERCMD} ${CIZT_ZSS_LOADLIB_MEMBER} ${XMEM_KEY}"
-pptCmd2="sh $SCRIPT_DIR/zowe-xmem-ppt.sh ${OPERCMD} ${CIZT_ZSS_AUX_LOADLIB_MEMBER} ${XMEM_KEY}"
-$pptCmd1 && $pptCmd2
-if [[ $? -eq 0 ]]
-then
-  pptOk=true
+RUN_SCRIPT="$pptCmd1"
+run_script_with_timeout "${RUN_SCRIPT}" 10
+EXIT_CODE=$?
+if [[ "$EXIT_CODE" != "0" ]]; then
+  echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
+else
+  pptCmd2="sh $SCRIPT_DIR/zowe-xmem-ppt.sh ${OPERCMD} ${CIZT_ZSS_AUX_LOADLIB_MEMBER} ${XMEM_KEY}"
+  RUN_SCRIPT="$pptCmd2"
+  run_script_with_timeout "${RUN_SCRIPT}" 10
+  EXIT_CODE=$?
+  if [[ "$EXIT_CODE" != "0" ]]; then
+    echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
+  else
+    pptOk=true
+  fi
 fi
+
 echo "************************ Install step 'PPT-entry' end **************************"
 echo
 if $apfOk ; then

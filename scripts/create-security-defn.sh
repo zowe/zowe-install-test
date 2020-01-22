@@ -33,24 +33,16 @@ fi
 # NOTE: This function exists to solve the issue calling tsocmd/submit/cp directly
 #       in pipeline will not exit properly.
 ################################################################################
-function wrap_call {
-  echo "[wrap_call] $@ >>>"
-  CALL_RESULT=$($@)
-  printf "%s\n[wrap_call] <<<\n" "$CALL_RESULT"
-}
+# function wrap_call {
+#   echo "[wrap_call] $@ >>>"
+#   CALL_RESULT=$($@)
+#   printf "%s\n[wrap_call] <<<\n" "$CALL_RESULT"
+# }
 
 function runJob {
 
     echo; echo $SCRIPT function runJob started
     jclname=$1
-
-    # echo $SCRIPT jclname=$jclname
-    # ls -l $jclname
-
-    # # show JCL for debugging purpose
-    # echo $SCRIPT ====================== content start ======================
-    # cat $jclname
-    # echo $SCRIPT ====================== content end ========================
 
     # submit the job using the USS submit command
     submit $jclname > $CIZT_TMP/submit.job.$$.out
