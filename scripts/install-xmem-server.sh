@@ -143,20 +143,55 @@ cat "${CI_ZSS_CONFIG_FILE}"
 
 # start ZSS installation
 echo "[${SCRIPT_NAME}] start ZSS installation ..."
-# FIXME: zowe-install-apf-server.sh should exit by itself, not depends on timeout
-RUN_SCRIPT=zowe-install-apf-server.sh
-echo "[${SCRIPT_NAME}] calling $RUN_SCRIPT from directory $(pwd)"
-run_script_with_timeout $RUN_SCRIPT 1800
-EXIT_CODE=$?
-if [[ "$EXIT_CODE" != "0" ]]; then
-  echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
-  echo
-  exit 1
-else
-  echo "[${SCRIPT_NAME}] ${RUN_SCRIPT} succeeds."
-  echo
-fi
+
+SCRIPT_DIR=${CIZT_ZOWE_ROOT_DIR}/scripts/zss
+OPERCMD=${CIZT_INSTALL_DIR}/opercmd
+ls -l $SCRIPT_DIR
+ls -l $OPERCMD
+apfOk=false
+pptOk=false
+# 2. APF-authorize loadlib
 echo
+echo "************************ Install step 'APF-auth' start *************************"
+apfCmd1="sh $SCRIPT_DIR/zowe-xmem-apf.sh ${OPERCMD} ${CIZT_ZSS_LOADLIB_DS_NAME}"
+$apfCmd1
+if [[ $? -eq 0 ]]; then
+  apfOk=true
+fi
+echo "************************ Install step 'APF-auth' end ***************************"
+
+# 5. Check PPT-entry
+echo
+echo "************************ Install step 'PPT-entry' start ************************"
+XMEM_KEY=4
+pptCmd1="sh $SCRIPT_DIR/zowe-xmem-ppt.sh ${OPERCMD} ${CIZT_ZSS_LOADLIB_MEMBER} ${XMEM_KEY}"
+pptCmd2="sh $SCRIPT_DIR/zowe-xmem-ppt.sh ${OPERCMD} ${CIZT_ZSS_AUX_LOADLIB_MEMBER} ${XMEM_KEY}"
+$pptCmd1 && $pptCmd2
+if [[ $? -eq 0 ]]
+then
+  pptOk=true
+fi
+echo "************************ Install step 'PPT-entry' end **************************"
+echo
+if $apfOk ; then
+  echo "APF-auth - Ok"
+else
+  echo "APF-auth - Error"
+  echo "Please correct errors and re-run the following scripts:"
+  echo $apfCmd1
+fi
+
+echo
+if $pptOk ; then
+  echo "PPT-entry - Ok"
+else
+  echo "PPT-entry - Error"
+  echo "Please add the provided PPT entries (zss/samplib/${XMEM_SCHED}) to your system PARMLIB"
+  echo "and update the configuration using 'SET SCH=xx' operator command"
+  echo "Re-run the following scripts to validate the changes:"
+  echo $pptCmd1
+  echo $pptCmd2
+fi
 
 ################################################################################
 echo
