@@ -151,7 +151,7 @@ node('ibm-jenkins-slave-dind') {
       }
       sh "cp scripts/${configFile} scripts/install-config.sh"
       // write node_home
-      if (params.TARGET_SERVER == 'marist') {
+      if (params.TARGET_SERVER == 'marist' || params.TARGET_SERVER == 'marist-2') {
         sh """
 echo  >> scripts/install-config.sh
 echo "# customize NODE_HOME with build pipeline parameter" >> scripts/install-config.sh
