@@ -144,14 +144,10 @@ cat "${CI_ZSS_CONFIG_FILE}"
 # start ZSS installation
 echo "[${SCRIPT_NAME}] start ZSS installation ..."
 
-echo CIZT_ZOWE_ROOT_DIR contains
-ls -R $CIZT_ZOWE_ROOT_DIR
-echo CIZT_INSTALL_DIR contains
-ls -R $CIZT_INSTALL_DIR
-SCRIPT_DIR=${CIZT_ZOWE_ROOT_DIR}/zss
+
+SCRIPT_DIR=${FULL_EXTRACTED_ZOWE_FOLDER}/scripts/zss
 OPERCMD=${CIZT_INSTALL_DIR}/opercmd
-ls -l $SCRIPT_DIR
-ls -l $OPERCMD
+ls -l $SCRIPT_DIR #debug
 apfOk=false
 pptOk=false
 # 2. APF-authorize loadlib
