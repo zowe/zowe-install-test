@@ -191,6 +191,8 @@ wrap_call tsocmd 'LISTUSER ZWESIUSR OMVS'
 wrap_call tsocmd 'LISTUSER ZOWEAD3  OMVS'
 wrap_call tsocmd 'LISTUSER '
 
+id ZWESVUSR
+
 # delete started tasks
 echo "[${SCRIPT_NAME}] deleting started tasks ..."
 wrap_call tsocmd 'RDELETE STARTED (ZWESIS*.*)'

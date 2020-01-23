@@ -64,9 +64,6 @@ export CIZT_ZSS_STC_USER_ID=2
 export CIZT_ZSS_STC_GROUP=ZWEADMIN
 export CIZT_ZSS_STC_USER=ZWESVUSR
 
-echo "user id ZWESVUSR"
-id ZWESVUSR  # debug
-
 # The SSH hostname/port stored as credential used to connect to test z/OS server
 export CIZT_TEST_IMAGE_GUEST_SSH_HOSTPORT=ssh-marist-server-zzow01-hostport
 # The SSH credential used to connect to test z/OS server
