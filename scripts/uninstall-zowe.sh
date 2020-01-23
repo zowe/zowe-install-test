@@ -191,6 +191,7 @@ wrap_call tsocmd 'LISTUSER ZWESIUSR OMVS'
 wrap_call tsocmd 'LISTUSER ZOWEAD3  OMVS'
 wrap_call tsocmd 'LISTUSER '
 
+echo "[${SCRIPT_NAME}] Display ZWESVUSR USS user and group ..."
 id ZWESVUSR
 
 # delete started tasks
