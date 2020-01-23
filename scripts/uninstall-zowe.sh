@@ -182,16 +182,14 @@ fi
 echo
 
 ################################################################################
-echo "[${SCRIPT_NAME}] check zowe user and group ..."
+echo "[${SCRIPT_NAME}] Display zowe user and group ..."
 wrap_call tsocmd 'LISTGRP  ZWEADMIN'
 wrap_call tsocmd 'LISTGRP  IZUADMIN'
-wrap_call tsocmd 'LG ZWEADMIN OMVS NORACF'
 
 wrap_call tsocmd 'LISTUSER ZWESVUSR OMVS'
 wrap_call tsocmd 'LISTUSER ZWESIUSR OMVS'
 wrap_call tsocmd 'LISTUSER ZOWEAD3  OMVS'
 wrap_call tsocmd 'LISTUSER '
-wrap_call tsocmd "ALTGROUP ZWEADMIN OMVS(AUTOGID) DATA('ZOWE ADMINISTRATORS')"
 
 # delete started tasks
 echo "[${SCRIPT_NAME}] deleting started tasks ..."
