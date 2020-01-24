@@ -437,25 +437,25 @@ EOF"""
               script: ". scripts/install-config.sh && echo \$CIZT_ZOWE_ZLUX_HTTPS_PORT",
               returnStdout: true
             ).trim()
-            sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 https://${SSH_HOST}:${port}/"
-            // check if explorer server is started
+            sh "./scripts/is-website-ready.sh -r 21 -t 10 -c 20 https://${SSH_HOST}:${port}/"
+            // check if explorer server is started - JAD changed 360 to 21 globally
             port = sh(
               script: ". scripts/install-config.sh && echo \$CIZT_ZOWE_EXPLORER_JOBS_PORT",
               returnStdout: true
             ).trim()
-            sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 'https://${USERNAME}:${PASSWORD}@${SSH_HOST}:${port}/api/v1/jobs?prefix=ZOWE*&status=ACTIVE'"
+            sh "./scripts/is-website-ready.sh -r 21 -t 10 -c 20 'https://${USERNAME}:${PASSWORD}@${SSH_HOST}:${port}/api/v1/jobs?prefix=ZOWE*&status=ACTIVE'"
             // check if apiml gateway is started
             port = sh(
               script: ". scripts/install-config.sh && echo \$CIZT_ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT",
               returnStdout: true
             ).trim()
-            sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 https://${USERNAME}:${PASSWORD}@${SSH_HOST}:${port}/"
+            sh "./scripts/is-website-ready.sh -r 21 -t 10 -c 20 https://${USERNAME}:${PASSWORD}@${SSH_HOST}:${port}/"
             // check if apiml catalog is started
             port = sh(
               script: ". scripts/install-config.sh && echo \$CIZT_ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT",
               returnStdout: true
             ).trim()
-            sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 -d '{\"username\":\"${USERNAME}\",\"password\":\"${PASSWORD}\"}' 'https://${SSH_HOST}:${port}/api/v1/apicatalog/auth/login'"
+            sh "./scripts/is-website-ready.sh -r 21 -t 10 -c 20 -d '{\"username\":\"${USERNAME}\",\"password\":\"${PASSWORD}\"}' 'https://${SSH_HOST}:${port}/api/v1/apicatalog/auth/login'"
           } // end of timeout - wait for Zowe to be fully started
 
           // post install verify script
@@ -468,12 +468,11 @@ echo "[temp-fixes-after-started.sh] succeeds" && exit 0
 EOF"""
           } // end of timeout - post install verify script
 
-          sh "./scripts/show-job-logs.sh -d -H '${SSH_HOST}' -P '${zOsmfPort}' -u '${USERNAME}' -p '${PASSWORD}' -n 'ZWESECUR' -o '${USERNAME}' -a file-contents"
           // pull job log
-          sh "./scripts/show-job-logs.sh -d -H '${SSH_HOST}' -P '${zOsmfPort}' -u '${USERNAME}' -p '${PASSWORD}' -n 'ZWES*STC' -o ZWESVUSR -a file-contents"
+          sh "./scripts/show-job-logs.sh -d -H '${SSH_HOST}' -P '${zOsmfPort}' -u '${USERNAME}' -p '${PASSWORD}' -n 'ZWES*' -o 'Z*' -a file-contents"
         } catch (e) {
           // pull job log
-          sh "./scripts/show-job-logs.sh -d -H '${SSH_HOST}' -P '${zOsmfPort}' -u '${USERNAME}' -p '${PASSWORD}' -n 'ZWES*STC' -o ZWESVUSR -a file-contents"
+          sh "./scripts/show-job-logs.sh -d -H '${SSH_HOST}' -P '${zOsmfPort}' -u '${USERNAME}' -p '${PASSWORD}' -n 'ZWES*' -o 'Z*' -a file-contents"
           throw e
         } // end of try/catch
       } // end of withCredentials
