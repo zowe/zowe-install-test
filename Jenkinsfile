@@ -438,7 +438,7 @@ EOF"""
               returnStdout: true
             ).trim()
             sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 https://${SSH_HOST}:${port}/"
-            // check if explorer server is started - JAD changed 360 to 21 globally
+            // check if explorer server is started
             port = sh(
               script: ". scripts/install-config.sh && echo \$CIZT_ZOWE_EXPLORER_JOBS_PORT",
               returnStdout: true
