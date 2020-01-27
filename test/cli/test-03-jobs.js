@@ -17,7 +17,7 @@ const { execZoweCli, defaultZOSMFProfileName, createDefaultZOSMFProfile } = requ
 const { ZOWE_JOB_NAME } = require('../constants');
 let testJobId;
 
-describe('cli list jobs of IZU*', function() {
+describe('cli list jobs of ZWE*', function() {
   before('verify environment variables', async function() {
     expect(process.env.ZOSMF_PORT, 'ZOSMF_PORT is not defined').to.not.be.empty;
     expect(process.env.SSH_HOST, 'SSH_HOST is not defined').to.not.be.empty;
@@ -41,7 +41,7 @@ describe('cli list jobs of IZU*', function() {
   });
 
   it(`should have an active job ${ZOWE_JOB_NAME}`, async function() {
-    const result = await execZoweCli(`zowe zos-jobs list jobs --owner 'IZU*' --prefix '${ZOWE_JOB_NAME}*' --response-format-json --zosmf-profile ${defaultZOSMFProfileName}`);
+    const result = await execZoweCli(`zowe zos-jobs list jobs --owner 'ZWE*' --prefix '${ZOWE_JOB_NAME}*' --response-format-json --zosmf-profile ${defaultZOSMFProfileName}`);
 
     debug('result:', result);
     addContext(this, {
