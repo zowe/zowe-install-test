@@ -62,7 +62,7 @@ export CIZT_ZSS_AUX_LOADLIB_MEMBER=ZWESAUX
 export CIZT_ZSS_ZOWE_USER=ZWESVUSR
 export CIZT_ZSS_STC_USER_ID=2
 export CIZT_ZSS_STC_GROUP=ZWEADMIN
-export CIZT_ZSS_STC_USER=ZWESVUSR
+export CIZT_ZSS_STC_USER=ZWESIUSR
 
 # The SSH hostname/port stored as credential used to connect to test z/OS server
 export CIZT_TEST_IMAGE_GUEST_SSH_HOSTPORT=ssh-marist-server-zzow01-hostport
