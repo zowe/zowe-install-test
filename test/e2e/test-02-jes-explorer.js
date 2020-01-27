@@ -237,7 +237,8 @@ describe(`test ${APP_TO_TEST}`, function() {
     await switchToIframeAppContext(driver, APP_TO_TEST, MVD_IFRAME_APP_CONTENT);
     let treeContent = await getElement(driver, MVD_EXPLORER_TREE_SECTION);
     expect(treeContent).to.be.an('object');
-    const items = await getElements(treeContent, 'div.node ul > div');
+    // await driver.sleep(10 * 60 * 1000);
+    const items = await getElements(treeContent, 'div#full-height-tree ul#job-list > div');
     const zoweJob = items[findZoweJob];
 
     // find the expand icon and click to load children
