@@ -182,6 +182,18 @@ fi
 echo
 
 ################################################################################
+echo "[${SCRIPT_NAME}] Display zowe user and group ..."
+wrap_call tsocmd 'LISTGRP  ZWEADMIN'
+wrap_call tsocmd 'LISTGRP  IZUADMIN'
+
+wrap_call tsocmd 'LISTUSER ZWESVUSR OMVS'
+wrap_call tsocmd 'LISTUSER ZWESIUSR OMVS'
+wrap_call tsocmd 'LISTUSER ZOWEAD3  OMVS'
+wrap_call tsocmd 'LISTUSER '
+
+echo "[${SCRIPT_NAME}] Display ZWESVUSR USS user and group ..."
+id ZWESVUSR
+
 # delete started tasks
 echo "[${SCRIPT_NAME}] deleting started tasks ..."
 wrap_call tsocmd 'RDELETE STARTED (ZWESIS*.*)'

@@ -20,6 +20,7 @@ node('ibm-jenkins-slave-dind') {
   def pipeline = lib.pipelines.nodejs.NodeJSPipeline.new(this)
 
   def artifactsForUploadAndInstallation = [
+    "scripts/create-security-defn.sh",
     "scripts/temp-fixes-before-install.sh",
     "scripts/temp-fixes-after-install.sh",
     "scripts/temp-fixes-after-started.sh",
@@ -468,10 +469,11 @@ EOF"""
           } // end of timeout - post install verify script
 
           // pull job log
-          sh "./scripts/show-job-logs.sh -d -H '${SSH_HOST}' -P '${zOsmfPort}' -u '${USERNAME}' -p '${PASSWORD}' -n 'ZWE*' -o IZUSVR -a file-contents"
+          sh "./scripts/show-job-logs.sh -d -H '${SSH_HOST}' -P '${zOsmfPort}' -u '${USERNAME}' -p '${PASSWORD}' -n 'ZWES*STC' -o ZWESVUSR -a file-contents"
         } catch (e) {
           // pull job log
-          sh "./scripts/show-job-logs.sh -d -H '${SSH_HOST}' -P '${zOsmfPort}' -u '${USERNAME}' -p '${PASSWORD}' -n 'ZWE*' -o IZUSVR -a file-contents"
+          sh "./scripts/show-job-logs.sh -d -H '${SSH_HOST}' -P '${zOsmfPort}' -u '${USERNAME}' -p '${PASSWORD}' -n 'ZWESECUR' -o '${USERNAME}' -a file-contents"
+          sh "./scripts/show-job-logs.sh -d -H '${SSH_HOST}' -P '${zOsmfPort}' -u '${USERNAME}' -p '${PASSWORD}' -n 'ZWES*STC' -o 'ZWES*USR' -a file-contents"
           throw e
         } // end of try/catch
       } // end of withCredentials

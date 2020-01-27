@@ -45,7 +45,7 @@ describe('test explorer server jobs api', function() {
       url: '/api/v1/jobs',
       params: {
         prefix: `${ZOWE_JOB_NAME}*`,
-        owner: 'IZU*',
+        owner: 'ZWE*',
         status: 'ACTIVE',
       },
       auth: {

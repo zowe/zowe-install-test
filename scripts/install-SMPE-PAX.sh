@@ -138,9 +138,7 @@ function runJob {
     echo; echo $SCRIPT function runJob started
     jclname=$1
 
-    echo $SCRIPT jclname=$jclname #jobname=$jobname
-    ls -l $jclname
-
+    echo $SCRIPT jclname=$jclname 
     # show JCL for debugging purpose
     echo $SCRIPT ====================== content start ======================
     cat $jclname

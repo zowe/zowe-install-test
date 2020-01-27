@@ -241,7 +241,7 @@ if [ -z "$CI_HOSTNAME" ]; then
   echo "[${SCRIPT_NAME}][error] server hostname/IP is required."
   exit 1
 fi
-# convert encoding if those files uploaded
+echo "convert encoding if those files uploaded"
 cd $CIZT_INSTALL_DIR
 if [ -f "temp-fixes-after-install.sh" ]; then
   ensure_script_encoding temp-fixes-after-install.sh
@@ -251,6 +251,9 @@ if [ -f "temp-fixes-after-started.sh" ]; then
 fi
 if [ -f "temp-fixes-before-install.sh" ]; then
   ensure_script_encoding temp-fixes-before-install.sh
+fi
+if [ -f "create-security-defn.sh" ]; then
+  ensure_script_encoding create-security-defn.sh
 fi
 if [ -f "uninstall-zowe.sh" ]; then
   ensure_script_encoding uninstall-zowe.sh
@@ -329,7 +332,7 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   fi
   echo
 
-  FULL_EXTRACTED_ZOWE_FOLDER=$CIZT_INSTALL_DIR/extracted
+  export FULL_EXTRACTED_ZOWE_FOLDER=$CIZT_INSTALL_DIR/extracted
 
   #TODO - does this have to happen before install as this is after? refactor with below
   # run temp fixes
@@ -345,6 +348,23 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
       fi
     fi
   fi
+
+# # EXTRACTED_ZOWE_FOLDER is also needed for SMP/E ...
+# temporary workaround ...
+# 17:32:23 /ZOWE/zowe-installs/a:
+# 17:32:23 zowe-1.8.0
+# 17:32:23 /ZOWE/zowe-installs/a/zowe-1.8.0/files/jcl:
+# 17:32:23 ZWESECUR.jcl  ZWESVSTC.jcl
+  export FULL_EXTRACTED_ZOWE_FOLDER=$CIZT_INSTALL_DIR/a
+  EXTRACTED_FILES=$(ls -1 $CIZT_INSTALL_DIR/a | wc -l | awk '{print $1}')
+  HAS_EXTRA_ZOWE_FOLDER=0
+  if [ "$EXTRACTED_FILES" = "1" ]; then
+    HAS_EXTRA_ZOWE_FOLDER=1
+    EXTRACTED_ZOWE_FOLDER=$(ls -1 $CIZT_INSTALL_DIR/a)
+    export FULL_EXTRACTED_ZOWE_FOLDER=$CIZT_INSTALL_DIR/a/$EXTRACTED_ZOWE_FOLDER
+  fi
+  echo     HAS_EXTRA_ZOWE_FOLDER=$HAS_EXTRA_ZOWE_FOLDER
+
 
   echo "[${SCRIPT_NAME}] all SMP/e install is done."
   echo
@@ -365,13 +385,13 @@ else #not SMPE
   # check extracted folder
   # - old version will have several folders like files, install, licenses, scripts, etc
   # - new version will only have one folder of zowe-{version}
-  FULL_EXTRACTED_ZOWE_FOLDER=$CIZT_INSTALL_DIR/extracted
+  export FULL_EXTRACTED_ZOWE_FOLDER=$CIZT_INSTALL_DIR/extracted
   EXTRACTED_FILES=$(ls -1 $CIZT_INSTALL_DIR/extracted | wc -l | awk '{print $1}')
   HAS_EXTRA_ZOWE_FOLDER=0
   if [ "$EXTRACTED_FILES" = "1" ]; then
     HAS_EXTRA_ZOWE_FOLDER=1
     EXTRACTED_ZOWE_FOLDER=$(ls -1 $CIZT_INSTALL_DIR/extracted)
-    FULL_EXTRACTED_ZOWE_FOLDER=$CIZT_INSTALL_DIR/extracted/$EXTRACTED_ZOWE_FOLDER
+    export FULL_EXTRACTED_ZOWE_FOLDER=$CIZT_INSTALL_DIR/extracted/$EXTRACTED_ZOWE_FOLDER
   fi
 
   #TODO - does this have to happen before install as this is after? refactor with below
@@ -473,6 +493,18 @@ else
 fi
 
 
+# Run security job to create the SAF definitions for Zowe
+cd $CIZT_INSTALL_DIR
+echo "[${SCRIPT_NAME}] create the SAF definitions for Zowe ..."
+
+RUN_SCRIPT="./create-security-defn.sh "
+run_script_with_timeout "${RUN_SCRIPT}" 300
+
+if [ $? -ne 0 ]; then
+  echo "[${SCRIPT_NAME}][error] create the SAF definitions failed"
+  exit 1
+fi
+
 #TODO - refactor
 echo "[${SCRIPT_NAME}] Starting installing xmem server ..."
 if [[ "$CI_IS_SMPE" = "yes" ]]; then
@@ -526,19 +558,11 @@ cat "${INSTANCE_ENV}" | \
   sed -e "s%ZOWE_ZLUX_SECURITY_TYPE=.*\$%ZOWE_ZLUX_SECURITY_TYPE=%" > "${INSTANCE_ENV}.tmp"
 mv ${INSTANCE_ENV}.tmp ${INSTANCE_ENV}
 
-# execute scripts/zowe-runtime-authorize.sh
-echo "[${SCRIPT_NAME}] executing scripts/zowe-runtime-authorize.sh ..."
-if [ -f "${CIZT_ZOWE_ROOT_DIR}/scripts/zowe-runtime-authorize.sh" ]; then
-  RUN_SCRIPT="${CIZT_ZOWE_ROOT_DIR}/scripts/zowe-runtime-authorize.sh"
-  if [ -f "$RUN_SCRIPT" ]; then
-    run_script_with_timeout "${RUN_SCRIPT}" 300
-    EXIT_CODE=$?
-    if [[ "$EXIT_CODE" != "0" ]]; then
-      echo "[${SCRIPT_NAME}][warning] ${RUN_SCRIPT} failed with exit code ${EXIT_CODE}."
-    fi
-  fi
-else
-  echo "[${SCRIPT_NAME}][warning] not found."
+cat ${INSTANCE_ENV}
+
+if [ ! -f ${CIZT_ZOWE_USER_DIR}"/bin/zowe-start.sh" ]; then
+  echo "[${SCRIPT_NAME}][error] installation is not successfully, cannot find zowe-start.sh."
+  exit 1
 fi
 
 # execute scripts/configure/zowe-config-stc.sh TODO - replace with ZWESECUR
