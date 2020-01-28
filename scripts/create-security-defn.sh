@@ -126,6 +126,8 @@ function runJob {
 
 echo "$SCRIPT Tailor ZWESECUR.jcl for execution in our test environment"
 cd $FULL_EXTRACTED_ZOWE_FOLDER/files/jcl
+echo "current folder $(pwd)"
+ls -la
 echo "check ZWESECUR.jcl start ==="
 head ZWESECUR.jcl
 echo "check ZWESECUR.jcl end   ==="
