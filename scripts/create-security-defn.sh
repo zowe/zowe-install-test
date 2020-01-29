@@ -125,7 +125,7 @@ function runJob {
 }
 
 echo "$SCRIPT Tailor ZWESECUR.jcl for execution in our test environment"
-
+echo "$SCRIPT Obtain ZWESECUR.jcl from $DATA_SET_PREFIX.SZWESAMP(ZWESECUR)"
 cp "//'$DATA_SET_PREFIX.SZWESAMP(ZWESECUR)'" $CIZT_TMP/ZWESECUR.raw.jcl
 
 echo "check ZWESECUR.jcl start ==="

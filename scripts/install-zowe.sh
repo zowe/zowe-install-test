@@ -492,6 +492,9 @@ else
   echo
 fi
 
+echo "[${SCRIPT_NAME}] VENDOR.PROCLIB(ZWESISTC) ==== start"
+cat "//'VENDOR.PROCLIB(ZWESISTC)'"
+echo "[${SCRIPT_NAME}] VENDOR.PROCLIB(ZWESISTC) ==== end"
 
 # Run security job to create the SAF definitions for Zowe
 cd $CIZT_INSTALL_DIR
