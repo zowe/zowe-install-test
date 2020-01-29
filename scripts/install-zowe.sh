@@ -511,8 +511,9 @@ fi
 #TODO - refactor
 echo "[${SCRIPT_NAME}] Starting installing xmem server ..."
 if [[ "$CI_IS_SMPE" = "yes" ]]; then
-  cd ${CIZT_SMPE_PATH_PREFIX}${CIZT_SMPE_PATH_DEFAULT}/xmem-server
-  ${CIZT_INSTALL_DIR}/install-xmem-server.sh
+  :
+  # cd ${CIZT_SMPE_PATH_PREFIX}${CIZT_SMPE_PATH_DEFAULT}/xmem-server
+  # ${CIZT_INSTALL_DIR}/install-xmem-server.sh
 else
   cd $FULL_EXTRACTED_ZOWE_FOLDER/install
   ${CIZT_INSTALL_DIR}/install-xmem-server.sh
