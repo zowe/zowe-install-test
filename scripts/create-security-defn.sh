@@ -125,11 +125,20 @@ function runJob {
 }
 
 echo "$SCRIPT Tailor ZWESECUR.jcl for execution in our test environment"
-cd $FULL_EXTRACTED_ZOWE_FOLDER/files/jcl
+echo "$SCRIPT ZWESECUR.jcl obtained from"
+if [[ "$CI_IS_SMPE" = "yes" ]]
+then
+    echo "$SCRIPT   $DATA_SET_PREFIX(ZWESECUR)"
+    cp "//'$DATA_SET_PREFIX(ZWESECUR)'" $CIZT_TMP/ZWESECUR.raw.jcl
+else
+    echo "$SCRIPT   $FULL_EXTRACTED_ZOWE_FOLDER/files/jcl/ZWESECUR.jcl"
+    cp $FULL_EXTRACTED_ZOWE_FOLDER/files/jcl/ZWESECUR.jcl $CIZT_TMP/ZWESECUR.raw.jcl
+fi
+
 echo "check ZWESECUR.jcl start ==="
-head ZWESECUR.jcl
+head $CIZT_TMP/ZWESECUR.raw.jcl
 echo "check ZWESECUR.jcl end   ==="
-# Nullify ADDGROUP, ALTGROUP and ADDUSER
+# Nullify ADDGROUP, ALTGROUP and ADDUSER for pipeline environment because these exist there already
 sed \
     -e "s+ADMINGRP=ZWEADMIN+ADMINGRP=${CIZT_ZSS_STC_GROUP}+" \
     -e "s+ZOWEUSER=ZWESVUSR+ZOWEUSER=$CIZT_ZSS_ZOWE_USER+" \
@@ -140,7 +149,7 @@ sed \
     -e "s+ADDGROUP+NOADDGROUP+" \
     -e "s+ALTGROUP+NOALTGROUP+" \
     -e "s+ADDUSER+NOADDUSER+" \
-    ZWESECUR.jcl > $CIZT_TMP/ZWESECUR.jcl
+    $CIZT_TMP/ZWESECUR.raw.jcl > $CIZT_TMP/ZWESECUR.jcl
     
 echo "check tailoring start ==="
 grep -e "^// *SET " \
