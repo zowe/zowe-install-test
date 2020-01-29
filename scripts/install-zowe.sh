@@ -511,9 +511,9 @@ fi
 #TODO - refactor
 echo "[${SCRIPT_NAME}] Starting installing xmem server ..."
 if [[ "$CI_IS_SMPE" = "yes" ]]; then
-  :
-  # cd ${CIZT_SMPE_PATH_PREFIX}${CIZT_SMPE_PATH_DEFAULT}/xmem-server
-  # ${CIZT_INSTALL_DIR}/install-xmem-server.sh
+  echo "[${SCRIPT_NAME}] creating APF settings of ${CIZT_ZSS_LOADLIB_DS_NAME}(${CIZT_ZSS_LOADLIB_MEMBER}) ..."
+    (exec "${CIZT_INSTALL_DIR}/opercmd" "SETPROG APF,ADD,DSNAME=${CIZT_ZSS_LOADLIB_DS_NAME},VOLUME=VPMVSC")
+
 else
   cd $FULL_EXTRACTED_ZOWE_FOLDER/install
   ${CIZT_INSTALL_DIR}/install-xmem-server.sh
@@ -598,6 +598,7 @@ if [ "$CI_SKIP_TEMP_FIXES" != "yes" ]; then
     fi
   fi
 fi
+
 
 # start cross memory server
 echo "[${SCRIPT_NAME}] start ZWESISTC ..."
