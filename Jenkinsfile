@@ -470,11 +470,11 @@ EOF"""
 
           // pull job log
           sh "./scripts/show-job-logs.sh -d -H '${SSH_HOST}' -P '${zOsmfPort}' -u '${USERNAME}' -p '${PASSWORD}' -n 'ZWESECUR' -o '${USERNAME}' -a file-contents"
-          sh "./scripts/show-job-logs.sh -d -H '${SSH_HOST}' -P '${zOsmfPort}' -u '${USERNAME}' -p '${PASSWORD}' -n 'ZWES*STC' -o ZWES*USR -a file-contents"
+          sh "./scripts/show-job-logs.sh -d -H '${SSH_HOST}' -P '${zOsmfPort}' -u '${USERNAME}' -p '${PASSWORD}' -n 'ZWES*' -o 'ZWES*' -a file-contents"
         } catch (e) {
           // pull job log
           sh "./scripts/show-job-logs.sh -d -H '${SSH_HOST}' -P '${zOsmfPort}' -u '${USERNAME}' -p '${PASSWORD}' -n 'ZWESECUR' -o '${USERNAME}' -a file-contents"
-          sh "./scripts/show-job-logs.sh -d -H '${SSH_HOST}' -P '${zOsmfPort}' -u '${USERNAME}' -p '${PASSWORD}' -n 'ZWES*STC' -o 'ZWES*USR' -a file-contents"
+          sh "./scripts/show-job-logs.sh -d -H '${SSH_HOST}' -P '${zOsmfPort}' -u '${USERNAME}' -p '${PASSWORD}' -n 'ZWES*' -o 'ZWES*' -a file-contents"
           throw e
         } // end of try/catch
       } // end of withCredentials
