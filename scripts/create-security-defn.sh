@@ -128,8 +128,8 @@ echo "$SCRIPT Tailor ZWESECUR.jcl for execution in our test environment"
 echo "$SCRIPT ZWESECUR.jcl obtained from"
 if [[ "$CI_IS_SMPE" = "yes" ]]
 then
-    echo "$SCRIPT   $DATA_SET_PREFIX(ZWESECUR)"
-    cp "//'$DATA_SET_PREFIX(ZWESECUR)'" $CIZT_TMP/ZWESECUR.raw.jcl
+    echo "$SCRIPT   $DATA_SET_PREFIX.SZWESAMP(ZWESECUR)"
+    cp "//'$DATA_SET_PREFIX.SZWESAMP(ZWESECUR)'" $CIZT_TMP/ZWESECUR.raw.jcl
 else
     echo "$SCRIPT   $FULL_EXTRACTED_ZOWE_FOLDER/files/jcl/ZWESECUR.jcl"
     cp $FULL_EXTRACTED_ZOWE_FOLDER/files/jcl/ZWESECUR.jcl $CIZT_TMP/ZWESECUR.raw.jcl
