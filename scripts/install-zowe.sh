@@ -495,9 +495,9 @@ else
   echo
 fi
 
-echo "[${SCRIPT_NAME}] ${CIZT_ZSS_PROCLIB_DS_NAME}(ZWESISTC) ==== start"
+echo "[${SCRIPT_NAME}] ${CIZT_ZSS_PROCLIB_DS_NAME}(ZWESISTC) ==== start of contents"
 cat "//'${CIZT_ZSS_PROCLIB_DS_NAME}(ZWESISTC)'"
-echo "[${SCRIPT_NAME}] ${CIZT_ZSS_PROCLIB_DS_NAME}(ZWESISTC) ==== end"
+echo "[${SCRIPT_NAME}] ${CIZT_ZSS_PROCLIB_DS_NAME}(ZWESISTC) ==== end of contents"
 
 # Run security job to create the SAF definitions for Zowe
 cd $CIZT_INSTALL_DIR
@@ -515,7 +515,6 @@ fi
 echo "[${SCRIPT_NAME}] Starting installing xmem server ..."
 
 echo "[${SCRIPT_NAME}] creating APF settings of ${CIZT_ZSS_LOADLIB_DS_NAME}(${CIZT_ZSS_LOADLIB_MEMBER}) ..."
-    # (exec "${CIZT_INSTALL_DIR}/opercmd" "SETPROG APF,ADD,DSNAME=${CIZT_ZSS_LOADLIB_DS_NAME},VOLUME=VPMVSC")
 
 echo "calling zowe-xmem-apf.sh with"
 echo "  opercmd       ${CIZT_INSTALL_DIR}/opercmd"
@@ -586,22 +585,6 @@ if [ ! -f ${CIZT_ZOWE_USER_DIR}"/bin/zowe-start.sh" ]; then
   echo "[${SCRIPT_NAME}][error] installation is not successfully, cannot find zowe-start.sh."
   exit 1
 fi
-
-# execute scripts/configure/zowe-config-stc.sh TODO - replace with ZWESECUR
-echo "[${SCRIPT_NAME}] executing scripts/configure/zowe-config-stc.sh ..."
-if [ -f "${CIZT_ZOWE_ROOT_DIR}/scripts/configure/zowe-config-stc.sh" ]; then
-  RUN_SCRIPT="${CIZT_ZOWE_ROOT_DIR}/scripts/configure/zowe-config-stc.sh"
-  if [ -f "$RUN_SCRIPT" ]; then
-    run_script_with_timeout "${RUN_SCRIPT}" 300
-    EXIT_CODE=$?
-    if [[ "$EXIT_CODE" != "0" ]]; then
-      echo "[${SCRIPT_NAME}][warning] ${RUN_SCRIPT} failed with exit code ${EXIT_CODE}."
-    fi
-  fi
-else
-  echo "[${SCRIPT_NAME}][warning] not found."
-fi
-echo
 
 # run temp fixes
 if [ "$CI_SKIP_TEMP_FIXES" != "yes" ]; then

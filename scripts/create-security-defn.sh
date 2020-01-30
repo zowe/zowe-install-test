@@ -128,9 +128,9 @@ echo "$SCRIPT Tailor ZWESECUR.jcl for execution in our test environment"
 echo "$SCRIPT Obtain ZWESECUR.jcl from $DATA_SET_PREFIX.SZWESAMP(ZWESECUR)"
 cp "//'$DATA_SET_PREFIX.SZWESAMP(ZWESECUR)'" $CIZT_TMP/ZWESECUR.raw.jcl
 
-echo "check ZWESECUR.jcl start ==="
+echo "check ZWESECUR.jcl first 10 lines of content ==="
 head $CIZT_TMP/ZWESECUR.raw.jcl
-echo "check ZWESECUR.jcl end   ==="
+echo "check ZWESECUR.jcl end   of content ==="
 # Nullify ADDGROUP, ALTGROUP and ADDUSER for pipeline environment because these exist there already
 sed \
     -e "s+ADMINGRP=ZWEADMIN+ADMINGRP=${CIZT_ZSS_STC_GROUP}+" \
