@@ -21,6 +21,7 @@ node('ibm-jenkins-slave-dind') {
 
   def artifactsForUploadAndInstallation = [
     "scripts/create-security-defn.sh",
+    "scripts/zowe-xmem-apf.sh",
     "scripts/temp-fixes-before-install.sh",
     "scripts/temp-fixes-after-install.sh",
     "scripts/temp-fixes-after-started.sh",
