@@ -358,15 +358,15 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
 # 17:32:23 zowe-1.8.0
 # 17:32:23 /ZOWE/zowe-installs/a/zowe-1.8.0/files/jcl:
 # 17:32:23 ZWESECUR.jcl  ZWESVSTC.jcl
-  export FULL_EXTRACTED_ZOWE_FOLDER=$CIZT_INSTALL_DIR/a
-  EXTRACTED_FILES=$(ls -1 $CIZT_INSTALL_DIR/a | wc -l | awk '{print $1}')
-  HAS_EXTRA_ZOWE_FOLDER=0
-  if [ "$EXTRACTED_FILES" = "1" ]; then
-    HAS_EXTRA_ZOWE_FOLDER=1
-    EXTRACTED_ZOWE_FOLDER=$(ls -1 $CIZT_INSTALL_DIR/a)
-    export FULL_EXTRACTED_ZOWE_FOLDER=$CIZT_INSTALL_DIR/a/$EXTRACTED_ZOWE_FOLDER
-  fi
-  echo     HAS_EXTRA_ZOWE_FOLDER=$HAS_EXTRA_ZOWE_FOLDER
+  # export FULL_EXTRACTED_ZOWE_FOLDER=$CIZT_INSTALL_DIR/a
+  # EXTRACTED_FILES=$(ls -1 $CIZT_INSTALL_DIR/a | wc -l | awk '{print $1}')
+  # HAS_EXTRA_ZOWE_FOLDER=0
+  # if [ "$EXTRACTED_FILES" = "1" ]; then
+  #   HAS_EXTRA_ZOWE_FOLDER=1
+  #   EXTRACTED_ZOWE_FOLDER=$(ls -1 $CIZT_INSTALL_DIR/a)
+  #   export FULL_EXTRACTED_ZOWE_FOLDER=$CIZT_INSTALL_DIR/a/$EXTRACTED_ZOWE_FOLDER
+  # fi
+  # echo     HAS_EXTRA_ZOWE_FOLDER=$HAS_EXTRA_ZOWE_FOLDER
 
 
   echo "[${SCRIPT_NAME}] all SMP/e install is done."
@@ -523,8 +523,6 @@ echo "  zss loadlib   ${CIZT_ZSS_LOADLIB_DS_NAME}"
 
 RUN_SCRIPT=./zowe-xmem-apf.sh
 cd $CIZT_INSTALL_DIR
-ls -l     $RUN_SCRIPT
-chmod a+x $RUN_SCRIPT
 echo "[${SCRIPT_NAME}] calling $RUN_SCRIPT from directory $(pwd)"
 run_script_with_timeout "$RUN_SCRIPT \
   ${CIZT_INSTALL_DIR}/opercmd \
