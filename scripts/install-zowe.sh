@@ -352,23 +352,6 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
     fi
   fi
 
-# # EXTRACTED_ZOWE_FOLDER is also needed for SMP/E ...
-# temporary workaround ...
-# 17:32:23 /ZOWE/zowe-installs/a:
-# 17:32:23 zowe-1.8.0
-# 17:32:23 /ZOWE/zowe-installs/a/zowe-1.8.0/files/jcl:
-# 17:32:23 ZWESECUR.jcl  ZWESVSTC.jcl
-  # export FULL_EXTRACTED_ZOWE_FOLDER=$CIZT_INSTALL_DIR/a
-  # EXTRACTED_FILES=$(ls -1 $CIZT_INSTALL_DIR/a | wc -l | awk '{print $1}')
-  # HAS_EXTRA_ZOWE_FOLDER=0
-  # if [ "$EXTRACTED_FILES" = "1" ]; then
-  #   HAS_EXTRA_ZOWE_FOLDER=1
-  #   EXTRACTED_ZOWE_FOLDER=$(ls -1 $CIZT_INSTALL_DIR/a)
-  #   export FULL_EXTRACTED_ZOWE_FOLDER=$CIZT_INSTALL_DIR/a/$EXTRACTED_ZOWE_FOLDER
-  # fi
-  # echo     HAS_EXTRA_ZOWE_FOLDER=$HAS_EXTRA_ZOWE_FOLDER
-
-
   echo "[${SCRIPT_NAME}] all SMP/e install is done."
   echo
 else #not SMPE
