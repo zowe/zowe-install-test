@@ -509,7 +509,26 @@ fi
 echo "[${SCRIPT_NAME}] Starting installing xmem server ..."
 
 echo "[${SCRIPT_NAME}] creating APF settings of ${CIZT_ZSS_LOADLIB_DS_NAME}(${CIZT_ZSS_LOADLIB_MEMBER}) ..."
-    (exec "${CIZT_INSTALL_DIR}/opercmd" "SETPROG APF,ADD,DSNAME=${CIZT_ZSS_LOADLIB_DS_NAME},VOLUME=VPMVSC")
+    # (exec "${CIZT_INSTALL_DIR}/opercmd" "SETPROG APF,ADD,DSNAME=${CIZT_ZSS_LOADLIB_DS_NAME},VOLUME=VPMVSC")
+
+echo "calling zowe-xmem-apf.sh with"
+echo "  opercmd       ${CIZT_INSTALL_DIR}/opercmd"
+echo "  zss loadlib   ${CIZT_ZSS_LOADLIB_DS_NAME}"
+
+RUN_SCRIPT=./zowe-xmem-apf.sh
+echo "[${SCRIPT_NAME}] calling $RUN_SCRIPT from directory $(pwd)"
+run_script_with_timeout "$RUN_SCRIPT \
+  ${CIZT_INSTALL_DIR}/opercmd \
+  ${CIZT_ZSS_LOADLIB_DS_NAME}" 1800
+EXIT_CODE=$?
+if [[ "$EXIT_CODE" != "0" ]]; then
+  echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed with exit code $EXIT_CODE."
+  echo
+  exit 1
+else
+  echo "[${SCRIPT_NAME}] ${RUN_SCRIPT} succeeds."
+  echo
+fi
 
 echo "Setting up certificate..."
 # Create a copy of the default environment
