@@ -261,9 +261,6 @@ fi
 if [ -f "install-SMPE-PAX.sh" ]; then
   ensure_script_encoding install-SMPE-PAX.sh
 fi
-if [ -f "install-xmem-server.sh" ]; then
-  ensure_script_encoding install-xmem-server.sh
-fi
 if [ -f "opercmd" ]; then
   ensure_script_encoding opercmd "parse var command opercmd"
 fi
@@ -510,14 +507,9 @@ fi
 
 #TODO - refactor
 echo "[${SCRIPT_NAME}] Starting installing xmem server ..."
-if [[ "$CI_IS_SMPE" = "yes" ]]; then
-  echo "[${SCRIPT_NAME}] creating APF settings of ${CIZT_ZSS_LOADLIB_DS_NAME}(${CIZT_ZSS_LOADLIB_MEMBER}) ..."
-    (exec "${CIZT_INSTALL_DIR}/opercmd" "SETPROG APF,ADD,DSNAME=${CIZT_ZSS_LOADLIB_DS_NAME},VOLUME=VPMVSC")
 
-else
-  cd $FULL_EXTRACTED_ZOWE_FOLDER/install
-  ${CIZT_INSTALL_DIR}/install-xmem-server.sh
-fi
+echo "[${SCRIPT_NAME}] creating APF settings of ${CIZT_ZSS_LOADLIB_DS_NAME}(${CIZT_ZSS_LOADLIB_MEMBER}) ..."
+    (exec "${CIZT_INSTALL_DIR}/opercmd" "SETPROG APF,ADD,DSNAME=${CIZT_ZSS_LOADLIB_DS_NAME},VOLUME=VPMVSC")
 
 echo "Setting up certificate..."
 # Create a copy of the default environment

@@ -26,7 +26,6 @@ node('ibm-jenkins-slave-dind') {
     "scripts/temp-fixes-after-started.sh",
     "scripts/install-zowe.sh",
     "scripts/install-config.sh",
-    "scripts/install-xmem-server.sh",
     "scripts/uninstall-zowe.sh",
     "scripts/install-SMPE-PAX.sh",
     "scripts/uninstall-SMPE-PAX.sh",
