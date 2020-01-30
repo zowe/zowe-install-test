@@ -517,6 +517,8 @@ echo "  zss loadlib   ${CIZT_ZSS_LOADLIB_DS_NAME}"
 
 RUN_SCRIPT=./zowe-xmem-apf.sh
 cd $CIZT_INSTALL_DIR
+ls -l     $RUN_SCRIPT
+chmod a+x $RUN_SCRIPT
 echo "[${SCRIPT_NAME}] calling $RUN_SCRIPT from directory $(pwd)"
 run_script_with_timeout "$RUN_SCRIPT \
   ${CIZT_INSTALL_DIR}/opercmd \
