@@ -258,6 +258,9 @@ fi
 if [ -f "zowe-xmem-apf.sh" ]; then
   ensure_script_encoding zowe-xmem-apf.sh
 fi
+if [ -f "zowe-xmem-check-if-sms.sh" ]; then
+  ensure_script_encoding zowe-xmem-check-if-sms.sh
+fi
 if [ -f "uninstall-zowe.sh" ]; then
   ensure_script_encoding uninstall-zowe.sh
 fi
