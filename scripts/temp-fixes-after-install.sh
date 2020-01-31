@@ -91,7 +91,7 @@ if [ -f run-zowe.sh ]; then
   echo cp run-zowe.sh run-zowe.sh.orig | su
   sed \
     -e "/# Copyright / a\\
-    __IPC_CLEANUP=1 ${CUSTOM_NODE_HOME}/bin/node --version"\
+    __IPC_CLEANUP=1 \${NODE_HOME}/bin/node --version"\
     run-zowe.sh > ${CIZT_TMP}/run-zowe.sh.tmp
   echo cp ${CIZT_TMP}/run-zowe.sh.tmp run-zowe.sh | su
   echo rm ${CIZT_TMP}/run-zowe.sh.tmp | su
