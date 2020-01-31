@@ -152,6 +152,18 @@ function run_script_with_timeout {
 }
 
 ################################################################################
+# Wrap call into $()
+#
+# NOTE: This function exists to solve the issue calling tsocmd/submit/cp directly
+#       in pipeline will not exit properly.
+################################################################################
+function wrap_call {
+  echo "[wrap_call] $@ >>>"
+  CALL_RESULT=$($@)
+  printf "%s\n[wrap_call] <<<\n" "$CALL_RESULT"
+}
+
+################################################################################
 # parse parameters
 function usage {
   echo "Extract and install Zowe."
@@ -583,6 +595,18 @@ if [ "$CI_SKIP_TEMP_FIXES" != "yes" ]; then
   fi
 fi
 
+################################################################################
+# issue https://github.com/zowe/zowe-install-test/issues/157
+# remove SZWESAMP
+echo "[${SCRIPT_NAME}] removing SZWESAMP ..."
+# listing 
+datasets=$(tsocmd listds "'${DATA_SET_PREFIX}.SZWESAMP'" level | grep "${DATA_SET_PREFIX}.SZWESAMP" | grep -v "UNABLE TO COMPLETE")
+for ds in $datasets
+do
+  echo "[${SCRIPT_NAME}] - found ${ds}, deleting ..."
+  wrap_call tsocmd DELETE "'${ds}'"
+done
+echo
 
 # start cross memory server
 echo "[${SCRIPT_NAME}] start ZWESISTC ..."
