@@ -152,18 +152,6 @@ function run_script_with_timeout {
 }
 
 ################################################################################
-# Wrap call into $()
-#
-# NOTE: This function exists to solve the issue calling tsocmd/submit/cp directly
-#       in pipeline will not exit properly.
-################################################################################
-function wrap_call {
-  echo "[wrap_call] $@ >>>"
-  CALL_RESULT=$($@)
-  printf "%s\n[wrap_call] <<<\n" "$CALL_RESULT"
-}
-
-################################################################################
 # parse parameters
 function usage {
   echo "Extract and install Zowe."
