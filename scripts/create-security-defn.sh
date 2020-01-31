@@ -125,11 +125,13 @@ function runJob {
 }
 
 echo "$SCRIPT Tailor ZWESECUR.jcl for execution in our test environment"
-cd $FULL_EXTRACTED_ZOWE_FOLDER/files/jcl
-echo "check ZWESECUR.jcl start ==="
-head ZWESECUR.jcl
-echo "check ZWESECUR.jcl end   ==="
-# Nullify ADDGROUP, ALTGROUP and ADDUSER
+echo "$SCRIPT Obtain ZWESECUR.jcl from $DATA_SET_PREFIX.SZWESAMP(ZWESECUR)"
+cp "//'$DATA_SET_PREFIX.SZWESAMP(ZWESECUR)'" $CIZT_TMP/ZWESECUR.raw.jcl
+
+echo "check ZWESECUR.jcl first 10 lines of content ==="
+head $CIZT_TMP/ZWESECUR.raw.jcl
+echo "check ZWESECUR.jcl end   of content ==="
+# Nullify ADDGROUP, ALTGROUP and ADDUSER for pipeline environment because these exist there already
 sed \
     -e "s+ADMINGRP=ZWEADMIN+ADMINGRP=${CIZT_ZSS_STC_GROUP}+" \
     -e "s+ZOWEUSER=ZWESVUSR+ZOWEUSER=$CIZT_ZSS_ZOWE_USER+" \
@@ -140,7 +142,7 @@ sed \
     -e "s+ADDGROUP+NOADDGROUP+" \
     -e "s+ALTGROUP+NOALTGROUP+" \
     -e "s+ADDUSER+NOADDUSER+" \
-    ZWESECUR.jcl > $CIZT_TMP/ZWESECUR.jcl
+    $CIZT_TMP/ZWESECUR.raw.jcl > $CIZT_TMP/ZWESECUR.jcl
     
 echo "check tailoring start ==="
 grep -e "^// *SET " \

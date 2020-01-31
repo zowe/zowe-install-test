@@ -21,12 +21,13 @@ node('ibm-jenkins-slave-dind') {
 
   def artifactsForUploadAndInstallation = [
     "scripts/create-security-defn.sh",
+    "scripts/zowe-xmem-apf.sh",
+    "scripts/zowe-xmem-check-if-sms.sh",
     "scripts/temp-fixes-before-install.sh",
     "scripts/temp-fixes-after-install.sh",
     "scripts/temp-fixes-after-started.sh",
     "scripts/install-zowe.sh",
     "scripts/install-config.sh",
-    "scripts/install-xmem-server.sh",
     "scripts/uninstall-zowe.sh",
     "scripts/install-SMPE-PAX.sh",
     "scripts/uninstall-SMPE-PAX.sh",
@@ -469,11 +470,12 @@ EOF"""
           } // end of timeout - post install verify script
 
           // pull job log
-          sh "./scripts/show-job-logs.sh -d -H '${SSH_HOST}' -P '${zOsmfPort}' -u '${USERNAME}' -p '${PASSWORD}' -n 'ZWES*STC' -o ZWESVUSR -a file-contents"
+          sh "./scripts/show-job-logs.sh -d -H '${SSH_HOST}' -P '${zOsmfPort}' -u '${USERNAME}' -p '${PASSWORD}' -n 'ZWESECUR' -o '${USERNAME}' -a file-contents"
+          sh "./scripts/show-job-logs.sh -d -H '${SSH_HOST}' -P '${zOsmfPort}' -u '${USERNAME}' -p '${PASSWORD}' -n 'ZWE*' -o 'ZWES*' -a file-contents"
         } catch (e) {
           // pull job log
           sh "./scripts/show-job-logs.sh -d -H '${SSH_HOST}' -P '${zOsmfPort}' -u '${USERNAME}' -p '${PASSWORD}' -n 'ZWESECUR' -o '${USERNAME}' -a file-contents"
-          sh "./scripts/show-job-logs.sh -d -H '${SSH_HOST}' -P '${zOsmfPort}' -u '${USERNAME}' -p '${PASSWORD}' -n 'ZWES*STC' -o 'ZWES*USR' -a file-contents"
+          sh "./scripts/show-job-logs.sh -d -H '${SSH_HOST}' -P '${zOsmfPort}' -u '${USERNAME}' -p '${PASSWORD}' -n 'ZWE*' -o 'ZWES*' -a file-contents"
           throw e
         } // end of try/catch
       } // end of withCredentials

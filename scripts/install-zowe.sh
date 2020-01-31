@@ -255,14 +255,17 @@ fi
 if [ -f "create-security-defn.sh" ]; then
   ensure_script_encoding create-security-defn.sh
 fi
+if [ -f "zowe-xmem-apf.sh" ]; then
+  ensure_script_encoding zowe-xmem-apf.sh
+fi
+if [ -f "zowe-xmem-check-if-sms.sh" ]; then
+  ensure_script_encoding zowe-xmem-check-if-sms.sh
+fi
 if [ -f "uninstall-zowe.sh" ]; then
   ensure_script_encoding uninstall-zowe.sh
 fi
 if [ -f "install-SMPE-PAX.sh" ]; then
   ensure_script_encoding install-SMPE-PAX.sh
-fi
-if [ -f "install-xmem-server.sh" ]; then
-  ensure_script_encoding install-xmem-server.sh
 fi
 if [ -f "opercmd" ]; then
   ensure_script_encoding opercmd "parse var command opercmd"
@@ -313,9 +316,9 @@ if [[ "$CI_UNINSTALL" = "yes" ]]; then
   fi
 fi
 
-DATA_SET_PREFIX=$USER.ZWE
+export DATA_SET_PREFIX=$USER.ZWE
 if [[ "$CI_IS_SMPE" = "yes" ]]; then
-  DATA_SET_PREFIX=$USER.SMPE
+  export DATA_SET_PREFIX=$USER.SMPE
 fi
 
 rm -fr ${CIZT_INSTALL_DIR}/extracted && mkdir -p ${CIZT_INSTALL_DIR}/extracted
@@ -348,23 +351,6 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
       fi
     fi
   fi
-
-# # EXTRACTED_ZOWE_FOLDER is also needed for SMP/E ...
-# temporary workaround ...
-# 17:32:23 /ZOWE/zowe-installs/a:
-# 17:32:23 zowe-1.8.0
-# 17:32:23 /ZOWE/zowe-installs/a/zowe-1.8.0/files/jcl:
-# 17:32:23 ZWESECUR.jcl  ZWESVSTC.jcl
-  export FULL_EXTRACTED_ZOWE_FOLDER=$CIZT_INSTALL_DIR/a
-  EXTRACTED_FILES=$(ls -1 $CIZT_INSTALL_DIR/a | wc -l | awk '{print $1}')
-  HAS_EXTRA_ZOWE_FOLDER=0
-  if [ "$EXTRACTED_FILES" = "1" ]; then
-    HAS_EXTRA_ZOWE_FOLDER=1
-    EXTRACTED_ZOWE_FOLDER=$(ls -1 $CIZT_INSTALL_DIR/a)
-    export FULL_EXTRACTED_ZOWE_FOLDER=$CIZT_INSTALL_DIR/a/$EXTRACTED_ZOWE_FOLDER
-  fi
-  echo     HAS_EXTRA_ZOWE_FOLDER=$HAS_EXTRA_ZOWE_FOLDER
-
 
   echo "[${SCRIPT_NAME}] all SMP/e install is done."
   echo
@@ -492,6 +478,9 @@ else
   echo
 fi
 
+echo "[${SCRIPT_NAME}] ${CIZT_ZSS_PROCLIB_DS_NAME}(ZWESISTC) ==== start of contents"
+cat "//'${CIZT_ZSS_PROCLIB_DS_NAME}(ZWESISTC)'"
+echo "[${SCRIPT_NAME}] ${CIZT_ZSS_PROCLIB_DS_NAME}(ZWESISTC) ==== end of contents"
 
 # Run security job to create the SAF definitions for Zowe
 cd $CIZT_INSTALL_DIR
@@ -507,12 +496,27 @@ fi
 
 #TODO - refactor
 echo "[${SCRIPT_NAME}] Starting installing xmem server ..."
-if [[ "$CI_IS_SMPE" = "yes" ]]; then
-  cd ${CIZT_SMPE_PATH_PREFIX}${CIZT_SMPE_PATH_DEFAULT}/xmem-server
-  ${CIZT_INSTALL_DIR}/install-xmem-server.sh
+
+echo "[${SCRIPT_NAME}] creating APF settings of ${CIZT_ZSS_LOADLIB_DS_NAME}(${CIZT_ZSS_LOADLIB_MEMBER}) ..."
+
+echo "calling zowe-xmem-apf.sh with"
+echo "  opercmd       ${CIZT_INSTALL_DIR}/opercmd"
+echo "  zss loadlib   ${CIZT_ZSS_LOADLIB_DS_NAME}"
+
+RUN_SCRIPT=./zowe-xmem-apf.sh
+cd $CIZT_INSTALL_DIR
+echo "[${SCRIPT_NAME}] calling $RUN_SCRIPT from directory $(pwd)"
+run_script_with_timeout "$RUN_SCRIPT \
+  ${CIZT_INSTALL_DIR}/opercmd \
+  ${CIZT_ZSS_LOADLIB_DS_NAME}" 1800
+EXIT_CODE=$?
+if [[ "$EXIT_CODE" != "0" ]]; then
+  echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed with exit code $EXIT_CODE."
+  echo
+  exit 1
 else
-  cd $FULL_EXTRACTED_ZOWE_FOLDER/install
-  ${CIZT_INSTALL_DIR}/install-xmem-server.sh
+  echo "[${SCRIPT_NAME}] ${RUN_SCRIPT} succeeds."
+  echo
 fi
 
 echo "Setting up certificate..."
@@ -565,22 +569,6 @@ if [ ! -f ${CIZT_ZOWE_USER_DIR}"/bin/zowe-start.sh" ]; then
   exit 1
 fi
 
-# execute scripts/configure/zowe-config-stc.sh TODO - replace with ZWESECUR
-echo "[${SCRIPT_NAME}] executing scripts/configure/zowe-config-stc.sh ..."
-if [ -f "${CIZT_ZOWE_ROOT_DIR}/scripts/configure/zowe-config-stc.sh" ]; then
-  RUN_SCRIPT="${CIZT_ZOWE_ROOT_DIR}/scripts/configure/zowe-config-stc.sh"
-  if [ -f "$RUN_SCRIPT" ]; then
-    run_script_with_timeout "${RUN_SCRIPT}" 300
-    EXIT_CODE=$?
-    if [[ "$EXIT_CODE" != "0" ]]; then
-      echo "[${SCRIPT_NAME}][warning] ${RUN_SCRIPT} failed with exit code ${EXIT_CODE}."
-    fi
-  fi
-else
-  echo "[${SCRIPT_NAME}][warning] not found."
-fi
-echo
-
 # run temp fixes
 if [ "$CI_SKIP_TEMP_FIXES" != "yes" ]; then
   cd $CIZT_INSTALL_DIR
@@ -594,6 +582,7 @@ if [ "$CI_SKIP_TEMP_FIXES" != "yes" ]; then
     fi
   fi
 fi
+
 
 # start cross memory server
 echo "[${SCRIPT_NAME}] start ZWESISTC ..."
