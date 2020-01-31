@@ -583,6 +583,19 @@ if [ "$CI_SKIP_TEMP_FIXES" != "yes" ]; then
   fi
 fi
 
+################################################################################
+# issue https://github.com/zowe/zowe-install-test/issues/157
+# remove SZWESAMP
+echo "[${SCRIPT_NAME}] removing SZWESAMP ..."
+if [ -f "$RUN_SCRIPT" ]; then
+  run_script_with_timeout "tsocmd DELETE \"'${DATA_SET_PREFIX}.SZWESAMP'\"" 1800
+  EXIT_CODE=$?
+  if [[ "$EXIT_CODE" != "0" ]]; then
+    echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
+    exit 1
+  fi
+fi
+echo
 
 # start cross memory server
 echo "[${SCRIPT_NAME}] start ZWESISTC ..."
