@@ -599,13 +599,14 @@ fi
 # issue https://github.com/zowe/zowe-install-test/issues/157
 # remove SZWESAMP
 echo "[${SCRIPT_NAME}] removing SZWESAMP ..."
-# listing 
-datasets=$(tsocmd listds "'${DATA_SET_PREFIX}.SZWESAMP'" level | grep "${DATA_SET_PREFIX}.SZWESAMP" | grep -v "UNABLE TO COMPLETE")
-for ds in $datasets
-do
-  echo "[${SCRIPT_NAME}] - found ${ds}, deleting ..."
-  wrap_call tsocmd DELETE "'${ds}'"
-done
+if [ -f "$RUN_SCRIPT" ]; then
+  run_script_with_timeout "tsocmd DELETE \"'${DATA_SET_PREFIX}.SZWESAMP'\"" 1800
+  EXIT_CODE=$?
+  if [[ "$EXIT_CODE" != "0" ]]; then
+    echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
+    exit 1
+  fi
+fi
 echo
 
 # start cross memory server
