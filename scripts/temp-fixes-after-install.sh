@@ -94,6 +94,8 @@ if [ -f run-zowe.sh ]; then
     __IPC_CLEANUP=1 ${CUSTOM_NODE_HOME}/bin/node --version"\
     run-zowe.sh > ${CIZT_TMP}/run-zowe.sh.tmp
   echo mv ${CIZT_TMP}/run-zowe.sh.tmp run-zowe.sh | su
+  # give execute permission
+  echo chmod 750 run-zowe.sh | su
 fi
 echo
 
