@@ -106,7 +106,7 @@ node('ibm-jenkins-slave-dind') {
     ),
     choice(
       name: 'NODE_VERSION',
-      choices: ['v8.16.0', 'v6.17.0', 'v8.16.1', 'v8.16.2', 'v12.13.0'],
+      choices: ['v8.16.0', 'v6.17.0', 'v8.16.1', 'v8.16.2', 'v12.13.0', 'v12.14.1'],
       description: 'This option is only valid for Marist server. The installation will set NODE_HOME to /ZOWE/node/node-{{version}}-os390-s390x.',
       trim: true
     ),
