@@ -23,22 +23,6 @@ FULL_EXTRACTED_ZOWE_FOLDER=$1
 echo "[${SCRIPT_NAME}] started ..."
 echo "[${SCRIPT_NAME}]    FULL_EXTRACTED_ZOWE_FOLDER : $FULL_EXTRACTED_ZOWE_FOLDER"
 
-# ################################################################################
-# if [ "$CIZT_TARGET_SERVER" = "marist" ]; then
-#   if [ "$CI_IS_SMPE" = "yes" ]; then
-#     # need to adjust directory permission for SMP/e installation
-#     cd $CIZT_SMPE_PATH_PREFIX
-#     echo "[${SCRIPT_NAME}] current file permissions:"
-#     echo "----- $(pwd)"
-#     ls -la
-#     echo "----- ${CIZT_SMPE_PATH_DEFAULT}"
-#     ls -la $CIZT_SMPE_PATH_DEFAULT
-#     echo "[${SCRIPT_NAME}] changing all owners to $USER ..."
-#     (echo chown -R $USER usr | su) || true
-#     # (echo chgrp -R IZUADMIN usr | su) || true
-#   fi
-# fi
-
 ################################################################################
 echo
 echo "[${SCRIPT_NAME}] done."
