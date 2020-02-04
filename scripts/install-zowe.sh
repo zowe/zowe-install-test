@@ -25,6 +25,11 @@ CI_SKIP_TEMP_FIXES=no
 CI_UNINSTALL=no
 CI_HOSTNAME=
 
+# allow us to customize /tmp folder
+if [ -z "${CIZT_TMP}" ]; then
+  CIZT_TMP=/tmp
+fi
+
 # allow to exit by ctrl+c
 function finish {
   echo "[${SCRIPT_NAME}] interrupted"
@@ -116,7 +121,7 @@ function run_script_with_timeout {
   echo
   echo "################################################################################"
 
-  TMP_LOG_FILE="$$-$RANDOM.log"
+  TMP_LOG_FILE="${CIZT_TMP}/$$-$RANDOM.log"
   (exec sh -c "$SCRIPT_TO_RUN" > $TMP_LOG_FILE) & CMD_PID=$!
   echo "[run_script_with_timeout] '${SCRIPT_TO_RUN}' process ID is $CMD_PID"
   # start waiter process in background
