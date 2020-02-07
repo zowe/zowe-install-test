@@ -20,20 +20,23 @@ node('ibm-jenkins-slave-dind') {
   def pipeline = lib.pipelines.nodejs.NodeJSPipeline.new(this)
 
   def artifactsForUploadAndInstallation = [
+    "scripts/create-security-defn.sh",
+    "scripts/zowe-xmem-apf.sh",
+    "scripts/zowe-xmem-check-if-sms.sh",
     "scripts/temp-fixes-before-install.sh",
     "scripts/temp-fixes-after-install.sh",
     "scripts/temp-fixes-after-started.sh",
     "scripts/install-zowe.sh",
     "scripts/install-config.sh",
-    "scripts/install-xmem-server.sh",
     "scripts/uninstall-zowe.sh",
     "scripts/install-SMPE-PAX.sh",
     "scripts/uninstall-SMPE-PAX.sh",
     "scripts/opercmd",
-    "scripts/show-job-logs.sh",
   ]
   def zoweArtifact = ''
   def zoweRootDir = ''
+  def zoweInstanceDir = ''
+  def zOsmfPort = ''
   def installDir = ''
   def testImageGuestSshHostPort = ''
   def testImageGuestSshCredential = ''
@@ -101,6 +104,12 @@ node('ibm-jenkins-slave-dind') {
       description: 'Choose which server to run test',
       trim: true
     ),
+    choice(
+      name: 'NODE_VERSION',
+      choices: ['v8.16.0', 'v6.17.0', 'v8.16.1', 'v8.16.2', 'v12.13.0', 'v12.14.1'],
+      description: 'This option is only valid for Marist server. The installation will set NODE_HOME to /ZOWE/node/node-{{version}}-os390-s390x.',
+      trim: true
+    ),
     // >>>>>>>> parametters for test cases
     string(
       name: 'TEST_CASE_DEBUG_INFORMATION',
@@ -116,8 +125,8 @@ node('ibm-jenkins-slave-dind') {
       usernamePasswordCredential : lib.Constants.DEFAULT_GITHUB_ROBOT_CREDENTIAL,
     ],
     artifactory: [
-      url                        : lib.Constants.DEFAULT_ARTIFACTORY_URL,
-      usernamePasswordCredential : lib.Constants.DEFAULT_ARTIFACTORY_ROBOT_CREDENTIAL,
+      url                        : lib.Constants.DEFAULT_LFJ_ARTIFACTORY_URL,
+      usernamePasswordCredential : lib.Constants.DEFAULT_LFJ_ARTIFACTORY_ROBOT_CREDENTIAL,
     ],
     // don't want audit failure blocks nightly test
     ignoreAuditFailure           : true
@@ -143,6 +152,14 @@ node('ibm-jenkins-slave-dind') {
         error "Cannot find installation config file [${params.TARGET_SERVER}]"
       }
       sh "cp scripts/${configFile} scripts/install-config.sh"
+      // write node_home
+      if (params.TARGET_SERVER == 'marist') {
+        sh """
+echo  >> scripts/install-config.sh
+echo "# customize NODE_HOME with build pipeline parameter" >> scripts/install-config.sh
+echo "export NODE_HOME=/ZOWE/node/node-${params.NODE_VERSION}-os390-s390x" >> scripts/install-config.sh
+"""
+      }
       installDir = sh(
         script: ". scripts/install-config.sh && echo \$CIZT_INSTALL_DIR",
         returnStdout: true
@@ -164,6 +181,14 @@ node('ibm-jenkins-slave-dind') {
         script: ". scripts/install-config.sh && echo \$CIZT_ZOWE_ROOT_DIR",
         returnStdout: true
       ).trim()
+      zoweInstanceDir = sh(
+        script: ". scripts/install-config.sh && echo \$CIZT_ZOWE_USER_DIR",
+        returnStdout: true
+      ).trim()
+      zOsmfPort = sh(
+        script: ". scripts/install-config.sh && echo \$CIZT_ZOSMF_PORT",
+        returnStdout: true
+      ).trim()
       if (params.IS_SMPE_PACKAGE) {
         // overwrite CIZT_ZOWE_ROOT_DIR for SMP/e package.
         zoweRootDir = sh(
@@ -182,12 +207,6 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
         echo "CIZT_ZOWE_ROOT_DIR is updated to ${zoweRootDir}"
       }
     }
-  )
-
-  // we need sonar scan
-  pipeline.sonarScan(
-    scannerTool     : lib.Constants.DEFAULT_SONARQUBE_SCANNER_TOOL,
-    scannerServer   : lib.Constants.DEFAULT_SONARQUBE_SERVER
   )
 
   pipeline.createStage(
@@ -217,11 +236,91 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
         } else if (params.ZOWE_ARTIFACTORY_PATTERN =~ /\/[^\/]+\.pax\.Z$/) {
           // the pattern is not a static path but including *
           smpeReadmePattern = params.ZOWE_ARTIFACTORY_PATTERN.replaceAll(/\/([^\/]+)\.pax\.Z$/, "/\$1.txt")
+        } else if (params.ZOWE_ARTIFACTORY_PATTERN =~ /\/[^\/]+\.tar$/) {
+          smpeReadmePattern = 'tarball'
+        } else if (params.ZOWE_ARTIFACTORY_PATTERN =~ /\/[^\/]+\.zip$/) {
+          smpeReadmePattern = 'zip'
         } else {
-          error "The Zowe SMP/e package pattern (ZOWE_ARTIFACTORY_PATTERN) should end with .pax.Z"
+          error "The Zowe SMP/e package pattern (ZOWE_ARTIFACTORY_PATTERN) should end with .pax.Z, .tar or .zip"
         }
-        pipeline.artifactory.download(
-          specContent : """
+        if (smpeReadmePattern == 'tarball') {
+          pipeline.artifactory.download(
+            specContent : """
+{
+  "files": [{
+    "pattern": "${params.ZOWE_ARTIFACTORY_PATTERN}",
+    "target": ".tmp/",
+    "flat": "true",
+    "build": "${params.ZOWE_ARTIFACTORY_BUILD}"
+  }, {
+    "pattern": "${params.ZOWE_CLI_ARTIFACTORY_PATTERN}",
+    "target": ".tmp/",
+    "flat": "true",
+    "build": "${params.ZOWE_CLI_ARTIFACTORY_BUILD}",
+    "explode": "true"
+  }]
+}
+""",
+            expected    : 2
+          )
+          dir('.tmp') {
+            // extract tar file
+            sh 'tar xvf $(ls -1 zowe-smpe-*.tar)'
+            // should get AZWE001.zip or AZWE001.TMP0001.zip, unzip it
+            sh 'echo "after extracted:" && ls -l * && unzip $(ls -1 AZWE*.zip)'
+            // should get AZWE001.pax.Z, AZWE001.readme.txt and AZWE001.htm for AZWE001.zip
+            def smpePax = sh(script: "ls -1 AZWE*.pax.Z", returnStdout: true).trim()
+            def smpeReadme = sh(script: "ls -1 AZWE*.readme.txt", returnStdout: true).trim()
+            if (!smpePax) {
+              error "Failed to extract SMPE pax file from ${params.ZOWE_ARTIFACTORY_PATTERN}"
+            }
+            if (!smpeReadme) {
+              error "Failed to extract SMPE readme file from ${params.ZOWE_ARTIFACTORY_PATTERN}"
+            }
+            artifactsForUploadAndInstallation.add(".tmp/${smpePax}")
+            artifactsForUploadAndInstallation.add(".tmp/${smpeReadme}")
+            zoweArtifact = "${smpePax}"
+          }
+        } else if (smpeReadmePattern == 'zip') {
+          pipeline.artifactory.download(
+            specContent : """
+{
+  "files": [{
+    "pattern": "${params.ZOWE_ARTIFACTORY_PATTERN}",
+    "target": ".tmp/",
+    "flat": "true",
+    "build": "${params.ZOWE_ARTIFACTORY_BUILD}"
+  }, {
+    "pattern": "${params.ZOWE_CLI_ARTIFACTORY_PATTERN}",
+    "target": ".tmp/",
+    "flat": "true",
+    "build": "${params.ZOWE_CLI_ARTIFACTORY_BUILD}",
+    "explode": "true"
+  }]
+}
+""",
+            expected    : 2
+          )
+          dir('.tmp') {
+            // extract zip file
+            sh 'unzip $(ls -1 zowe-smpe-*.zip)'
+            // should get AZWE001.pax.Z, AZWE001.readme.txt and AZWE001.htm for AZWE001.zip
+            sh 'echo "after extracted:" && ls -l *'
+            def smpePax = sh(script: "ls -1 AZWE*.pax.Z", returnStdout: true).trim()
+            def smpeReadme = sh(script: "ls -1 AZWE*.readme.txt", returnStdout: true).trim()
+            if (!smpePax) {
+              error "Failed to extract SMPE pax file from ${params.ZOWE_ARTIFACTORY_PATTERN}"
+            }
+            if (!smpeReadme) {
+              error "Failed to extract SMPE readme file from ${params.ZOWE_ARTIFACTORY_PATTERN}"
+            }
+            artifactsForUploadAndInstallation.add(".tmp/${smpePax}")
+            artifactsForUploadAndInstallation.add(".tmp/${smpeReadme}")
+            zoweArtifact = "${smpePax}"
+          }
+        } else {
+          pipeline.artifactory.download(
+            specContent : """
 {
   "files": [{
     "pattern": "${params.ZOWE_ARTIFACTORY_PATTERN}",
@@ -242,18 +341,19 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
   }]
 }
 """,
-          expected    : 3
-        )
-        // extract FMID from downloaded artifact
-        def smpeFmid = sh(
-          script: "cd .tmp && ls -1 AZWE*.pax.Z | head -n 1 | awk -F- '{print \$1}'",
-          returnStdout: true
-        ).trim()
-        // rename and prepare for upload
-        sh "mv .tmp/${smpeFmid}*.pax.Z .tmp/${smpeFmid}.pax.Z && mv .tmp/${smpeFmid}*.txt .tmp/${smpeFmid}.readme.txt"
-        artifactsForUploadAndInstallation.add(".tmp/${smpeFmid}.pax.Z")
-        artifactsForUploadAndInstallation.add(".tmp/${smpeFmid}.readme.txt")
-        zoweArtifact = "${smpeFmid}.pax.Z"
+            expected    : 3
+          )
+          // extract FMID from downloaded artifact
+          def smpeFmid = sh(
+            script: "cd .tmp && ls -1 AZWE*.pax.Z | head -n 1 | awk -F- '{print \$1}'",
+            returnStdout: true
+          ).trim()
+          // rename and prepare for upload
+          sh "mv .tmp/${smpeFmid}*.pax.Z .tmp/${smpeFmid}.pax.Z && mv .tmp/${smpeFmid}*.txt .tmp/${smpeFmid}.readme.txt"
+          artifactsForUploadAndInstallation.add(".tmp/${smpeFmid}.pax.Z")
+          artifactsForUploadAndInstallation.add(".tmp/${smpeFmid}.readme.txt")
+          zoweArtifact = "${smpeFmid}.pax.Z"
+        }
       } else {
         pipeline.artifactory.download(
           specContent : """
@@ -314,68 +414,70 @@ cd ${installDir}
 ${allPuts}
 EOF"""
 
-        // run install-zowe.sh
-        timeout(90) {
-          def skipTempFixes = ""
-          if (params.SKIP_TEMP_FIXES) {
-            skipTempFixes = " -s"
-          }
-          sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${SSH_PORT} ${USERNAME}@${SSH_HOST} << EOF
+        try {
+          // run install-zowe.sh
+          timeout(90) {
+            def skipTempFixes = ""
+            if (params.SKIP_TEMP_FIXES) {
+              skipTempFixes = " -s"
+            }
+            sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${SSH_PORT} ${USERNAME}@${SSH_HOST} << EOF
 cd ${installDir} && \
   (iconv -f ISO8859-1 -t IBM-1047 install-zowe.sh > install-zowe.sh.new) && mv install-zowe.sh.new install-zowe.sh && chmod +x install-zowe.sh
 ./install-zowe.sh --uninstall -n ${SSH_HOST}${skipTempFixes} \
   ${installDir}/${zoweArtifact} || { echo "[install-zowe.sh] failed"; exit 1; }
 echo "[install-zowe.sh] succeeds" && exit 0
 EOF"""
-        } // end of timeout - run install-zowe.sh
+          } // end of timeout - run install-zowe.sh
 
-        // wait for Zowe to be fully started
-        timeout(60) {
-          def port = ''
-          // check if zLux is started
-          port = sh(
-            script: ". scripts/install-config.sh && echo \$CIZT_ZOWE_ZLUX_HTTPS_PORT",
-            returnStdout: true
-          ).trim()
-          sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 https://${SSH_HOST}:${port}/"
-          // check if explorer server is started
-          port = sh(
-            script: ". scripts/install-config.sh && echo \$CIZT_ZOWE_EXPLORER_JOBS_PORT",
-            returnStdout: true
-          ).trim()
-          sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 'https://${USERNAME}:${PASSWORD}@${SSH_HOST}:${port}/api/v1/jobs?prefix=ZOWE*&status=ACTIVE'"
-          // check if apiml gateway is started
-          port = sh(
-            script: ". scripts/install-config.sh && echo \$CIZT_ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT",
-            returnStdout: true
-          ).trim()
-          sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 https://${USERNAME}:${PASSWORD}@${SSH_HOST}:${port}/"
-          // check if apiml catalog is started
-          port = sh(
-            script: ". scripts/install-config.sh && echo \$CIZT_ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT",
-            returnStdout: true
-          ).trim()
-          sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 -d '{\"username\":\"${USERNAME}\",\"password\":\"${PASSWORD}\"}' 'https://${SSH_HOST}:${port}/api/v1/apicatalog/auth/login'"
-        } // end of timeout - wait for Zowe to be fully started
+          // wait for Zowe to be fully started
+          timeout(60) {
+            def port = ''
+            // check if zLux is started
+            port = sh(
+              script: ". scripts/install-config.sh && echo \$CIZT_ZOWE_ZLUX_HTTPS_PORT",
+              returnStdout: true
+            ).trim()
+            sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 https://${SSH_HOST}:${port}/"
+            // check if explorer server is started
+            port = sh(
+              script: ". scripts/install-config.sh && echo \$CIZT_ZOWE_EXPLORER_JOBS_PORT",
+              returnStdout: true
+            ).trim()
+            sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 'https://${USERNAME}:${PASSWORD}@${SSH_HOST}:${port}/api/v1/jobs?prefix=ZOWE*&status=ACTIVE'"
+            // check if apiml gateway is started
+            port = sh(
+              script: ". scripts/install-config.sh && echo \$CIZT_ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT",
+              returnStdout: true
+            ).trim()
+            sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 https://${USERNAME}:${PASSWORD}@${SSH_HOST}:${port}/"
+            // check if apiml catalog is started
+            port = sh(
+              script: ". scripts/install-config.sh && echo \$CIZT_ZOWE_API_MEDIATION_GATEWAY_HTTP_PORT",
+              returnStdout: true
+            ).trim()
+            sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 -d '{\"username\":\"${USERNAME}\",\"password\":\"${PASSWORD}\"}' 'https://${SSH_HOST}:${port}/api/v1/apicatalog/auth/login'"
+          } // end of timeout - wait for Zowe to be fully started
 
-        // post install verify script
-        timeout(30) {
-          // always exit 0 to ignore failures in zowe-verify.sh
-          sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${SSH_PORT} ${USERNAME}@${SSH_HOST} << EOF
+          // post install verify script
+          timeout(30) {
+            // always exit 0 to ignore failures in zowe-verify.sh
+            sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${SSH_PORT} ${USERNAME}@${SSH_HOST} << EOF
 cd ${installDir} && \
   temp-fixes-after-started.sh "${SSH_HOST}" "${USERNAME}" "${PASSWORD}" || { echo "[temp-fixes-after-started.sh] failed"; exit 0; }
 echo "[temp-fixes-after-started.sh] succeeds" && exit 0
 EOF"""
-        } // end of timeout - post install verify script
+          } // end of timeout - post install verify script
 
-        // pull job log
-        // show-job-logs.sh encoding should have been converted
-        sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${SSH_PORT} ${USERNAME}@${SSH_HOST} << EOF
-cd ${installDir}
-. install-config.sh
-./show-job-logs.sh -H "${SSH_HOST}" -P "\\\${CIZT_ZOSMF_PORT}" -u "${USERNAME}" -p "${PASSWORD}" -n 'ZOWE*' -o IZUSVR -a file-contents
-exit 0
-EOF"""
+          // pull job log
+          sh "./scripts/show-job-logs.sh -d -H '${SSH_HOST}' -P '${zOsmfPort}' -u '${USERNAME}' -p '${PASSWORD}' -n 'ZWESECUR' -o '${USERNAME}' -a file-contents"
+          sh "./scripts/show-job-logs.sh -d -H '${SSH_HOST}' -P '${zOsmfPort}' -u '${USERNAME}' -p '${PASSWORD}' -n 'ZWE*' -o 'ZWES*' -a file-contents"
+        } catch (e) {
+          // pull job log
+          sh "./scripts/show-job-logs.sh -d -H '${SSH_HOST}' -P '${zOsmfPort}' -u '${USERNAME}' -p '${PASSWORD}' -n 'ZWESECUR' -o '${USERNAME}' -a file-contents"
+          sh "./scripts/show-job-logs.sh -d -H '${SSH_HOST}' -P '${zOsmfPort}' -u '${USERNAME}' -p '${PASSWORD}' -n 'ZWE*' -o 'ZWES*' -a file-contents"
+          throw e
+        } // end of try/catch
       } // end of withCredentials
       } // end of timestamps
       } // end of lock
@@ -413,6 +515,7 @@ EOF"""
       ]) {
         sh """. scripts/install-config.sh
 ZOWE_ROOT_DIR=${zoweRootDir} \
+ZOWE_INSTANCE_DIR=${zoweInstanceDir} \
 SSH_HOST=${SSH_HOST} \
 SSH_PORT=${SSH_PORT} \
 SSH_USER=${USERNAME} \

@@ -28,6 +28,10 @@ fi
 echo "[${SCRIPT_NAME}]    CI_HOSTNAME                : $CI_HOSTNAME"
 echo "[${SCRIPT_NAME}]    CIZT_ZOWE_ROOT_DIR         : $CIZT_ZOWE_ROOT_DIR"
 
+if [ -z "${CIZT_TMP}" ]; then
+  CIZT_TMP=/tmp
+fi
+
 ################################################################################
 # Error during zowe-install:
 # Exporting certificate zOSMFCA from z/OSMF:
@@ -81,19 +85,20 @@ fi
 # FIXME: on marist server, message queue accumulated fast and will soon run out
 #        of space. Need to use __IPC_CLEANUP=1 to clean up.
 echo "[${SCRIPT_NAME}] updating run-zowe.sh to prepend __IPC_CLEANUP=1 ..."
-cd "${CIZT_ZOWE_ROOT_DIR}/scripts/internal"
-cp run-zowe.sh run-zowe.sh.orig
-CUSTOM_NODE_HOME=$(cat run-zowe.sh | grep NODE_HOME= | awk -F= '{print $2}')
-if [ -z "$CUSTOM_NODE_HOME" ]; then
-  echo "[${SCRIPT_NAME}][warning] cannot find NODE_HOME value."
-else
+cd "${CIZT_ZOWE_ROOT_DIR}/bin/internal"
+if [ -f run-zowe.sh ]; then
   echo "[${SCRIPT_NAME}] prepending __IPC_CLEANUP=1 ..."
+  echo cp run-zowe.sh run-zowe.sh.orig | su
   sed \
     -e "/# Copyright / a\\
-    __IPC_CLEANUP=1 ${CUSTOM_NODE_HOME}/bin/node --version"\
-    run-zowe.sh > run-zowe.sh.tmp
-  cp run-zowe.sh.tmp run-zowe.sh
-  rm run-zowe.sh.tmp
+    __IPC_CLEANUP=1 \${NODE_HOME}/bin/node --version"\
+    run-zowe.sh > ${CIZT_TMP}/run-zowe.sh.tmp
+  echo cp ${CIZT_TMP}/run-zowe.sh.tmp run-zowe.sh | su
+  echo rm ${CIZT_TMP}/run-zowe.sh.tmp | su
+  # make sure group
+  echo chgrp ${CIZT_ZSS_STC_GROUP} run-zowe.sh | su
+  # give execute permission
+  echo chmod 750 run-zowe.sh | su
 fi
 echo
 

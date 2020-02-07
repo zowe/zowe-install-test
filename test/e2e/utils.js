@@ -43,10 +43,9 @@ const PRE_INSTALLED_APPS = [
 ];
 const PRE_PINNED_APPS = [
   'TN3270',
+  'JES Explorer',
+  'Editor',
   'VT Terminal',
-  'Sample Angular App',
-  'Sample React App',
-  'IFrame Sample',
 ];
 
 // timeout of HTTP request to Zowe services, default is 3m

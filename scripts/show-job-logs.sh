@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ################################################################################
 # This program and the accompanying materials are made available under the terms of the
@@ -33,7 +33,8 @@ CI_JOBID=
 CI_FILEID=
 
 # allow to exit by ctrl+c
-function finish {
+finish()
+{
   echo "[${SCRIPT_NAME}] interrupted"
   exit 1
 }
@@ -42,7 +43,8 @@ trap finish SIGINT
 
 ################################################################################
 # parse parameters
-function usage {
+usage()
+{
   echo "Show z/OS job logs."
   echo
   echo "Usage: $SCRIPT_NAME [OPTIONS] action"
@@ -80,7 +82,8 @@ function usage {
   echo
 }
 
-function call_zosmf_api {
+call_zosmf_api()
+{
   ENDPOINT=$1
 
   npx ncc --insecure \
@@ -195,13 +198,13 @@ fi
 ################################################################################
 if [ "${CI_DEBUG}" = "yes" ]; then
   echo "[${SCRIPT_NAME}] installing/upgrading node-curl-cli ..."
-  npm install curl-cli
-  npm install jq2
+  npm install curl-cli --no-audit || true
+  npm install jq2 --no-audit || true
   echo
 else
   echo >/dev/null 2>&1
-  npm install curl-cli >/dev/null 2>&1
-  npm install jq2 >/dev/null 2>&1
+  npm install curl-cli --no-audit >/dev/null 2>&1
+  npm install jq2 --no-audit >/dev/null 2>&1
 fi
 
 ################################################################################

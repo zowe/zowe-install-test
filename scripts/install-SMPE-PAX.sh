@@ -41,7 +41,7 @@ $SCRIPT Hlq Csihlq Thlq Dhlq Pathprefix download_path zfs_path FMID PREFIX volse
  6  download_path   /tmp            where PAX and README are located
  7  zfs_path 	    /tmp/zowe/smpe	SMPDIR where GIMUNZIP unzips the PAX file
  8  FMID	        AZWE001	        The FMID for this release (omitted in archid of SMPMCS?)
- 9  PREFIX	        ZOE.ZOWE        RELFILE prefix?
+ 9  PREFIX	        ZOE             RELFILE prefix?
 10  volser          B3PRD3          volume serial number of a DASD volume to hold MVS datasets 
 
 EndOfUsage
@@ -100,32 +100,26 @@ README=readme.txt                   # the filename of the FMID.readme-v.m.r-smpe
 
 # In case previous run failed,
 # delete the datasets that this script creates
-wrap_call tsocmd delete "'${hlq}.${FMID}.F1'"
-wrap_call tsocmd delete "'${hlq}.${FMID}.F2'"
-wrap_call tsocmd delete "'${hlq}.${FMID}.F3'"
-wrap_call tsocmd delete "'${hlq}.${FMID}.F4'"
-wrap_call tsocmd delete "'${hlq}.${FMID}.smpmcs'"
-wrap_call tsocmd delete "'${hlq}.ZOWE.${FMID}.F1'"
-wrap_call tsocmd delete "'${hlq}.ZOWE.${FMID}.F2'"
-wrap_call tsocmd delete "'${hlq}.ZOWE.${FMID}.F3'"
-wrap_call tsocmd delete "'${hlq}.ZOWE.${FMID}.F4'"
-wrap_call tsocmd delete "'${hlq}.ZOWE.${FMID}.smpmcs'"
-wrap_call tsocmd delete "'${hlq}.SMPE.CSI'"
-wrap_call tsocmd delete "'${hlq}.SMPE.SMPLOG'"
-wrap_call tsocmd delete "'${hlq}.SMPE.SMPLOGA'"
-wrap_call tsocmd delete "'${hlq}.SMPE.SMPLTS'"
-wrap_call tsocmd delete "'${hlq}.SMPE.SMPMTS'"
-wrap_call tsocmd delete "'${hlq}.SMPE.SMPPTS'"
-wrap_call tsocmd delete "'${hlq}.SMPE.SMPSCDS'"
-wrap_call tsocmd delete "'${hlq}.SMPE.SMPSTS'"
-wrap_call tsocmd delete "'${hlq}.SMPE.AZWEAUTH'"
-wrap_call tsocmd delete "'${hlq}.SMPE.AZWESAMP'"
-wrap_call tsocmd delete "'${hlq}.SMPE.AZWEZFS'"
-wrap_call tsocmd delete "'${hlq}.SMPE.SZWEAUTH'"
-wrap_call tsocmd delete "'${hlq}.SMPE.SZWESAMP'"
-wrap_call tsocmd delete "'${hlq}.install.jcl'"
-wrap_call tsocmd delete 'TEST.jcl.*'
-wrap_call tsocmd free all
+
+wrap_call tsocmd delete "'$PREFIX.ZOWE.${FMID}.F1'"
+wrap_call tsocmd delete "'$PREFIX.ZOWE.${FMID}.F2'"
+wrap_call tsocmd delete "'$PREFIX.ZOWE.${FMID}.F3'"
+wrap_call tsocmd delete "'$PREFIX.ZOWE.${FMID}.F4'"
+wrap_call tsocmd delete "'$PREFIX.ZOWE.${FMID}.smpmcs'"
+wrap_call tsocmd delete "'${csihlq}.CSI'"
+wrap_call tsocmd delete "'${csihlq}.SMPLOG'"
+wrap_call tsocmd delete "'${csihlq}.SMPLOGA'"
+wrap_call tsocmd delete "'${csihlq}.SMPLTS'"
+wrap_call tsocmd delete "'${csihlq}.SMPMTS'"
+wrap_call tsocmd delete "'${csihlq}.SMPPTS'"
+wrap_call tsocmd delete "'${csihlq}.SMPSCDS'"
+wrap_call tsocmd delete "'${csihlq}.SMPSTS'"
+wrap_call tsocmd delete "'${dhlq}.AZWEAUTH'"
+wrap_call tsocmd delete "'${dhlq}.AZWESAMP'"
+wrap_call tsocmd delete "'${dhlq}.AZWEZFS'"
+wrap_call tsocmd delete "'${thlq}.SZWEAUTH'"
+wrap_call tsocmd delete "'${thlq}.SZWESAMP'"
+wrap_call tsocmd free all 
 
 if [ -d "${pathprefix}usr/lpp/zowe" ]; then
   if [ "${pathprefix}" = "/" ]; then
@@ -144,9 +138,7 @@ function runJob {
     echo; echo $SCRIPT function runJob started
     jclname=$1
 
-    echo $SCRIPT jclname=$jclname #jobname=$jobname
-    ls -l $jclname
-
+    echo $SCRIPT jclname=$jclname 
     # show JCL for debugging purpose
     echo $SCRIPT ====================== content start ======================
     cat $jclname
@@ -381,9 +373,5 @@ do
     fi
 
 done
-
-# TBD:  do this even if we quit early
-rm $CIZT_TMP/$$.submit.job.out
-rm $CIZT_TMP/$$.dj.cc
 
 echo script $SCRIPT ended from $SCRIPT_DIR

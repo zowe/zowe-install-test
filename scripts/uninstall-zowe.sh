@@ -21,7 +21,19 @@
 SCRIPT_NAME=$(basename "$0")
 SCRIPT_PWD=$(cd $(dirname "$0") && pwd)
 # this should list all known Zowe job names we ever shipped separated by space
-KNOWN_ZOWE_JOB_NAMES="ZOWESVR ZOWESV1 ZOWE1SV"
+# job name before 1.4.0: ZOWESVR
+# job name after 1.4.0: ZOWESV1
+# job name preparing for 1.5.0: ZOWE1SV
+# job name preparing for 1.8.0: ZWE1SV
+KNOWN_ZOWE_JOB_NAMES="ZOWESVR ZOWESV1 ZOWE1SV ZWE1SV"
+# this should list all known xmem Zowe job names we ever shipped separated by space
+# job name before 1.8.0: ZWESIS01
+# job name preparing for 1.8.0: ZWESISTC
+KNOWN_XMEM_JOB_NAMES="ZWESIS01 ZWEXMSTC ZWESISTC"
+if [[ $KNOWN_XMEM_JOB_NAMES != *"${CIZT_ZSS_PROCLIB_MEMBER}"* ]]
+then
+  KNOWN_XMEM_JOB_NAMES="${KNOWN_XMEM_JOB_NAMES} ${CIZT_ZSS_PROCLIB_MEMBER}"
+fi
 # this should list all known FMIDs we ever shipped separated by space, so the
 # uninstall script can uninstall any versions we ever installed.
 KNOWN_SMPE_FMIDS=AZWE001
@@ -145,21 +157,21 @@ if [ ! -f "${CIZT_INSTALL_DIR}/opercmd" ]; then
 fi
 
 ################################################################################
-# stop ZWESIS01
-echo "[${SCRIPT_NAME}] stopping ZWESIS01 ..."
-(exec "${CIZT_INSTALL_DIR}/opercmd" "P ${CIZT_ZSS_PROCLIB_MEMBER}")
+# stop ZWESISTC
+echo "[${SCRIPT_NAME}] stopping ZWESISTC ..."
+for XMEM_JOB_NAME in $KNOWN_XMEM_JOB_NAMES; do
+  echo "[${SCRIPT_NAME}] - ${XMEM_JOB_NANE}"
+  (exec "${CIZT_INSTALL_DIR}/opercmd" "P ${XMEM_JOB_NAME}")
+done
 echo
 
 ################################################################################
 # stop Zowe
 echo "[${SCRIPT_NAME}] stopping Zowe ..."
-if [ -f "${CIZT_ZOWE_ROOT_DIR}/scripts/zowe-stop.sh" ]; then
-  (exec "${CIZT_ZOWE_ROOT_DIR}/scripts/zowe-stop.sh")
+if [ -f "${CIZT_ZOWE_USER_DIR}/bin/zowe-stop.sh" ]; then
+  (exec "${CIZT_ZOWE_USER_DIR}/bin/zowe-stop.sh")
 fi
 if [ -f "${CIZT_INSTALL_DIR}/opercmd" ]; then
-  # job name before 1.4.0: ZOWESVR
-  # job name after 1.4.0: ZOWESV1
-  # job name preparing for 1.5.0: ZOWE1SV
   for ZOWE_JOB_NANE in $KNOWN_ZOWE_JOB_NAMES; do
     echo "[${SCRIPT_NAME}] - ${ZOWE_JOB_NANE}"
     (exec "${CIZT_INSTALL_DIR}/opercmd" "C ${ZOWE_JOB_NANE}")
@@ -170,11 +182,34 @@ fi
 echo
 
 ################################################################################
+# --- The code below can be un-commented for debugging
+# echo "[${SCRIPT_NAME}] Display zowe user and group ..."
+# wrap_call tsocmd 'LISTGRP  ZWEADMIN'
+# wrap_call tsocmd 'LISTGRP  IZUADMIN'
+
+# wrap_call tsocmd 'LISTUSER ZWESVUSR OMVS'
+# wrap_call tsocmd 'LISTUSER ZWESIUSR OMVS'
+# wrap_call tsocmd 'LISTUSER ZOWEAD3  OMVS'
+# wrap_call tsocmd 'LISTUSER '
+
+# echo "[${SCRIPT_NAME}] Display ZWESVUSR USS user and group ..."
+# id ZWESVUSR
+# --- The code above can be un-commented for debugging
+
 # delete started tasks
 echo "[${SCRIPT_NAME}] deleting started tasks ..."
 wrap_call tsocmd 'RDELETE STARTED (ZWESIS*.*)'
-wrap_call tsocmd 'RDELETE STARTED (ZOWESVR.*)'
+wrap_call tsocmd 'RDELETE STARTED (ZWESVSTC.*)'
 wrap_call tsocmd 'SETR RACLIST(STARTED) REFRESH'
+echo
+
+################################################################################
+# delete facility profiles
+echo "[${SCRIPT_NAME}] deleting facility profiles ..."
+wrap_call tsocmd 'RDELETE FACILITY ZWES.IS'
+# this profile was used shortly by some testing versions of 1.7.1
+wrap_call tsocmd 'RDELETE FACILITY ZWEX.IS'
+wrap_call tsocmd 'SETR RACLIST(FACILITY) REF'
 echo
 
 ################################################################################
@@ -211,10 +246,16 @@ echo
 PROCLIBS=$("${CIZT_INSTALL_DIR}/opercmd" '$d proclib' | grep 'DSNAME=.*\.PROCLIB' | sed 's/.*DSNAME=\(.*\)\.PROCLIB.*/\1.PROCLIB/')
 
 ################################################################################
-# removing ZOWESVR
-echo "[${SCRIPT_NAME}] deleting ${CIZT_PROCLIB_MEMBER} PROC ..."
+# removing old versions of Zowe proclib + current if they exists
+KNOWN_ZOWE_PROCLIB_NAMES="ZOWESVR ZOWESTC ZWESVSTC"
+if [[ ${KNOWN_ZOWE_PROCLIB_NAMES} != *"${CIZT_PROCLIB_MEMBER}"* ]]
+then
+  KNOWN_ZOWE_PROCLIB_NAMES="${KNOWN_ZOWE_PROCLIB_NAMES} ${CIZT_PROCLIB_MEMBER}"
+fi
+
+echo "[${SCRIPT_NAME}] deleting Zowe PROC ..."
 # listing all proclibs and members
-FOUND_ZOWESVR_AT=
+FOUND_ZWESVSTC_AT=
 for proclib in $PROCLIBS
 do
   echo "[${SCRIPT_NAME}] - finding in $proclib ..."
@@ -222,18 +263,18 @@ do
   for member in $members
   do
     echo "[${SCRIPT_NAME}]   - ${member}"
-    if [ "${member}" = "${CIZT_PROCLIB_MEMBER}" ]; then
-      FOUND_ZOWESVR_AT=$proclib
-      break 2
-    fi
+    for ZOWE_PROCLIB in $KNOWN_ZOWE_PROCLIB_NAMES; do
+      if [ "${member}" = "${ZOWE_PROCLIB}" ]; then
+        echo "[${SCRIPT_NAME}] found ${ZOWE_PROCLIB} in ${proclib}, deleting ..."
+        wrap_call tsocmd DELETE "'${proclib}(${ZOWE_PROCLIB})'"
+        FOUND_ZWESVSTC_AT=$proclib
+      fi
+    done
   done
 done
-# do we find ZOWESVR?
-if [ -z "$FOUND_ZOWESVR_AT" ]; then
-  echo "[${SCRIPT_NAME}][warn] cannot find ${CIZT_PROCLIB_MEMBER} in PROCLIBs, skipped."
-else
-  echo "[${SCRIPT_NAME}] found ${CIZT_PROCLIB_MEMBER} in ${FOUND_ZOWESVR_AT}, deleting ..."
-  wrap_call tsocmd DELETE "'${FOUND_ZOWESVR_AT}(${CIZT_PROCLIB_MEMBER})'"
+# do we find ZWESVSTC?
+if [ -z "$FOUND_ZWESVSTC_AT" ]; then
+  echo "[${SCRIPT_NAME}][warn] cannot find a Zowe proclib in PROCLIBs, skipped."
 fi
 echo
 
@@ -303,7 +344,12 @@ echo
 
 ################################################################################
 # removing xmem PARMLIB(ZWESIP00)
-echo "[${SCRIPT_NAME}] deleting ${CIZT_ZSS_PARMLIB_DS_NAME}(${CIZT_ZSS_PARMLIB_MEMBER}) ..."
+KNOWN_XMEM_PARMLIB_NAMES="ZWESIP00 ZWEXMP00"
+if [[ ${KNOWN_XMEM_PARMLIB_NAMES} != *"${CIZT_ZSS_PARMLIB_MEMBER}"* ]]
+then
+  KNOWN_XMEM_PARMLIB_NAMES="${KNOWN_XMEM_PARMLIB_NAMES} ${CIZT_ZSS_PARMLIB_MEMBER}"
+fi
+echo "[${SCRIPT_NAME}] deleting ${CIZT_ZSS_PARMLIB_DS_NAME}(${KNOWN_XMEM_PARMLIB_NAMES}) ..."
 # listing all proclibs and members
 FOUND_DS_MEMBER_AT=
 echo "[${SCRIPT_NAME}] - finding in ${CIZT_ZSS_PARMLIB_DS_NAME} ..."
@@ -311,25 +357,31 @@ members=$(tsocmd listds "'${CIZT_ZSS_PARMLIB_DS_NAME}'" members | sed -e '1,/--M
 for member in $members
 do
   echo "[${SCRIPT_NAME}]   - ${member}"
-  if [ "${member}" = "${CIZT_ZSS_PARMLIB_MEMBER}" ]; then
-    FOUND_DS_MEMBER_AT=$CIZT_ZSS_PARMLIB_DS_NAME
-    break 2
-  fi
+  for XMEM_PARMLIB in $KNOWN_XMEM_PARMLIB_NAMES; do
+    if [ "${member}" = "${XMEM_PARMLIB}" ]; then
+      echo "[${SCRIPT_NAME}] found ${XMEM_PARMLIB} in ${CIZT_ZSS_PARMLIB_DS_NAME}, deleting ..."
+      wrap_call tsocmd DELETE "'${CIZT_ZSS_PARMLIB_DS_NAME}(${XMEM_PARMLIB})'"
+      FOUND_DS_MEMBER_AT=$CIZT_ZSS_PARMLIB_DS_NAME
+    fi
+  done
 done
 # do we find CIZT_ZSS_PARMLIB_MEMBER?
 if [ -z "$FOUND_DS_MEMBER_AT" ]; then
   echo "[${SCRIPT_NAME}][warn] cannot find ${CIZT_ZSS_PARMLIB_MEMBER} in ${CIZT_ZSS_PARMLIB_DS_NAME}, skipped."
-else
-  echo "[${SCRIPT_NAME}] found ${CIZT_ZSS_PARMLIB_MEMBER} in ${FOUND_DS_MEMBER_AT}, deleting ..."
-  wrap_call tsocmd DELETE "'${FOUND_DS_MEMBER_AT}(${CIZT_ZSS_PARMLIB_MEMBER})'"
 fi
 echo
 
 ################################################################################
-# removing ZWESIS01 proc
-echo "[${SCRIPT_NAME}] deleting ${CIZT_ZSS_PROCLIB_MEMBER} PROC ..."
+# removing old versions of xmem proclib + current if they exists
+KNOWN_XMEM_PROCLIB_NAMES="ZWESIS01 ZWEXMSTC ZWESISTC"
+if [[ ${KNOWN_XMEM_PROCLIB_NAMES} != *"${CIZT_ZSS_PROCLIB_MEMBER}"* ]]
+then
+  KNOWN_XMEM_PROCLIB_NAMES="${KNOWN_XMEM_PROCLIB_NAMES} ${CIZT_ZSS_PROCLIB_MEMBER}"
+fi
+
+echo "[${SCRIPT_NAME}] deleting XMEM server PROC ..."
 # listing all proclibs and members
-FOUND_ZWESIS01_AT=
+FOUND_ZWESISTC_AT=
 for proclib in $PROCLIBS
 do
   echo "[${SCRIPT_NAME}] - finding in $proclib ..."
@@ -337,26 +389,32 @@ do
   for member in $members
   do
     echo "[${SCRIPT_NAME}]   - ${member}"
-    if [ "${member}" = "${CIZT_ZSS_PROCLIB_MEMBER}" ]; then
-      FOUND_ZWESIS01_AT=$proclib
-      break 2
-    fi
+    for XMEM_PROCLIB in $KNOWN_XMEM_PROCLIB_NAMES; do
+      if [ "${member}" = "${XMEM_PROCLIB}" ]; then
+        echo "[${SCRIPT_NAME}] found ${XMEM_PROCLIB} in ${proclib}, deleting ..."
+        wrap_call tsocmd DELETE "'${proclib}(${XMEM_PROCLIB})'"
+        FOUND_ZWESISTC_AT=$proclib
+      fi
+    done
   done
 done
-# do we find ZWESIS01?
-if [ -z "$FOUND_ZWESIS01_AT" ]; then
-  echo "[${SCRIPT_NAME}][warn] cannot find ${CIZT_ZSS_PROCLIB_MEMBER} in PROCLIBs, skipped."
-else
-  echo "[${SCRIPT_NAME}] found ${CIZT_ZSS_PROCLIB_MEMBER} in ${FOUND_ZWESIS01_AT}, deleting ..."
-  wrap_call tsocmd DELETE "'${FOUND_ZWESIS01_AT}(${CIZT_ZSS_PROCLIB_MEMBER})'"
+# do we find ZWESISTC?
+if [ -z "$FOUND_ZWESISTC_AT" ]; then
+  echo "[${SCRIPT_NAME}][warn] cannot find XMEM in PROCLIBs, skipped."
 fi
 echo
 
 ################################################################################
-# removing ZWESAUX proc
-echo "[${SCRIPT_NAME}] deleting ${CIZT_ZSS_AUX_PROCLIB_MEMBER} PROC ..."
+# removing old versions of xmem aux proclib + current if they exists
+KNOWN_AUX_PROCLIB_NAMES="ZWESAUX ZWEXASTC ZWESASTC"
+if [[ ${KNOWN_AUX_PROCLIB_NAMES} != *"${CIZT_ZSS_AUX_PROCLIB_MEMBER}"* ]]
+then
+  KNOWN_AUX_PROCLIB_NAMES="${KNOWN_AUX_PROCLIB_NAMES} ${CIZT_ZSS_AUX_PROCLIB_MEMBER}"
+fi
+
+echo "[${SCRIPT_NAME}] deleting XMEM AUX PROC ..."
 # listing all proclibs and members
-FOUND_ZWESAUX_AT=
+FOUND_ZWESASTC_AT=
 for proclib in $PROCLIBS
 do
   echo "[${SCRIPT_NAME}] - finding in $proclib ..."
@@ -364,18 +422,18 @@ do
   for member in $members
   do
     echo "[${SCRIPT_NAME}]   - ${member}"
-    if [ "${member}" = "${CIZT_ZSS_AUX_PROCLIB_MEMBER}" ]; then
-      FOUND_ZWESAUX_AT=$proclib
-      break 2
-    fi
+    for AUX_PROCLIB in $KNOWN_AUX_PROCLIB_NAMES; do
+      if [ "${member}" = "${AUX_PROCLIB}" ]; then
+        echo "[${SCRIPT_NAME}] found ${AUX_PROCLIB} in ${proclib}, deleting ..."
+        wrap_call tsocmd DELETE "'${proclib}(${AUX_PROCLIB})'"
+        FOUND_ZWESASTC_AT=$proclib
+      fi
+    done
   done
 done
-# do we find ZWESAUX?
-if [ -z "$FOUND_ZWESAUX_AT" ]; then
-  echo "[${SCRIPT_NAME}][warn] cannot find ${CIZT_ZSS_AUX_PROCLIB_MEMBER} in PROCLIBs, skipped."
-else
-  echo "[${SCRIPT_NAME}] found ${CIZT_ZSS_AUX_PROCLIB_MEMBER} in ${FOUND_ZWESAUX_AT}, deleting ..."
-  wrap_call tsocmd DELETE "'${FOUND_ZWESAUX_AT}(${CIZT_ZSS_AUX_PROCLIB_MEMBER})'"
+# do we find ZWESASTC?
+if [ -z "$FOUND_ZWESASTC_AT" ]; then
+  echo "[${SCRIPT_NAME}][warn] cannot find XMEM AUX in PROCLIBs, skipped."
 fi
 echo
 
@@ -400,6 +458,14 @@ echo "[${SCRIPT_NAME}] removing installation folder $CIZT_ZOWE_ROOT_DIR ..."
 (echo rm -fr $CIZT_ZOWE_ROOT_DIR | su) || true
 echo "[${SCRIPT_NAME}] removing user folder $CIZT_ZOWE_USER_DIR ..."
 (echo rm -fr $CIZT_ZOWE_USER_DIR | su) || true
+echo "[${SCRIPT_NAME}] removing user folder $CIZT_ZOWE_KEYSTORE_DIR ..."
+(echo rm -fr $CIZT_ZOWE_KEYSTORE_DIR | su) || true
+echo "[${SCRIPT_NAME}] removing user folder ~/zowe-*.log ..."
+(echo rm -fr ~/zowe-*.log | su) || true
+echo "[${SCRIPT_NAME}] removing user folder ~/zowe_certificate_setup_log ..."
+(echo rm -fr ~/zowe_certificate_setup_log | su) || true
+echo "[${SCRIPT_NAME}] removing user folder ~/zowe-instance-dir ..."
+(echo rm -fr ~/zowe-instance-dir | su) || true
 echo
 
 ################################################################################

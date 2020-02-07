@@ -16,6 +16,7 @@ const testName = path.basename(__filename, path.extname(__filename));
 
 const { Key, until } = require('selenium-webdriver');
 
+const { ZOWE_JOB_NAME } = require('../constants');
 const {
   DEFAULT_PAGE_LOADING_TIMEOUT,
   DEFAULT_ELEMENT_CHECK_INTERVAL,
@@ -36,7 +37,7 @@ const {
 let driver;
 
 const APP_TO_TEST = 'JES Explorer';
-const JOB_TO_TEST = 'IZUSVR1';
+const JOB_TO_TEST = ZOWE_JOB_NAME;
 const JCL_TO_TEST = 'JESJCL';
 
 const MVD_EXPLORER_TREE_SECTION = '#tree-text-content';
@@ -107,7 +108,7 @@ describe(`test ${APP_TO_TEST}`, function() {
     appLaunched = true;
   });
 
-  it(`should be able to list IZU* jobs and should include ${JOB_TO_TEST}`, async function() {
+  it(`should be able to list ZWE* jobs and should include ${JOB_TO_TEST}`, async function() {
     if (!appLaunched) {
       this.skip();
     }
@@ -157,10 +158,10 @@ describe(`test ${APP_TO_TEST}`, function() {
       const id = await input.getAttribute('id');
       if (id.indexOf('-owner-') > -1) {
         await input.clear();
-        await input.sendKeys('IZU*');
+        await input.sendKeys('ZWE*');
       } else if (id.indexOf('-prefix-') > -1) {
         await input.clear();
-        await input.sendKeys('IZU*');
+        await input.sendKeys('ZWE*');
       }
     }
     // save screenshot
@@ -236,7 +237,8 @@ describe(`test ${APP_TO_TEST}`, function() {
     await switchToIframeAppContext(driver, APP_TO_TEST, MVD_IFRAME_APP_CONTENT);
     let treeContent = await getElement(driver, MVD_EXPLORER_TREE_SECTION);
     expect(treeContent).to.be.an('object');
-    const items = await getElements(treeContent, 'div.node ul > div');
+    // await driver.sleep(10 * 60 * 1000);
+    const items = await getElements(treeContent, 'div#full-height-tree ul#job-list > div');
     const zoweJob = items[findZoweJob];
 
     // find the expand icon and click to load children
