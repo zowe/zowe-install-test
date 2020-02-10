@@ -409,14 +409,12 @@ else #not SMPE
     if [[ "$EXIT_CODE" != "0" ]]; then
       echo "[${SCRIPT_NAME}][warning] ${RUN_SCRIPT} failed."
     fi
-    echo "Got output ${OUTPUT}"
     EXPECTED_OUTPUTS="OK: opercmd is available\nOK: jobname ICSF or CSF is not running\nOK: Node is working\nOK: Node is at a supported version"
     echo ${EXPECTED_OUTPUTS} | while read -r line
     do
-      echo "Looking for ${line}"
       if [[ OUTPUT != *${line}* ]]
       then
-        echo "[${SCRIPT_NAME}][warning] output didn't contain expected ${line}."
+        echo "[${SCRIPT_NAME}][warning] output didn't contain expected '${line}'."
       fi
     done
   fi
