@@ -19,7 +19,6 @@
 ################################################################################
 # constants
 SCRIPT_NAME=$(basename "$0")
-CI_ZOWE_CONFIG_FILE=zowe-install.yaml
 CI_ZOWE_PAX=
 CI_SKIP_TEMP_FIXES=no
 CI_UNINSTALL=no
@@ -405,11 +404,20 @@ else #not SMPE
   cd $FULL_EXTRACTED_ZOWE_FOLDER/install
   RUN_SCRIPT=zowe-check-prereqs.sh
   if [ -f "$RUN_SCRIPT" ]; then
-    run_script_with_timeout $RUN_SCRIPT 1800
+    OUTPUT=`run_script_with_timeout $RUN_SCRIPT 1800`
     EXIT_CODE=$?
     if [[ "$EXIT_CODE" != "0" ]]; then
       echo "[${SCRIPT_NAME}][warning] ${RUN_SCRIPT} failed."
     fi
+
+    EXPECTED_OUTPUTS="OK: opercmd is available,OK: jobname ICSF or CSF is not running,OK: Node is working,OK: Node is at a supported version"
+    for i in $(echo $EXPECTED_OUTPUTS | sed "s/,/ /g")
+    do
+      if [[ OUTPUT != *${i}* ]]
+      then
+        echo "[${SCRIPT_NAME}][warning] ${OUTPUT} didn't contain expected ${i}."
+      fi
+    done
   fi
   echo
 
