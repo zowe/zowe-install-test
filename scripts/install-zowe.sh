@@ -413,7 +413,7 @@ else #not SMPE
     EXPECTED_OUTPUTS="OK: opercmd is available\nOK: jobname ICSF or CSF is not running\nOK: Node is working\nOK: Node is at a supported version"
     echo ${EXPECTED_OUTPUTS} | while read -r line
     do
-      if [[ OUTPUT != *${line}* ]]
+      if [[ ${OUTPUT} != *${line}* ]]
       then
         echo "[${SCRIPT_NAME}][${RUN_SCRIPT}][warning] output didn't contain expected '${line}'."
       fi
