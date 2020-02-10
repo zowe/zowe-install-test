@@ -407,14 +407,15 @@ else #not SMPE
     OUTPUT=`run_script_with_timeout $RUN_SCRIPT 1800`
     EXIT_CODE=$?
     if [[ "$EXIT_CODE" != "0" ]]; then
-      echo "[${SCRIPT_NAME}][warning] ${RUN_SCRIPT} failed."
+      echo "[${SCRIPT_NAME}][${RUN_SCRIPT}][warning] ${RUN_SCRIPT} failed."
     fi
+    echo "${RUN_SCRIPT} output was ${OUTPUT}"
     EXPECTED_OUTPUTS="OK: opercmd is available\nOK: jobname ICSF or CSF is not running\nOK: Node is working\nOK: Node is at a supported version"
     echo ${EXPECTED_OUTPUTS} | while read -r line
     do
       if [[ OUTPUT != *${line}* ]]
       then
-        echo "[${SCRIPT_NAME}][warning] output didn't contain expected '${line}'."
+        echo "[${SCRIPT_NAME}][${RUN_SCRIPT}][warning] output didn't contain expected '${line}'."
       fi
     done
   fi
