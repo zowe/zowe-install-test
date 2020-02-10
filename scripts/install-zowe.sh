@@ -410,13 +410,13 @@ else #not SMPE
       echo "[${SCRIPT_NAME}][warning] ${RUN_SCRIPT} failed."
     fi
     echo "Got output ${OUTPUT}"
-    EXPECTED_OUTPUTS="OK: opercmd is available,OK: jobname ICSF or CSF is not running,OK: Node is working,OK: Node is at a supported version"
-    for i in $(echo $EXPECTED_OUTPUTS | sed "s/,/ /g")
+    EXPECTED_OUTPUTS="OK: opercmd is available\nOK: jobname ICSF or CSF is not running\nOK: Node is working\nOK: Node is at a supported version"
+    echo -e "$EXPECTED_OUTPUTS" | while read -r line
     do
-      echo "Looking for ${i}"
-      if [[ OUTPUT != *${i}* ]]
+      echo "Looking for ${line}"
+      if [[ OUTPUT != *${line}* ]]
       then
-        echo "[${SCRIPT_NAME}][warning] ${OUTPUT} didn't contain expected ${i}."
+        echo "[${SCRIPT_NAME}][warning] ${OUTPUT} didn't contain expected ${line}."
       fi
     done
   fi
