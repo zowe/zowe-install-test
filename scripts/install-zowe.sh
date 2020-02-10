@@ -409,10 +409,11 @@ else #not SMPE
     if [[ "$EXIT_CODE" != "0" ]]; then
       echo "[${SCRIPT_NAME}][warning] ${RUN_SCRIPT} failed."
     fi
-
+    echo "Got output ${OUTPUT}"
     EXPECTED_OUTPUTS="OK: opercmd is available,OK: jobname ICSF or CSF is not running,OK: Node is working,OK: Node is at a supported version"
     for i in $(echo $EXPECTED_OUTPUTS | sed "s/,/ /g")
     do
+      echo "Looking for ${i}"
       if [[ OUTPUT != *${i}* ]]
       then
         echo "[${SCRIPT_NAME}][warning] ${OUTPUT} didn't contain expected ${i}."
