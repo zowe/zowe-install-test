@@ -429,7 +429,7 @@ cd ${installDir} && \
 echo "[install-zowe.sh] succeeds" && exit 0
 EOF"""
             // download install-zowe.log
-            sh "SSHPASS=${PASSWORD} sshpass -e scp -o BatchMode=no -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -b - -P ${SSH_PORT} ${USERNAME}@${SSH_HOST}:${installDir}/install-zowe.log ."
+            sh "SSHPASS=${PASSWORD} sshpass -e scp -o BatchMode=no -o StrictHostKeyChecking=no -o PubkeyAuthentication=no - -P ${SSH_PORT} ${USERNAME}@${SSH_HOST}:${installDir}/install-zowe.log ."
             // has errors?
             def foundErrors = sh(
               script: "cat install-zowe.log | grep '[error]'",
