@@ -459,7 +459,7 @@ EOF"""
             sh "./scripts/is-website-ready.sh -r 360 -t 10 -c 20 -d '{\"username\":\"${USERNAME}\",\"password\":\"${PASSWORD}\"}' 'https://${SSH_HOST}:${port}/api/v1/apicatalog/auth/login'"
           } // end of timeout - wait for Zowe to be fully started
 
-          // post install verify script
+         // post install script
           timeout(30) {
             // always exit 0 to ignore failures in zowe-verify.sh
             sh """SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${SSH_PORT} ${USERNAME}@${SSH_HOST} << EOF
@@ -467,7 +467,7 @@ cd ${installDir} && \
   temp-fixes-after-started.sh "${SSH_HOST}" "${USERNAME}" "${PASSWORD}" || { echo "[temp-fixes-after-started.sh] failed"; exit 0; }
 echo "[temp-fixes-after-started.sh] succeeds" && exit 0
 EOF"""
-          } // end of timeout - post install verify script
+          } // end of timeout - post install script
 
           // pull job log
           sh "./scripts/show-job-logs.sh -d -H '${SSH_HOST}' -P '${zOsmfPort}' -u '${USERNAME}' -p '${PASSWORD}' -n 'ZWESECUR' -o '${USERNAME}' -a file-contents"
