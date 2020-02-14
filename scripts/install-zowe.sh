@@ -272,6 +272,9 @@ fi
 if [ -f "install-SMPE-PAX.sh" ]; then
   ensure_script_encoding install-SMPE-PAX.sh
 fi
+if [ -f "install-SMPE-SYSMOD.sh" ]; then
+  ensure_script_encoding install-SMPE-SYSMOD.sh
+fi
 if [ -f "opercmd" ]; then
   ensure_script_encoding opercmd "parse var command opercmd"
 fi
@@ -336,6 +339,26 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
 
   if [ ! -d "${CIZT_ZOWE_ROOT_DIR}/scripts" ]; then
     echo "[${SCRIPT_NAME}][error] installation is not successfully, ${CIZT_ZOWE_ROOT_DIR}/scripts doesn't exist."
+    exit 1
+  fi
+  echo
+
+  # install SMP/E PTF
+  echo "[${SCRIPT_NAME}] installing $CI_ZOWE_PTF to $CIZT_ZOWE_ROOT_DIR ..."
+  RUN_SCRIPT="./install-SMPE-SYSMOD.sh \
+    ${CIZT_SMPE_HLQ_DSN} \
+    ${CIZT_SMPE_HLQ_CSI} \
+    ${CIZT_SMPE_PATH_PREFIX} \
+    ${CIZT_INSTALL_DIR} \
+    ${CI_SMPE_FMID} \
+    ${CIZT_SMPE_SYSMOD1} \
+    ${CIZT_SMPE_SYSMOD2} \
+    ${CIZT_SMPE_VOLSER} \
+    install"
+  run_script_with_timeout "${RUN_SCRIPT}" 1800
+  RC=$?
+  if [ $RC -ne 0 ]; then
+    echo "[${SCRIPT_NAME}][error] PTF installation failed, RC=$RC"
     exit 1
   fi
   echo
