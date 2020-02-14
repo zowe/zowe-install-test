@@ -30,7 +30,7 @@ node('ibm-jenkins-slave-dind') {
     "scripts/install-config.sh",
     "scripts/uninstall-zowe.sh",
     "scripts/install-SMPE-PAX.sh",
-    "scripts/install-SMPE-SYSMODS.sh",
+    "scripts/install-SMPE-SYSMOD.sh",
     "scripts/uninstall-SMPE-PAX.sh",
     "scripts/opercmd",
   ]
