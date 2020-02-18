@@ -262,7 +262,7 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
           error "The Zowe SMP/e package pattern (ZOWE_ARTIFACTORY_PATTERN) should end with .pax.Z, .tar or .zip"
         }
         // debug
-        sh 'echo "line 258, smpeReadmePattern ="${smpeReadmePattern}'
+        sh 'echo "line 258, smpeReadmePattern =" smpeReadmePattern'
         if (smpeReadmePattern == 'tarball') {
           pipeline.artifactory.download(
             specContent : """
@@ -339,7 +339,9 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
             zoweArtifact = "${smpePax}"
           }
         } else if (smpeReadmePattern == 'sysmod') {
-           sh 'echo "line 335 sysmod"'
+           sh 'echo "line 342 sysmod"'
+           sh 'ls -1 ${params.SYSMOD_ARTIFACTORY_PATTERN}'
+           sh 'ls -1 ${params.ZOWE_ARTIFACTORY_PATTERN}'
 // begin FMID+PTF processing
           pipeline.artifactory.download(
             specContent : """
