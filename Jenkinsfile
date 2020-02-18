@@ -341,8 +341,6 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
         } else if (smpeReadmePattern == 'sysmod') {
            sh 'echo "13:58 line 342 sysmod"'
            sh 'ls -l'
-           sh "ls -1 ${params.SYSMOD_ARTIFACTORY_PATTERN}"
-           sh "ls -1 ${params.ZOWE_ARTIFACTORY_PATTERN}"
            sh 'pwd'
            sh 'echo 14:14 end of display'
 // begin FMID+PTF processing
@@ -372,7 +370,9 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
           dir('.tmp') {
             // extract zip files
             sh 'echo 371 extract zip files'
-            sh 'ls -l *'
+            sh 'pwd'
+            sh "ls -1 ${params.SYSMOD_ARTIFACTORY_PATTERN}"
+            sh "ls -1 ${params.ZOWE_ARTIFACTORY_PATTERN}"
             // FMID =  AZWE001.zip extracts to:
             //  -> AZWE001.htm
             //  -> AZWE001.pax.Z
