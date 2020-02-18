@@ -343,6 +343,8 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
            sh 'ls -l'
            sh 'ls -1 ${params.SYSMOD_ARTIFACTORY_PATTERN}'
            sh 'ls -1 ${params.ZOWE_ARTIFACTORY_PATTERN}'
+           sh 'pwd'
+           sh 'echo 14:14 end of display'
 // begin FMID+PTF processing
           pipeline.artifactory.download(
             specContent : """
