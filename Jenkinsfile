@@ -74,7 +74,13 @@ node('ibm-jenkins-slave-dind') {
       trim: true,
       required: true
     ),
-      string(
+    string(
+      name: 'ZOWE_ARTIFACTORY_BUILD',
+      description: 'Zowe artifactory download build',
+      defaultValue: 'zowe-install-packaging :: staging',
+      trim: true
+    ),
+    string(
       name: 'SYSMOD_ARTIFACTORY_PATTERN',
       description: 'Zowe artifactory SYSMOD download pattern',
       defaultValue: 'libs-snapshot-local/org/zowe/AZWE*.*.zip',
@@ -82,10 +88,11 @@ node('ibm-jenkins-slave-dind') {
       required: false
     ),
     string(
-      name: 'ZOWE_ARTIFACTORY_BUILD',
-      description: 'Zowe artifactory download build',
+      name: 'SYSMOD_ARTIFACTORY_BUILD',
+      description: 'Zowe artifactory SYSMOD download build',
       defaultValue: 'zowe-install-packaging :: staging',
-      trim: true
+      trim: true,
+      required: false
     ),
     booleanParam(
       name: 'IS_SMPE_PACKAGE',
@@ -240,6 +247,7 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
         def smpeReadmePattern = ''
         if (params.SYSMOD_ARTIFACTORY_PATTERN =~ /\/AZWE[0-9]+\.[A-Z0-9]+-[^\/]+\.zip$/) {
           smpeReadmePattern = 'sysmod'
+
         } else if (params.ZOWE_ARTIFACTORY_PATTERN =~ /\/[^\/-]+-[0-9]+\.[0-9]+\.[0-9]+-[^\/]+\.pax\.Z$/) {
           // the pattern is a static path pointing to one pax.Z file
           smpeReadmePattern = params.ZOWE_ARTIFACTORY_PATTERN.replaceAll(/\/([^\/-]+)-([0-9]+\.[0-9]+\.[0-9]+-[^\/]+)\.pax\.Z$/, "/\$1.readme-\$2.txt")
@@ -253,6 +261,8 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
         } else {
           error "The Zowe SMP/e package pattern (ZOWE_ARTIFACTORY_PATTERN) should end with .pax.Z, .tar or .zip"
         }
+        // debug
+        sh 'echo "line 258, smpeReadmePattern ="${smpeReadmePattern}'
         if (smpeReadmePattern == 'tarball') {
           pipeline.artifactory.download(
             specContent : """
@@ -329,7 +339,7 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
             zoweArtifact = "${smpePax}"
           }
         } else if (smpeReadmePattern == 'sysmod') {
-           
+           sh 'echo "line 335 sysmod"'
 // begin FMID+PTF processing
           pipeline.artifactory.download(
             specContent : """
