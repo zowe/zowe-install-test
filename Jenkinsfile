@@ -245,7 +245,7 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
         )
       } else if (params.IS_SMPE_PACKAGE) {
         def smpeReadmePattern = ''
-        if (params.SYSMOD_ARTIFACTORY_PATTERN =~ /\/AZWE[0-9]+\.[A-Z0-9]+-[^\/]+\.zip$/) {
+        if (params.SYSMOD_ARTIFACTORY_PATTERN =~ /.*\/AZWE[0-9]+\.[A-Z0-9]+-[^\/]+\.zip$/) {
           smpeReadmePattern = 'sysmod'
 
         } else if (params.ZOWE_ARTIFACTORY_PATTERN =~ /\/[^\/-]+-[0-9]+\.[0-9]+\.[0-9]+-[^\/]+\.pax\.Z$/) {
