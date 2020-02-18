@@ -486,24 +486,27 @@ for FMID in $KNOWN_SMPE_FMIDS; do
 done
 echo
 
-  # uninstall SMP/E PTF
-  echo "[${SCRIPT_NAME}] uninstalling $CI_ZOWE_PTF to $CIZT_ZOWE_ROOT_DIR ..."
-  RUN_SCRIPT="./install-SMPE-SYSMOD.sh \
-    ${CIZT_SMPE_HLQ_DSN} \
-    ${CIZT_SMPE_HLQ_CSI} \
-    ${CIZT_SMPE_PATH_PREFIX} \
-    ${CIZT_INSTALL_DIR} \
-    ${CI_SMPE_FMID} \
-    ${CIZT_SMPE_SYSMOD1} \
-    ${CIZT_SMPE_SYSMOD2} \
-    ${CIZT_SMPE_VOLSER} \
-    uninstall"
-  run_script_with_timeout "${RUN_SCRIPT}" 1800
-  RC=$?
-  if [ $RC -ne 0 ]; then
-    echo "[${SCRIPT_NAME}][error] PTF installation failed, RC=$RC"
-    exit 1
-  fi
+ls -l     ./install-SMPE-SYSMOD.sh
+chmod a+x ./install-SMPE-SYSMOD.sh
+
+  # # uninstall SMP/E PTF
+  # echo "[${SCRIPT_NAME}] uninstalling $CI_ZOWE_PTF to $CIZT_ZOWE_ROOT_DIR ..."
+  # RUN_SCRIPT="./install-SMPE-SYSMOD.sh \
+  #   ${CIZT_SMPE_HLQ_DSN} \
+  #   ${CIZT_SMPE_HLQ_CSI} \
+  #   ${CIZT_SMPE_PATH_PREFIX} \
+  #   ${CIZT_INSTALL_DIR} \
+  #   ${CI_SMPE_FMID} \
+  #   ${CIZT_SMPE_SYSMOD1} \
+  #   ${CIZT_SMPE_SYSMOD2} \
+  #   ${CIZT_SMPE_VOLSER} \
+  #   uninstall"
+  # run_script_with_timeout "${RUN_SCRIPT}" 1800
+  # RC=$?
+  # if [ $RC -ne 0 ]; then
+  #   echo "[${SCRIPT_NAME}][error] PTF installation failed, RC=$RC"
+  #   exit 1
+  # fi
 
 ################################################################################
 echo "[${SCRIPT_NAME}] done."

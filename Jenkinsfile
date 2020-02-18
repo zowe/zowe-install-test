@@ -74,6 +74,13 @@ node('ibm-jenkins-slave-dind') {
       trim: true,
       required: true
     ),
+      string(
+      name: 'SYSMOD_ARTIFACTORY_PATTERN',
+      description: 'Zowe artifactory SYSMOD download pattern',
+      defaultValue: 'libs-snapshot-local/org/zowe/AZWE*.*.zip',
+      trim: true,
+      required: false
+    ),
     string(
       name: 'ZOWE_ARTIFACTORY_BUILD',
       description: 'Zowe artifactory download build',
@@ -231,7 +238,9 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
         )
       } else if (params.IS_SMPE_PACKAGE) {
         def smpeReadmePattern = ''
-        if (params.ZOWE_ARTIFACTORY_PATTERN =~ /\/[^\/-]+-[0-9]+\.[0-9]+\.[0-9]+-[^\/]+\.pax\.Z$/) {
+        if (params.SYSMOD_ARTIFACTORY_PATTERN =~ /\/AZWE[0-9]+\.[A-Z0-9]+-[^\/]+\.zip$/) {
+          smpeReadmePattern = 'sysmod'
+        } else if (params.ZOWE_ARTIFACTORY_PATTERN =~ /\/[^\/-]+-[0-9]+\.[0-9]+\.[0-9]+-[^\/]+\.pax\.Z$/) {
           // the pattern is a static path pointing to one pax.Z file
           smpeReadmePattern = params.ZOWE_ARTIFACTORY_PATTERN.replaceAll(/\/([^\/-]+)-([0-9]+\.[0-9]+\.[0-9]+-[^\/]+)\.pax\.Z$/, "/\$1.readme-\$2.txt")
         } else if (params.ZOWE_ARTIFACTORY_PATTERN =~ /\/[^\/]+\.pax\.Z$/) {
@@ -297,7 +306,7 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
     "flat": "true",
     "build": "${params.ZOWE_CLI_ARTIFACTORY_BUILD}",
     "explode": "true"
-  }]
+      }]
 }
 """,
             expected    : 2
@@ -319,6 +328,73 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
             artifactsForUploadAndInstallation.add(".tmp/${smpeReadme}")
             zoweArtifact = "${smpePax}"
           }
+        } else if (smpeReadmePattern = 'sysmod') {
+           
+// begin FMID+PTF processing
+          pipeline.artifactory.download(
+            specContent : """
+{
+  "files": [{
+    "pattern": "${params.ZOWE_ARTIFACTORY_PATTERN}",
+    "target": ".tmp/",
+    "flat": "true",
+    "build": "${params.ZOWE_ARTIFACTORY_BUILD}"
+  }, {
+    "pattern": "${params.SYSMOD_ARTIFACTORY_PATTERN}",
+    "target": ".tmp/",
+    "flat": "true",
+    "build": "${params.SYSMOD_ARTIFACTORY_BUILD}"
+  }, {
+    "pattern": "${params.ZOWE_CLI_ARTIFACTORY_PATTERN}",
+    "target": ".tmp/",
+    "flat": "true",
+    "build": "${params.ZOWE_CLI_ARTIFACTORY_BUILD}",
+    "explode": "true"  }]
+}
+""",
+            expected    : 3
+          )
+          dir('.tmp') {
+            // extract zip files
+            // FMID =  AZWE001.zip extracts to:
+            //  -> AZWE001.htm
+            //  -> AZWE001.pax.Z
+            //  -> AZWE001.readme.txt
+            sh 'unzip $(ls -1 ${params.ZOWE_ARTIFACTORY_PATTERN})'
+            def smpePax = sh(script: "ls -1 AZWE*.pax.Z", returnStdout: true).trim()
+            def smpeReadme = sh(script: "ls -1 AZWE*.readme.txt", returnStdout: true).trim()
+            
+            // PTF  =  AZWE001.TMP0001.zip extracts to:
+            //  -> ZOWE.AZWE001.TMP0001
+            //  -> ZOWE.AZWE001.TMP0002
+            //  -> ZOWE.AZWE001.TMP0001.readme.htm
+            sh 'unzip $(ls -1 ${params.SYSMOD_ARTIFACTORY_PATTERN})'
+            sh 'echo "after extracted:" && ls -l *'
+            def smpeSysmod1 = sh(script: "ls -1 ZOWE.AZWE[0-9][0-9][1-9].[A-Z][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9]|head -1", returnStdout: true).trim()
+            def smpeSysmod2 = sh(script: "ls -r ZOWE.AZWE[0-9][0-9][1-9].[A-Z][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9]|head -1", returnStdout: true).trim()
+
+            if (!smpePax) {
+              error "Failed to extract SMPE pax file from ${params.ZOWE_ARTIFACTORY_PATTERN}"
+            }
+            if (!smpeReadme) {
+              error "Failed to extract SMPE readme file from ${params.ZOWE_ARTIFACTORY_PATTERN}"
+            }
+            if (!smpeSysmod1) {
+              error "Failed to extract SMPE SYSMOD1 file from ${params.SYSMOD_ARTIFACTORY_PATTERN}"
+            }
+            if (!smpeSysmod2) {
+              error "Failed to extract SMPE SYSMOD2 file from ${params.SYSMOD_ARTIFACTORY_PATTERN}"
+            }
+            
+            artifactsForUploadAndInstallation.add(".tmp/${smpePax}")
+            artifactsForUploadAndInstallation.add(".tmp/${smpeReadme}")
+            artifactsForUploadAndInstallation.add(".tmp/${smpeSysmod1}")
+            artifactsForUploadAndInstallation.add(".tmp/${smpeSysmod2}")
+            zoweArtifact = "${smpePtf}"
+          }
+// end FMID+PTF processing
+           
+
         } else {
           pipeline.artifactory.download(
             specContent : """
