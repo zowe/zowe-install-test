@@ -328,7 +328,7 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
             artifactsForUploadAndInstallation.add(".tmp/${smpeReadme}")
             zoweArtifact = "${smpePax}"
           }
-        } else if (smpeReadmePattern = 'sysmod') {
+        } else if (smpeReadmePattern == 'sysmod') {
            
 // begin FMID+PTF processing
           pipeline.artifactory.download(
