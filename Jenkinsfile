@@ -377,7 +377,7 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
             //  -> AZWE001.htm
             //  -> AZWE001.pax.Z
             //  -> AZWE001.readme.txt
-            sh "unzip $(ls -1 ${params.ZOWE_ARTIFACTORY_PATTERN})"
+            sh "unzip ${params.ZOWE_ARTIFACTORY_PATTERN}"
             def smpePax = sh(script: "ls -1 AZWE*.pax.Z", returnStdout: true).trim()
             def smpeReadme = sh(script: "ls -1 AZWE*.readme.txt", returnStdout: true).trim()
             
@@ -385,7 +385,7 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
             //  -> ZOWE.AZWE001.TMP0001
             //  -> ZOWE.AZWE001.TMP0002
             //  -> ZOWE.AZWE001.TMP0001.readme.htm
-            sh "unzip $(ls -1 ${params.SYSMOD_ARTIFACTORY_PATTERN})"
+            sh "unzip ${params.SYSMOD_ARTIFACTORY_PATTERN}"
             sh 'echo "after extracted:" && ls -l *'
             def smpeSysmod1 = sh(script: "ls -1 ZOWE.AZWE[0-9][0-9][1-9].[A-Z][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9]|head -1", returnStdout: true).trim()
             def smpeSysmod2 = sh(script: "ls -r ZOWE.AZWE[0-9][0-9][1-9].[A-Z][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9]|head -1", returnStdout: true).trim()
