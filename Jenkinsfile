@@ -247,7 +247,6 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
         def smpeReadmePattern = ''
         if (params.SYSMOD_ARTIFACTORY_PATTERN =~ /.*\/AZWE[0-9]+\.[A-Z0-9]+-[^\/]+\.zip$/) {
           smpeReadmePattern = 'sysmod'
-
         } else if (params.ZOWE_ARTIFACTORY_PATTERN =~ /\/[^\/-]+-[0-9]+\.[0-9]+\.[0-9]+-[^\/]+\.pax\.Z$/) {
           // the pattern is a static path pointing to one pax.Z file
           smpeReadmePattern = params.ZOWE_ARTIFACTORY_PATTERN.replaceAll(/\/([^\/-]+)-([0-9]+\.[0-9]+\.[0-9]+-[^\/]+)\.pax\.Z$/, "/\$1.readme-\$2.txt")
@@ -371,13 +370,13 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
             // extract zip files
             sh 'echo 371 extract zip files'
             sh 'pwd'
-            sh "ls -1 ${params.SYSMOD_ARTIFACTORY_PATTERN}"
-            sh "ls -1 ${params.ZOWE_ARTIFACTORY_PATTERN}"
+            sh "ls -1 AZWE001.zip"
+            sh "ls -1 AZWE001.TMP0001.zip"
             // FMID =  AZWE001.zip extracts to:
             //  -> AZWE001.htm
             //  -> AZWE001.pax.Z
             //  -> AZWE001.readme.txt
-            sh "unzip ${params.ZOWE_ARTIFACTORY_PATTERN}"
+            sh "unzip AZWE001.zip"
             def smpePax = sh(script: "ls -1 AZWE*.pax.Z", returnStdout: true).trim()
             def smpeReadme = sh(script: "ls -1 AZWE*.readme.txt", returnStdout: true).trim()
             
@@ -385,7 +384,7 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
             //  -> ZOWE.AZWE001.TMP0001
             //  -> ZOWE.AZWE001.TMP0002
             //  -> ZOWE.AZWE001.TMP0001.readme.htm
-            sh "unzip ${params.SYSMOD_ARTIFACTORY_PATTERN}"
+            sh "unzip AZWE001.TMP0001.zip"
             sh 'echo "after extracted:" && ls -l *'
             def smpeSysmod1 = sh(script: "ls -1 ZOWE.AZWE[0-9][0-9][1-9].[A-Z][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9]|head -1", returnStdout: true).trim()
             def smpeSysmod2 = sh(script: "ls -r ZOWE.AZWE[0-9][0-9][1-9].[A-Z][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9]|head -1", returnStdout: true).trim()
