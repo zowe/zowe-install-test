@@ -333,7 +333,7 @@ rm -fr ${CIZT_INSTALL_DIR}/extracted && mkdir -p ${CIZT_INSTALL_DIR}/extracted
 if [[ "$CI_IS_SMPE" = "yes" ]]; then
   cd $CIZT_INSTALL_DIR
   # install SMP/e package
-  echo "[${SCRIPT_NAME}] installing $CI_ZOWE_PAX to $CIZT_ZOWE_ROOT_DIR ..."
+  echo "[${SCRIPT_NAME}] installing FMID $CI_ZOWE_PAX to $CIZT_ZOWE_ROOT_DIR ..."
   RUN_SCRIPT="./install-SMPE-PAX.sh ${CIZT_SMPE_HLQ_DSN} ${CIZT_SMPE_HLQ_CSI} ${CIZT_SMPE_HLQ_TZONE} ${CIZT_SMPE_HLQ_DZONE} ${CIZT_SMPE_PATH_PREFIX} ${CIZT_INSTALL_DIR} ${CIZT_INSTALL_DIR}/extracted ${CI_SMPE_FMID} ${CIZT_SMPE_REL_FILE_PREFIX} ${CIZT_SMPE_VOLSER}"
   run_script_with_timeout "${RUN_SCRIPT}" 1800
 
@@ -344,7 +344,7 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   echo
 
   # install SMP/E PTF
-  echo "[${SCRIPT_NAME}] installing $CI_ZOWE_PTF to $CIZT_ZOWE_ROOT_DIR ..."
+  echo "[${SCRIPT_NAME}] installing SYSMOD $CI_ZOWE_SYSMOD to $CIZT_ZOWE_ROOT_DIR ..."
   RUN_SCRIPT="./install-SMPE-SYSMOD.sh \
     ${CIZT_SMPE_HLQ_DSN} \
     ${CIZT_SMPE_HLQ_CSI} \

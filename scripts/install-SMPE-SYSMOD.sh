@@ -62,9 +62,9 @@ $SCRIPT Hlq Csihlq download_path pathprefix FMID SYSMOD1 SYSMOD2 volser install
     ---------       ----------      -------
  1  hlq             ZOE             DSN HLQ
  2  csihlq          ZOE.SMPE        HLQ for our CSI 
- 3  download_path   /tmp            where SYSMODs (binary) and JCL (EBCDIC) are located
- 4  pathprefix      /tmp/           Path Prefix of usr/lpp/zowe,
+ 3  pathprefix      /tmp/           Path Prefix of usr/lpp/zowe,
                                     where SMP/E will install zowe runtimes
+ 4  download_path   /tmp            where SYSMODs (binary) and JCL (EBCDIC) are located
  5  FMID            AZWE001         The FMID for base release 
  6  SYSMOD1         TMP0001         The name of the first  part of the SYSMOD
  7  SYSMOD2         TMP0002         The name of the second part of the SYSMOD 
@@ -80,8 +80,8 @@ hlq=${1}
 csihlq=$2
 # thlq=$3
 # dhlq=$4
-download_path=$3
-pathprefix=$4
+pathprefix=$3
+download_path=$4
 FMID=$5
 SYSMOD1=$6
 SYSMOD2=$7

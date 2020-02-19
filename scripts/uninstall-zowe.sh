@@ -490,7 +490,7 @@ ls -l     ./install-SMPE-SYSMOD.sh
 chmod a+x ./install-SMPE-SYSMOD.sh
 
   # # uninstall SMP/E PTF
-  # echo "[${SCRIPT_NAME}] uninstalling $CI_ZOWE_PTF to $CIZT_ZOWE_ROOT_DIR ..."
+  # echo "[${SCRIPT_NAME}] uninstalling $CI_ZOWE_SYSMOD to $CIZT_ZOWE_ROOT_DIR ..."
   # RUN_SCRIPT="./install-SMPE-SYSMOD.sh \
   #   ${CIZT_SMPE_HLQ_DSN} \
   #   ${CIZT_SMPE_HLQ_CSI} \
