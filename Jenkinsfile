@@ -38,7 +38,7 @@ node('ibm-jenkins-slave-dind') {
     "jcl/Z2ACCEPT.jcl",
     "jcl/Z3RECEIV.jcl",
     "jcl/Z4APPLY.jcl",
-    "jcl/Z5REST.jcl",
+    "jcl/Z6REST.jcl",
     "jcl/Z7REJECT.jcl",
     "jcl/Z8DEALOC.jcl",
     "scripts/uninstall-SMPE-PAX.sh",
