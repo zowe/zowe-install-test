@@ -310,7 +310,7 @@ for job in \
     Z8DEALOC 
 do    
   if [ -f "${job}.jcl" ]; then
-    ensure_script_encoding ${job}.jcl
+    ensure_script_encoding ${job}.jcl "//" # tell script to check jcl files for "//" instead of default for shell scripts
   fi
 done
 
