@@ -367,12 +367,12 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
             // extract zip files
             sh 'echo 371 extract zip files Wed 09:58'
             sh "ls -1 AZWE*.zip"
-            sh "ls -1 zowe-smpe-*.zip"
+            // sh "ls -1 zowe-smpe-*.zip"
             // FMID =  AZWE001.zip extracts to:
             //  -> AZWE001.htm
             //  -> AZWE001.pax.Z
             //  -> AZWE001.readme.txt
-            sh "ls zowe-smpe-*.zip 2>/dev/null 1>/dev/null && unzip zowe-smpe-*.zip"  // pre-GA
+            // sh "ls zowe-smpe-*.zip 2>/dev/null 1>/dev/null && unzip zowe-smpe-*.zip"  // pre-GA
             sh "ls AZWE[0-9][0-9][1-9]-*.zip 2>/dev/null 1>/dev/null && unzip AZWE[0-9][0-9][1-9]-*.zip"  // post-GA
             def smpePax = sh(script: "ls -1 AZWE*.pax.Z", returnStdout: true).trim()
             def smpeReadme = sh(script: "ls -1 AZWE*.readme.txt", returnStdout: true).trim()
