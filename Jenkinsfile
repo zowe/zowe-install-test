@@ -338,11 +338,8 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
             zoweArtifact = "${smpePax}"
           }
         } else if (smpeReadmePattern == 'sysmod') {
-           sh 'echo "13:58 line 342 sysmod"'
-           sh 'ls -l'
-           sh 'pwd'
-           sh 'echo 14:14 end of display'
-// begin FMID+PTF processing
+           sh 'echo "10:50 line 341 sysmod"'
+           // begin FMID+PTF processing
           pipeline.artifactory.download(
             specContent : """
 {
@@ -368,15 +365,15 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
           )
           dir('.tmp') {
             // extract zip files
-            sh 'echo 371 extract zip files'
-            sh 'pwd'
-            sh "ls -1 AZWE001.zip"
-            sh "ls -1 AZWE001.TMP0001.zip"
+            sh 'echo 371 extract zip files Wed 09:58'
+            sh "ls -1 AZWE*.zip"
+            sh "ls -1 zowe-smpe-*.zip"
             // FMID =  AZWE001.zip extracts to:
             //  -> AZWE001.htm
             //  -> AZWE001.pax.Z
             //  -> AZWE001.readme.txt
-            sh "unzip AZWE001.zip"
+            sh "ls zowe-smpe-*.zip 2>/dev/null 1>/dev/null && unzip zowe-smpe-*.zip"  // pre-GA
+            sh "ls AZWE[0-9][0-9][1-9]-*.zip 2>/dev/null 1>/dev/null && unzip AZWE[0-9][0-9][1-9]-*.zip"  // post-GA
             def smpePax = sh(script: "ls -1 AZWE*.pax.Z", returnStdout: true).trim()
             def smpeReadme = sh(script: "ls -1 AZWE*.readme.txt", returnStdout: true).trim()
             
@@ -384,7 +381,7 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
             //  -> ZOWE.AZWE001.TMP0001
             //  -> ZOWE.AZWE001.TMP0002
             //  -> ZOWE.AZWE001.TMP0001.readme.htm
-            sh "unzip AZWE001.TMP0001.zip"
+            sh "unzip AZWE[0-9][0-9][1-9].[A-Z][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9]-*.zip"
             sh 'echo "after extracted:" && ls -l *'
             def smpeSysmod1 = sh(script: "ls -1 ZOWE.AZWE[0-9][0-9][1-9].[A-Z][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9]|head -1", returnStdout: true).trim()
             def smpeSysmod2 = sh(script: "ls -r ZOWE.AZWE[0-9][0-9][1-9].[A-Z][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9]|head -1", returnStdout: true).trim()
