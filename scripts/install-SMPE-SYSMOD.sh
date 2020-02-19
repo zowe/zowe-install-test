@@ -257,7 +257,12 @@ do
         CUSTOMIZED_VOLSER="$volser"
     fi
 
-    iconv -f IBM-850 -t IBM-1047 $download_path/$smpejob.jcl > $download_path/$smpejob.EBCDIC.jcl
+# JCL is in CWD, which is $CIZT_INSTALL_DIR
+echo CIZT_INSTALL_DIR contains ...
+ls -ld $CIZT_INSTALL_DIR
+ls -l  $CIZT_INSTALL_DIR
+ls -l  $smpejob.jcl
+    iconv -f IBM-850 -t IBM-1047 $smpejob.jcl > $CIZT_TMP/$smpejob.EBCDIC.jcl
 
 #   The following stubs are to be replaced in the SMP/E PTF JCL:
 #   - #hlq          ZOE             the high level qualifier used to upload the SYSMOD
@@ -279,7 +284,7 @@ do
         s/#fmid/${FMID}/; \
         s/#sysmod1/${SYSMOD1}/; \
         s/#sysmod2/${SYSMOD2}/" \
-        $download_path/$smpejob.EBCDIC.jcl > $download_path/$smpejob.sed.jcl
+        $$CIZT_TMP/$smpejob.EBCDIC.jcl > $$CIZT_TMP/$smpejob.sed.jcl
 
         # s/#csihlq/${csihlq}/; \
         # s/#csivol/$CUSTOMIZED_VOLSER/; \
@@ -311,7 +316,7 @@ do
         # s/ RFPREFIX(.*)//" \
         # hlq was just $hlq before ... s/#hlq/${hlq}/; \
 
-    runJob $download_path/$smpejob.sed.jcl
+    runJob $$CIZT_TMP/$smpejob.sed.jcl
     if [[ $? -ne 0 ]]
     then
         echo $SCRIPT ERROR: SMP/E JOB $smpejob failed

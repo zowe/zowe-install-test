@@ -19,6 +19,9 @@ node('ibm-jenkins-slave-dind') {
 
   def pipeline = lib.pipelines.nodejs.NodeJSPipeline.new(this)
 
+// The files in the 'def' below will be put into the root CIZT_INSTALL_DIR folder
+// without the 'jcl' or 'scripts' path
+
   def artifactsForUploadAndInstallation = [
     "scripts/create-security-defn.sh",
     "scripts/zowe-xmem-apf.sh",
@@ -31,6 +34,13 @@ node('ibm-jenkins-slave-dind') {
     "scripts/uninstall-zowe.sh",
     "scripts/install-SMPE-PAX.sh",
     "scripts/install-SMPE-SYSMOD.sh",
+    "jcl/Z1ALLOC.jcl",
+    "jcl/Z2ACCEPT.jcl",
+    "jcl/Z3RECEIV.jcl",
+    "jcl/Z4APPLY.jcl",
+    "jcl/Z5REST.jcl",
+    "jcl/Z7REJECT.jcl",
+    "jcl/Z8DEALOC.jcl",
     "scripts/uninstall-SMPE-PAX.sh",
     "scripts/opercmd",
   ]

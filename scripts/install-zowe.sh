@@ -299,6 +299,21 @@ fi
 if [ -f "install-SMPE-SYSMOD.sh" ]; then
   ensure_script_encoding install-SMPE-SYSMOD.sh
 fi
+
+for job in \
+    Z1ALLOC \
+    Z2ACCEPT \
+    Z3RECEIV \
+    Z4APPLY \
+    Z5REST \
+    Z7REJECT \
+    Z8DEALOC 
+do    
+  if [ -f "${job}.jcl" ]; then
+    ensure_script_encoding ${job}.jcl
+  fi
+done
+
 if [ -f "opercmd" ]; then
   ensure_script_encoding opercmd "parse var command opercmd"
 fi
