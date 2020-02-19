@@ -87,13 +87,13 @@ SYSMOD1=$6
 SYSMOD2=$7
 volser=$8
 install=$9
-# volser=B3IME1  # B3PRD3
+# volser=B3IME1  # B3PRD3 # ZOWE02
 
 echo $SCRIPT    hlq=$hlq
 echo $SCRIPT    csihlq=$csihlq
 # echo $SCRIPT    thlq=$thlq
 # echo $SCRIPT    dhlq=$dhlq
-# echo $SCRIPT    pathprefix=$pathprefix
+echo $SCRIPT    pathprefix=$pathprefix
 echo $SCRIPT    download_path=$download_path
 # echo $SCRIPT    zfs_path=$zfs_path
 echo $SCRIPT    FMID=$FMID
@@ -105,9 +105,9 @@ echo $SCRIPT    install=$install
 csidsn=$csihlq.CSI
 
 for FMIDpath in \
-    $download_path/ZOWE.$FMID.$SYSMOD1.readme.htm \
     $download_path/ZOWE.$FMID.$SYSMOD1            \
     $download_path/ZOWE.$FMID.$SYSMOD2  
+#  ignore   $download_path/ZOWE.$FMID.$SYSMOD1.readme.htm  for now
 do
     if [[ ! -r $FMIDpath ]]
     then
