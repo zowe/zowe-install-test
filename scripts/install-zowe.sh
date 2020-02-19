@@ -240,6 +240,30 @@ if [ $? -eq 0 ]; then
     echo "[${SCRIPT_NAME}][error] cannot find the SMP/e readme file."
     exit 1
   fi
+
+  CIZT_SMPE_SYSMOD1=
+  CIZT_SMPE_SYSMOD2=
+  # check for SYSMOD, PTF
+  ls ZOWE.${CI_SMPE_FMID}.[A-Z][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9]
+  if [ $? -eq 0 ]
+  then  
+      echo "[${SCRIPT_NAME}][info] found some SYSMOD files"
+      if [[ `ls ZOWE.${CI_SMPE_FMID}.[A-Z][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9] | wc -l` -eq 2 ]]
+      then 
+        echo "[${SCRIPT_NAME}][info] found 2 SYSMOD files"
+        # extract the SYSMOD name, e.g. TMP0001, from the filename
+        CIZT_SMPE_SYSMOD1=`ls -1 ZOWE.AZWE[0-9][0-9][1-9].[A-Z][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9]|head -1\
+          | sed 's/ZOWE.AZWE[0-9][0-9][1-9].\([A-Z][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9]\)/\1/'`
+        CIZT_SMPE_SYSMOD2=`ls -r ZOWE.AZWE[0-9][0-9][1-9].[A-Z][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9]|head -1\
+          | sed 's/ZOWE.AZWE[0-9][0-9][1-9].\([A-Z][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9]\)/\1/'`
+      else 
+        echo "[${SCRIPT_NAME}][error] did not find 2 SYSMOD files"
+        exit 1
+      fi 
+  else
+    echo "[${SCRIPT_NAME}][info] no SYSMOD files found"
+  fi  
+
 fi
 export CI_IS_SMPE=$CI_IS_SMPE
 if [ -z "$CI_HOSTNAME" ]; then
@@ -344,23 +368,28 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   echo
 
   # install SMP/E PTF
-  echo "[${SCRIPT_NAME}] installing SYSMOD $CI_ZOWE_SYSMOD to $CIZT_ZOWE_ROOT_DIR ..."
-  RUN_SCRIPT="./install-SMPE-SYSMOD.sh \
-    ${CIZT_SMPE_HLQ_DSN} \
-    ${CIZT_SMPE_HLQ_CSI} \
-    ${CIZT_SMPE_PATH_PREFIX} \
-    ${CIZT_INSTALL_DIR} \
-    ${CI_SMPE_FMID} \
-    ${CIZT_SMPE_SYSMOD1} \
-    ${CIZT_SMPE_SYSMOD2} \
-    ${CIZT_SMPE_VOLSER} \
-    install"
-  run_script_with_timeout "${RUN_SCRIPT}" 1800
-  RC=$?
-  if [ $RC -ne 0 ]; then
-    echo "[${SCRIPT_NAME}][error] PTF installation failed, RC=$RC"
-    exit 1
-  fi
+  if [[ ${CIZT_SMPE_SYSMOD1} != "" ]]
+  then  
+    echo "[${SCRIPT_NAME}] installing SYSMOD $CI_ZOWE_SYSMOD to $CIZT_ZOWE_ROOT_DIR ..."
+    RUN_SCRIPT="./install-SMPE-SYSMOD.sh \
+      ${CIZT_SMPE_HLQ_DSN} \
+      ${CIZT_SMPE_HLQ_CSI} \
+      ${CIZT_SMPE_PATH_PREFIX} \
+      ${CIZT_INSTALL_DIR} \
+      ${CI_SMPE_FMID} \
+      ${CIZT_SMPE_SYSMOD1} \
+      ${CIZT_SMPE_SYSMOD2} \
+      ${CIZT_SMPE_VOLSER} \
+      install"
+    run_script_with_timeout "${RUN_SCRIPT}" 1800
+    RC=$?
+    if [ $RC -ne 0 ]; then
+      echo "[${SCRIPT_NAME}][error] PTF installation failed, RC=$RC"
+      exit 1
+    fi
+  else 
+    echo "[${SCRIPT_NAME}] no SYSMOD to install"
+  fi 
   echo
 
   export FULL_EXTRACTED_ZOWE_FOLDER=$CIZT_INSTALL_DIR/extracted
