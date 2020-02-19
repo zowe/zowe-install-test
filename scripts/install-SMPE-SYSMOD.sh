@@ -284,7 +284,7 @@ ls -l  $smpejob.jcl
         s/#fmid/${FMID}/; \
         s/#sysmod1/${SYSMOD1}/; \
         s/#sysmod2/${SYSMOD2}/" \
-        $$CIZT_TMP/$smpejob.EBCDIC.jcl > $$CIZT_TMP/$smpejob.sed.jcl
+        $CIZT_TMP/$smpejob.EBCDIC.jcl > $CIZT_TMP/$smpejob.sed.jcl
 
         # s/#csihlq/${csihlq}/; \
         # s/#csivol/$CUSTOMIZED_VOLSER/; \
@@ -316,7 +316,7 @@ ls -l  $smpejob.jcl
         # s/ RFPREFIX(.*)//" \
         # hlq was just $hlq before ... s/#hlq/${hlq}/; \
 
-    runJob $$CIZT_TMP/$smpejob.sed.jcl
+    runJob $CIZT_TMP/$smpejob.sed.jcl
     if [[ $? -ne 0 ]]
     then
         echo $SCRIPT ERROR: SMP/E JOB $smpejob failed
