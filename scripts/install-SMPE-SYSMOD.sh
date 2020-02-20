@@ -211,7 +211,7 @@ function runJob {
         echo $SCRIPT DISPLAY JOB output was:
         cat $CIZT_TMP/dj.$$.cc
         rm $CIZT_TMP/dj.$$.cc 2> /dev/null 
-        return 3
+        # do NOT ... return 3
     fi
     
     rc=`sed -n 's/.*RC=\([0-9]*\))/\1/p' $CIZT_TMP/dj.$$.cc`
@@ -220,7 +220,7 @@ function runJob {
     if [[ $rc -gt 4 ]]
     then
         echo $SCRIPT ERROR: job "$jobname(JOB$jobid)" failed, RC=$rc 
-        return 4
+        # do NOT ... return 4
     fi
     # echo; echo $SCRIPT function runJob ended
 }
