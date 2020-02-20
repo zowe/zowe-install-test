@@ -309,9 +309,14 @@ for job in \
     Z7REJECT \
     Z8DEALOC 
 do    
+  echo     ${job}.jcl before
+  od -xc   ${job}.jcl | head -2
   if [ -f "${job}.jcl" ]; then
     ensure_script_encoding ${job}.jcl "//" # tell script to check jcl files for "//" instead of default for shell scripts
   fi
+  echo     ${job}.jcl after
+  od -xc   ${job}.jcl | head -2
+  exit 3
 done
 
 if [ -f "opercmd" ]; then
