@@ -262,7 +262,7 @@ echo CIZT_INSTALL_DIR contains ...
 ls -ld $CIZT_INSTALL_DIR
 ls -l  $CIZT_INSTALL_DIR
 ls -l  $smpejob.jcl
-    iconv -f IBM-850 -t IBM-1047 $smpejob.jcl > $CIZT_TMP/$smpejob.EBCDIC.jcl
+    # iconv -f IBM-850 -t IBM-1047 $smpejob.jcl > $CIZT_TMP/$smpejob.EBCDIC.jcl
 
 #   The following stubs are to be replaced in the SMP/E PTF JCL:
 #   - #hlq          ZOE             the high level qualifier used to upload the SYSMOD
@@ -284,7 +284,7 @@ ls -l  $smpejob.jcl
         s/#fmid/${FMID}/; \
         s/#sysmod1/${SYSMOD1}/; \
         s/#sysmod2/${SYSMOD2}/" \
-        $CIZT_TMP/$smpejob.EBCDIC.jcl > $CIZT_TMP/$smpejob.sed.jcl
+        $smpejob.jcl > $CIZT_TMP/$smpejob.sed.jcl
 
         # s/#csihlq/${csihlq}/; \
         # s/#csivol/$CUSTOMIZED_VOLSER/; \
