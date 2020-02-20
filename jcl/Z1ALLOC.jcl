@@ -23,7 +23,7 @@
 //            RECFM=FB,
 //            LRECL=80,
 //            UNIT=SYSALLDA,
-//*            VOL=SER=#volser,
+//            VOL=SER=#volser,
 //*            BLKSIZE=6160,
 //            SPACE=(TRK,(5423,15))
 //TMP0002  DD DSN=&HLQ..ZOWE.&FMID..&SYSMOD2,
@@ -32,7 +32,7 @@
 //            RECFM=FB,
 //            LRECL=80,
 //            UNIT=SYSALLDA,
-//*            VOL=SER=#volser,
+//            VOL=SER=#volser,
 //*            BLKSIZE=6160,
 //            SPACE=(TRK,(3270,15))
 //*
