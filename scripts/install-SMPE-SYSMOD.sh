@@ -231,6 +231,7 @@ function runJob {
 smpejobs=
 if [[ $install = install ]]
 then
+    smpejobs="$smpejobs Z0PTFUCL"
     smpejobs="$smpejobs Z1ALLOC"
     smpejobs="$smpejobs Z2ACCEPT"
     smpejobs="$smpejobs Z3RECEIV"

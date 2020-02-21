@@ -34,6 +34,7 @@ node('ibm-jenkins-slave-dind') {
     "scripts/uninstall-zowe.sh",
     "scripts/install-SMPE-PAX.sh",
     "scripts/install-SMPE-SYSMOD.sh",
+    "jcl/Z0PTFUCL.jcl",
     "jcl/Z1ALLOC.jcl",
     "jcl/Z2ACCEPT.jcl",
     "jcl/Z3RECEIV.jcl",
