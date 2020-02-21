@@ -14,7 +14,7 @@
 //SMPCNTL  DD *,SYMBOLS=JCLONLY                                
    SET BOUNDARY(GLOBAL) .                                      
    UCLIN .                                                     
-   REP DDDEF(SYSUT1)   CYL SPACE(20,200) DIR(50) UNIT(SYSALLDA)        
+   REP DDDEF(SYSUT1)   CYL SPACE(20,300) DIR(50) UNIT(SYSALLDA)        
    VOLUME(&VOLSER) .                                           
    ENDUCL                                                      
    .                                                           
