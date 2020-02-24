@@ -389,7 +389,7 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   # install SMP/E PTF
   if [[ ${CIZT_SMPE_SYSMOD1} != "" ]]
   then  
-    echo "[${SCRIPT_NAME}] installing SYSMODs $CI_ZOWE_SYSMOD1, $CI_ZOWE_SYSMOD2 to $CIZT_ZOWE_ROOT_DIR ..."
+    echo "[${SCRIPT_NAME}] installing SYSMODs $CIZT_SMPE_SYSMOD1, $CIZT_SMPE_SYSMOD2 to $CIZT_ZOWE_ROOT_DIR ..."
     RUN_SCRIPT="./install-SMPE-SYSMOD.sh \
       ${CIZT_SMPE_HLQ_DSN} \
       ${CIZT_SMPE_HLQ_CSI} \

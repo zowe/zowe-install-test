@@ -3,14 +3,13 @@
 //* update active CSI                                          
 //*                                                            
 //         EXPORT SYMLIST=*                                    
-//         SET SMPE=CUST.ZOWE.SMPE                             
-//         SET TLIB=SMPTZN                                     
-//         SET DLIB=SMPDZN                                     
-//         SET VOLSER=ZOWE02                                   
+//         SET TLIB=#tzone                                   
+//         SET DLIB=#dzone                                    
+//         SET VOLSER=#volser
 //*                                                            
 //UCLIN    EXEC PGM=GIMSMP,REGION=0M,COND=(4,LT)               
 //SMPLOG   DD SYSOUT=*                                         
-//SMPCSI   DD DISP=OLD,DSN=&SMPE..CSI                          
+//SMPCSI   DD DISP=OLD,DSN=&CSI                          
 //SMPCNTL  DD *,SYMBOLS=JCLONLY                                
    SET BOUNDARY(GLOBAL) .                                      
    UCLIN .                                                     

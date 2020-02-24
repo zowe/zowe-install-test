@@ -210,7 +210,6 @@ function runJob {
         echo $SCRIPT ERROR: no return code for jobid $jobid PID=$$
         echo $SCRIPT DISPLAY JOB output was:
         cat $CIZT_TMP/dj.$$.cc
-        rm $CIZT_TMP/dj.$$.cc 2> /dev/null 
         # do NOT ... return 3
     fi
     
