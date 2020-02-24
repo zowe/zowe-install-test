@@ -4,7 +4,7 @@
 //*                                                            
 //UCLIN    EXEC PGM=GIMSMP,REGION=0M,COND=(4,LT)               
 //SMPLOG   DD SYSOUT=*                                         
-//SMPCSI   DD DISP=OLD,DSN=&CSI                          
+//SMPCSI   DD DISP=OLD,DSN=#globalcsi
 //SMPCNTL  DD *,SYMBOLS=JCLONLY                                
    SET BOUNDARY(GLOBAL) .                                      
    UCLIN .                                                     
