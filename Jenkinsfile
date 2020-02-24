@@ -571,11 +571,11 @@ EOF"""
           } // end of timeout - post install script
 
           // pull job log
-          sh "./scripts/show-job-logs.sh -d -H '${SSH_HOST}' -P '${zOsmfPort}' -u '${USERNAME}' -p '${PASSWORD}' -n 'Z*' -o '${USERNAME}' -a file-contents"
+          // sh "./scripts/show-job-logs.sh -d -H '${SSH_HOST}' -P '${zOsmfPort}' -u '${USERNAME}' -p '${PASSWORD}' -n 'Z*' -o '${USERNAME}' -a file-contents"
           sh "./scripts/show-job-logs.sh -d -H '${SSH_HOST}' -P '${zOsmfPort}' -u '${USERNAME}' -p '${PASSWORD}' -n 'ZWE*' -o 'ZWES*' -a file-contents"
         } catch (e) {
           // pull job log
-          sh "./scripts/show-job-logs.sh -d -H '${SSH_HOST}' -P '${zOsmfPort}' -u '${USERNAME}' -p '${PASSWORD}' -n 'Z*' -o '${USERNAME}' -a file-contents"
+          // sh "./scripts/show-job-logs.sh -d -H '${SSH_HOST}' -P '${zOsmfPort}' -u '${USERNAME}' -p '${PASSWORD}' -n 'Z*' -o '${USERNAME}' -a file-contents"
           sh "./scripts/show-job-logs.sh -d -H '${SSH_HOST}' -P '${zOsmfPort}' -u '${USERNAME}' -p '${PASSWORD}' -n 'ZWE*' -o 'ZWES*' -a file-contents"
           throw e
         } // end of try/catch
