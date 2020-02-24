@@ -2,31 +2,26 @@
 //*                                                            
 //* update active CSI                                          
 //*                                                            
-//         EXPORT SYMLIST=*                                    
-//         SET TLIB=#tzone                                   
-//         SET DLIB=#dzone                                    
-//         SET VOLSER=#volser
-//*                                                            
 //UCLIN    EXEC PGM=GIMSMP,REGION=0M,COND=(4,LT)               
 //SMPLOG   DD SYSOUT=*                                         
 //SMPCSI   DD DISP=OLD,DSN=&CSI                          
 //SMPCNTL  DD *,SYMBOLS=JCLONLY                                
    SET BOUNDARY(GLOBAL) .                                      
    UCLIN .                                                     
-   REP DDDEF(SYSUT1)   CYL SPACE(20,300) DIR(50) UNIT(SYSALLDA)        
-   VOLUME(&VOLSER) .                                           
+   REP DDDEF(SYSUT1)   CYL SPACE(20,200) DIR(50) UNIT(SYSALLDA)        
+   VOLUME(#volser) .                                           
    ENDUCL                                                      
    .                                                           
-   SET BOUNDARY(&TLIB) .                                       
+   SET BOUNDARY(#tzone) .                                       
    UCLIN .                                                     
    REP DDDEF(SMPWRK6)  CYL SPACE(20,200) DIR(50) UNIT(SYSALLDA)        
-   VOLUME(&VOLSER) .                                           
+   VOLUME(#volser) .                                           
    ENDUCL                                                      
    .                                                           
-   SET BOUNDARY(&DLIB) .                                       
+   SET BOUNDARY(#dzone) .                                       
    UCLIN .                                                     
    REP DDDEF(SMPWRK6)  CYL SPACE(20,200) DIR(50) UNIT(SYSALLDA)        
-   VOLUME(&VOLSER) .                                           
+   VOLUME(#volser) .                                           
    ENDUCL                                                      
    .                                                           
 //*                                                            
