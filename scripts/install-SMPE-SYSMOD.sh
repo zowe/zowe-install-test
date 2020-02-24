@@ -220,8 +220,10 @@ function runJob {
     then
         echo $SCRIPT ERROR: job "$jobname(JOB$jobid)" failed, RC=$rc 
         # do NOT ... return 4
+    else
+        echo $SCRIPT ERROR: job "$jobname(JOB$jobid)" ended, RC=$rc
     fi
-    # echo; echo $SCRIPT function runJob ended
+    echo; echo $SCRIPT function runJob ended
 }
 
 # SMP/E -- SMP/E -- SMP/E -- SMP/E
@@ -258,10 +260,10 @@ do
     fi
 
 # JCL is in CWD, which is $CIZT_INSTALL_DIR
-echo CIZT_INSTALL_DIR contains ...
-ls -ld $CIZT_INSTALL_DIR
-ls -l  $CIZT_INSTALL_DIR
-ls -l  $smpejob.jcl
+# echo CIZT_INSTALL_DIR contains ...
+# ls -ld $CIZT_INSTALL_DIR
+# ls -l  $CIZT_INSTALL_DIR
+# ls -l  $smpejob.jcl
     # iconv -f IBM-850 -t IBM-1047 $smpejob.jcl > $CIZT_TMP/$smpejob.EBCDIC.jcl
 
 #   The following stubs are to be replaced in the SMP/E PTF JCL:
