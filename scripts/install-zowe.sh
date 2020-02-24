@@ -423,24 +423,16 @@ else #not SMPE
   if [[ "$EXIT_CODE" != "0" ]]; then
     echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
     echo "[${SCRIPT_NAME}][error] here is log file >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    echo "[${SCRIPT_NAME}][error] - $FULL_EXTRACTED_ZOWE_FOLDER/log/*"
-    cat $FULL_EXTRACTED_ZOWE_FOLDER/log/* || true
-    echo "[${SCRIPT_NAME}][error] - $CIZT_ZOWE_ROOT_DIR/configure_log/*"
-    cat $CIZT_ZOWE_ROOT_DIR/configure_log/* || true
-    echo "[${SCRIPT_NAME}][error] - $CIZT_ZOWE_ROOT_DIR/scripts/configure/log/*"
-    cat $CIZT_ZOWE_ROOT_DIR/scripts/configure/log/* || true
+    echo "[${SCRIPT_NAME}][error] - $CIZT_ZOWE_ROOT_DIR/install_log/*"
+    cat $CIZT_ZOWE_ROOT_DIR/install_log/* || true
     echo "[${SCRIPT_NAME}][error] log end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
     echo
     exit 1
   else
     echo "[${SCRIPT_NAME}] ${RUN_SCRIPT} succeeds."
     echo "[${SCRIPT_NAME}] here is log file >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    echo "[${SCRIPT_NAME}] - $FULL_EXTRACTED_ZOWE_FOLDER/log/*"
-    cat $FULL_EXTRACTED_ZOWE_FOLDER/log/* || true
-    echo "[${SCRIPT_NAME}] - $CIZT_ZOWE_ROOT_DIR/configure_log/*"
-    cat $CIZT_ZOWE_ROOT_DIR/configure_log/* || true
-    echo "[${SCRIPT_NAME}] - $CIZT_ZOWE_ROOT_DIR/scripts/configure/log/*"
-    cat $CIZT_ZOWE_ROOT_DIR/scripts/configure/log/* || true
+    echo "[${SCRIPT_NAME}][error] - $CIZT_ZOWE_ROOT_DIR/install_log/*"
+    cat $CIZT_ZOWE_ROOT_DIR/install_log/* || true
     echo "[${SCRIPT_NAME}] log end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
     echo
   fi
