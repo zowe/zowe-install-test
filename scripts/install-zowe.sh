@@ -300,7 +300,9 @@ if [ -f "install-SMPE-SYSMOD.sh" ]; then
   ensure_script_encoding install-SMPE-SYSMOD.sh
 fi
 
+
 for job in \
+    Z0PTFUCL \
     Z1ALLOC \
     Z2ACCEPT \
     Z3RECEIV \
