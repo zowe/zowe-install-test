@@ -8,14 +8,16 @@
 //SMPCNTL  DD *,SYMBOLS=JCLONLY                                
    SET BOUNDARY(GLOBAL) .                                      
    UCLIN .                                                     
-   REP DDDEF(SYSUT1)   CYL SPACE(1500,200) DIR(50) UNIT(SYSALLDA)        
+   REP DDDEF(SYSUT1)   CYL SPACE(20,200) DIR(50) UNIT(SYSALLDA)        
    VOLUME(#volser) .                                           
    ENDUCL                                                      
    .                                                           
    SET BOUNDARY(#tzone) .                                       
    UCLIN .                                                     
    REP DDDEF(SMPWRK6)  CYL SPACE(20,200) DIR(50) UNIT(SYSALLDA)        
-   VOLUME(#volser) .                                           
+   VOLUME(#volser) .    
+   REP DDDEF(SYSUT1)   CYL SPACE(20,200) DIR(50) UNIT(SYSALLDA)        
+   VOLUME(#volser) .                                          
    ENDUCL                                                      
    .                                                           
    SET BOUNDARY(#dzone) .                                       
