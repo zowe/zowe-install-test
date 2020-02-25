@@ -431,7 +431,7 @@ else #not SMPE
   else
     echo "[${SCRIPT_NAME}] ${RUN_SCRIPT} succeeds."
     echo "[${SCRIPT_NAME}] here is log file >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    echo "[${SCRIPT_NAME}][error] - $CIZT_ZOWE_ROOT_DIR/install_log/*"
+    echo "[${SCRIPT_NAME}] - $CIZT_ZOWE_ROOT_DIR/install_log/*"
     cat $CIZT_ZOWE_ROOT_DIR/install_log/* || true
     echo "[${SCRIPT_NAME}] log end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
     echo
