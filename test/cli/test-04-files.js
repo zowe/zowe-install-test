@@ -93,8 +93,6 @@ describe(`cli list data sets of ${TEST_DATASET_PATTERN}`, function() {
     expect(res.data.commandResponse).to.be.a('string');
     expect(res.data.commandResponse).to.include('Data set downloaded successfully');
     expect(res.data.apiResponse).to.be.a('object');
-    expect(res.data.apiResponse.type).to.be.a('string');
-    expect(res.data.apiResponse.type).to.include('Buffer');
 
     // file should exist
     await fsAccess(targetFile, fs.constants.R_OK);
