@@ -221,7 +221,7 @@ function runJob {
         echo $SCRIPT ERROR: job "$jobname(JOB$jobid)" failed, RC=$rc 
         # do NOT ... return 4
     else
-        echo $SCRIPT ERROR: job "$jobname(JOB$jobid)" ended, RC=$rc
+        echo $SCRIPT INFO: job "$jobname(JOB$jobid)" ended, RC=$rc
     fi
     echo; echo $SCRIPT function runJob ended
 }
