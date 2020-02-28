@@ -110,23 +110,6 @@ function run_script_with_timeout {
 }
 
 ################################################################################
-# Run after install verify script
-echo
-RUN_SCRIPT=zowe-verify.sh
-if [ -f "${CIZT_ZOWE_ROOT_DIR}/scripts/$RUN_SCRIPT" ]; then
-  cd "${CIZT_ZOWE_ROOT_DIR}/scripts"
-  run_script_with_timeout "${RUN_SCRIPT}" 1800
-  EXIT_CODE=$?
-  if [[ "$EXIT_CODE" != "0" ]]; then
-    echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed with exit code ${EXIT_CODE}."
-  else
-    echo "[${SCRIPT_NAME}] ${RUN_SCRIPT} finished successfully."
-  fi
-fi
-echo
-
-
-################################################################################
 # FIXME: zLux login may hang there which blocks UI test cases
 # try a login to the zlux auth api
 # curl -d "{\"username\":\"${CI_USERNAME}\",\"password\":\"${CI_PASSWORD}\"}" \
