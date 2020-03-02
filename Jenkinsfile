@@ -31,6 +31,8 @@ node('ibm-jenkins-slave-dind') {
     "scripts/uninstall-zowe.sh",
     "scripts/install-SMPE-PAX.sh",
     "scripts/uninstall-SMPE-PAX.sh",
+    "scripts/ZWEPSI00"
+    "scripts/create-PSI.sh"
     "scripts/opercmd",
   ]
   def zoweArtifact = ''

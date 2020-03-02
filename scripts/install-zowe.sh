@@ -275,6 +275,9 @@ fi
 if [ -f "opercmd" ]; then
   ensure_script_encoding opercmd "parse var command opercmd"
 fi
+if [ -f "create_PSI.sh" ]; then
+  ensure_script_encoding create_PSI.sh
+fi
 
 ################################################################################
 echo "[${SCRIPT_NAME}] installation script started ..."
@@ -331,7 +334,7 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   cd $CIZT_INSTALL_DIR
   # install SMP/e package
   echo "[${SCRIPT_NAME}] installing $CI_ZOWE_PAX to $CIZT_ZOWE_ROOT_DIR ..."
-  RUN_SCRIPT="./install-SMPE-PAX.sh ${CIZT_SMPE_HLQ_DSN} ${CIZT_SMPE_HLQ_CSI} ${CIZT_SMPE_HLQ_TZONE} ${CIZT_SMPE_HLQ_DZONE} ${CIZT_SMPE_PATH_PREFIX} ${CIZT_INSTALL_DIR} ${CIZT_INSTALL_DIR}/extracted ${CI_SMPE_FMID} ${CIZT_SMPE_REL_FILE_PREFIX} ${CIZT_SMPE_VOLSER}"
+  RUN_SCRIPT="./install-SMPE-PAX.sh ${CIZT_SMPE_HLQ_DSN} ${CIZT_SMPE_HLQ_CSI} ${CIZT_SMPE_HLQ_TZONE} ${CIZT_SMPE_HLQ_DZONE} ${CIZT_SMPE_PATH_PREFIX} ${CIZT_INSTALL_DIR} ${CIZT_INSTALL_DIR}/extracted ${CI_SMPE_FMID} ${CIZT_SMPE_REL_FILE_PREFIX} ${CIZT_SMPE_VOLSER} ${CIZT_SMPE_TARGET_ZONE}"
   run_script_with_timeout "${RUN_SCRIPT}" 1800
 
   if [ ! -d "${CIZT_ZOWE_ROOT_DIR}/scripts" ]; then
@@ -359,6 +362,14 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
 
   echo "[${SCRIPT_NAME}] all SMP/e install is done."
   echo
+  
+  #TODO: probably use something like $CI_IS_SMPE Jenkins variable if PSI should be created
+  # Creating Portable Software Instance
+  cd $CIZT_INSTALL_DIR
+  
+  RUN_SCRIPT="./create-PSI.sh ${CIZT_ZOSMF_SAFKEYRING} ${CIZT_ZOSMF_PORT} ${CIZT_PSI_NAME} ${CIZT_ZOSMF_SYSTEM} ${CIZT_SMPE_HLQ_CSI}.CSI ${CIZT_SMPE_TARGET_ZONE} ${CIZT_TMP}/export/ ${CIZT_PSI_DSN} ${CIZT_PSI_VOLSER}"
+  run_script_with_timeout "${RUN_SCRIPT}" 1800
+  
 else #not SMPE
   # extract Zowe
   echo "[${SCRIPT_NAME}] extracting $CI_ZOWE_PAX to $CIZT_INSTALL_DIR/extracted ..."

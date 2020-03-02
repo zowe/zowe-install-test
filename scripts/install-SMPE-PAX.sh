@@ -24,7 +24,7 @@ if [[ $# -ne 10 ]]   # until script is called with 10 parms
 then
 echo; echo $SCRIPT Usage:
 cat <<EndOfUsage
-$SCRIPT Hlq Csihlq Thlq Dhlq Pathprefix download_path zfs_path FMID PREFIX volser
+$SCRIPT Hlq Csihlq Thlq Dhlq Pathprefix download_path zfs_path FMID PREFIX volser tzone
 
    Parameter subsitutions:
  a.  for SMP/E jobs:
@@ -43,7 +43,7 @@ $SCRIPT Hlq Csihlq Thlq Dhlq Pathprefix download_path zfs_path FMID PREFIX volse
  8  FMID	        AZWE001	        The FMID for this release (omitted in archid of SMPMCS?)
  9  PREFIX	        ZOE             RELFILE prefix?
 10  volser          B3PRD3          volume serial number of a DASD volume to hold MVS datasets 
-
+11  tzone           TZONE           Target zone name  
 EndOfUsage
 exit
 fi
@@ -59,6 +59,7 @@ FMID=$8
 PREFIX=$9
 shift
 volser=$9
+tzone=$10
 # volser=B3IME1  # B3PRD3
 
 echo $SCRIPT    hlq=$hlq
@@ -71,6 +72,7 @@ echo $SCRIPT    zfs_path=$zfs_path
 echo $SCRIPT    FMID=$FMID
 echo $SCRIPT    PREFIX=$PREFIX
 echo $SCRIPT    volser=$volser
+echo $SCRIPT    tzone=$tzone
 
 operdir=$SCRIPT_DIR         # this is where opercmd should be available
 
@@ -326,7 +328,7 @@ do
         s/#csihlq/${csihlq}/; \
         s/#csivol/$CUSTOMIZED_VOLSER/; \
         s/#dvol/$CUSTOMIZED_VOLSER/; \
-        s/#tzone/TZONE/; \
+        s/#tzone/$tzone/; \
         s/#dzone/DZONE/; \
         s/#hlq/${PREFIX}/; \
         s/\[RFDSNPFX\]/ZOWE/; \
