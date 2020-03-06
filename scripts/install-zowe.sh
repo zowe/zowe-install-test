@@ -381,9 +381,20 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   run_script_with_timeout "${RUN_SCRIPT}" 1800
 
   if [ ! -d "${CIZT_ZOWE_ROOT_DIR}/scripts" ]; then
-    echo "[${SCRIPT_NAME}][error] installation is not successfully, ${CIZT_ZOWE_ROOT_DIR}/scripts doesn't exist."
+    echo "[${SCRIPT_NAME}][error] installation is not successful, ${CIZT_ZOWE_ROOT_DIR}/scripts doesn't exist."
     exit 1
   fi
+
+  # show manifest of FMID
+  echo "[${SCRIPT_NAME}] FMID ${CIZT_ZOWE_ROOT_DIR}/manifest.json"
+  echo "[${SCRIPT_NAME}] ==== start of contents ===="
+  cat ${CIZT_ZOWE_ROOT_DIR}/manifest.json
+  echo "[${SCRIPT_NAME}] ==== end of contents ===="
+
+  # show components of FMID
+  echo "[${SCRIPT_NAME}] FMID ${CIZT_ZOWE_ROOT_DIR}/components"
+  ls -l ${CIZT_ZOWE_ROOT_DIR}/components
+
   echo
 
   # install SMP/E PTF
@@ -405,6 +416,18 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
     if [ $RC -ne 0 ]; then
       echo "[${SCRIPT_NAME}][error] PTF installation failed, RC=$RC"
       exit 1
+    else
+      echo "[${SCRIPT_NAME}][error] PTF installation succeeded, RC=$RC"
+
+      # show manifest of PTF
+      echo "[${SCRIPT_NAME}] PTF ${CIZT_ZOWE_ROOT_DIR}/manifest.json"
+      echo "[${SCRIPT_NAME}] ==== start of contents ===="
+      cat ${CIZT_ZOWE_ROOT_DIR}/manifest.json
+      echo "[${SCRIPT_NAME}] ==== end of contents ===="
+
+      # show components of PTF
+      echo "[${SCRIPT_NAME}] PTF ${CIZT_ZOWE_ROOT_DIR}/components"
+      ls -l ${CIZT_ZOWE_ROOT_DIR}/components
     fi
   else 
     echo "[${SCRIPT_NAME}] no SYSMOD to install"
@@ -633,7 +656,7 @@ mv ${INSTANCE_ENV}.tmp ${INSTANCE_ENV}
 cat ${INSTANCE_ENV}
 
 if [ ! -f ${CIZT_ZOWE_USER_DIR}"/bin/zowe-start.sh" ]; then
-  echo "[${SCRIPT_NAME}][error] installation is not successfully, cannot find zowe-start.sh."
+  echo "[${SCRIPT_NAME}][error] installation is not successful, cannot find zowe-start.sh."
   exit 1
 fi
 
