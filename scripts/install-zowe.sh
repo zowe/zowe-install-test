@@ -392,14 +392,23 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   echo "[${SCRIPT_NAME}] ==== end of contents ===="
 
   # show components of FMID
-  echo "[${SCRIPT_NAME}] FMID ${CIZT_ZOWE_ROOT_DIR}/components"
+  echo "[${SCRIPT_NAME}] FMID list of ${CIZT_ZOWE_ROOT_DIR}/components"
   ls -l ${CIZT_ZOWE_ROOT_DIR}/components
+  # show size of .jar files
+  echo "[${SCRIPT_NAME}] FMID size of .jar files"
+  find ${CIZT_ZOWE_ROOT_DIR}/components -name *.jar -exec ls -l {} \;
 
   echo
 
   # install SMP/E PTF
   if [[ ${CIZT_SMPE_SYSMOD1} != "" ]]
   then  
+    # ensure FMID version is deleted, in order to verify that the SYSMOD is the software being tested ...
+    rm -r ${CIZT_ZOWE_ROOT_DIR}/bin
+    rm -r ${CIZT_ZOWE_ROOT_DIR}/scripts
+    rm -r ${CIZT_ZOWE_ROOT_DIR}/components
+    ls -la ${CIZT_ZOWE_ROOT_DIR}    # show what's left
+
     echo "[${SCRIPT_NAME}] installing SYSMODs $CIZT_SMPE_SYSMOD1, $CIZT_SMPE_SYSMOD2 to $CIZT_ZOWE_ROOT_DIR ..."
     RUN_SCRIPT="./install-SMPE-SYSMOD.sh \
       ${CIZT_SMPE_HLQ_DSN} \
@@ -426,8 +435,12 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
       echo "[${SCRIPT_NAME}] ==== end of contents ===="
 
       # show components of PTF
-      echo "[${SCRIPT_NAME}] PTF ${CIZT_ZOWE_ROOT_DIR}/components"
+      echo "[${SCRIPT_NAME}] PTF list of ${CIZT_ZOWE_ROOT_DIR}/components"
       ls -l ${CIZT_ZOWE_ROOT_DIR}/components
+      # show size of .jar files
+      echo "[${SCRIPT_NAME}] PTF size of .jar files"
+      find ${CIZT_ZOWE_ROOT_DIR}/components -name *.jar -exec ls -l {} \;
+
     fi
   else 
     echo "[${SCRIPT_NAME}] no SYSMOD to install"
