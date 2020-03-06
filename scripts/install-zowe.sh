@@ -19,7 +19,9 @@
 ################################################################################
 # constants
 SCRIPT_NAME=$(basename "$0")
-CI_ZOWE_CONFIG_FILE=zowe-install.yaml
+SCRIPT_PWD=$(cd "$(dirname "$0")" && pwd)
+# this log currently only includes errors and warnings
+INSTALL_ZOWE_LOG="${SCRIPT_PWD}/install-zowe.log"
 CI_ZOWE_PAX=
 CI_SKIP_TEMP_FIXES=no
 CI_UNINSTALL=no
@@ -30,9 +32,14 @@ if [ -z "${CIZT_TMP}" ]; then
   CIZT_TMP=/tmp
 fi
 
+# reset log
+rm -f "${INSTALL_ZOWE_LOG}"
+touch "${INSTALL_ZOWE_LOG}"
+
 # allow to exit by ctrl+c
 function finish {
   echo "[${SCRIPT_NAME}] interrupted"
+  echo "[${SCRIPT_NAME}] interrupted" >> "${INSTALL_ZOWE_LOG}"
   exit 1
 }
 trap finish SIGINT
@@ -199,6 +206,7 @@ while [ $# -gt 0 ]; do
     *)    # unknown option
       if [ ! "$1" = "${1#-}" ]; then
         echo "[${SCRIPT_NAME}][error] invalid option: $1" >&2
+        echo "[${SCRIPT_NAME}][error] invalid option: $1" >> "${INSTALL_ZOWE_LOG}"
         exit 1
       fi 
       POSITIONAL[$POSITIONALINDEX]="$1" # save it in an array for later
@@ -214,16 +222,19 @@ CI_ZOWE_PAX=$1
 # essential validations
 if [ ! -f install-config.sh ]; then
   echo "[${SCRIPT_NAME}][error] cannot find install-config.sh"
+  echo "[${SCRIPT_NAME}][error] cannot find install-config.sh" >> "${INSTALL_ZOWE_LOG}"
   exit 1
 fi
 ensure_script_encoding install-config.sh
 . install-config.sh
 if [ -z "$CI_ZOWE_PAX" ]; then
   echo "[${SCRIPT_NAME}][error] package is required."
+  echo "[${SCRIPT_NAME}][error] package is required." >> "${INSTALL_ZOWE_LOG}"
   exit 1
 fi
 if [ ! -f "$CI_ZOWE_PAX" ]; then
   echo "[${SCRIPT_NAME}][error] cannot find the package file."
+  echo "[${SCRIPT_NAME}][error] cannot find the package file." >> "${INSTALL_ZOWE_LOG}"
   exit 1
 fi
 CI_IS_SMPE=no
@@ -234,16 +245,19 @@ if [ $? -eq 0 ]; then
   CI_SMPE_FMID=$(basename ${CI_ZOWE_PAX} | awk -F. '{print $1}')
   if [ -z "$CI_SMPE_FMID" ]; then
     echo "[${SCRIPT_NAME}][error] cannot determine SMP/e FMID."
+    echo "[${SCRIPT_NAME}][error] cannot determine SMP/e FMID." >> "${INSTALL_ZOWE_LOG}"
     exit 1
   fi
   if [ ! -f "${CI_SMPE_FMID}.readme.txt" ]; then
     echo "[${SCRIPT_NAME}][error] cannot find the SMP/e readme file."
+    echo "[${SCRIPT_NAME}][error] cannot find the SMP/e readme file." >> "${INSTALL_ZOWE_LOG}"
     exit 1
   fi
 fi
 export CI_IS_SMPE=$CI_IS_SMPE
 if [ -z "$CI_HOSTNAME" ]; then
   echo "[${SCRIPT_NAME}][error] server hostname/IP is required."
+  echo "[${SCRIPT_NAME}][error] server hostname/IP is required." >> "${INSTALL_ZOWE_LOG}"
   exit 1
 fi
 echo "convert encoding if those files uploaded"
@@ -316,6 +330,7 @@ if [[ "$CI_UNINSTALL" = "yes" ]]; then
     EXIT_CODE=$?
     if [[ "$EXIT_CODE" != "0" ]]; then
       echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
+      echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed." >> "${INSTALL_ZOWE_LOG}"
       exit 1
     fi
   fi
@@ -336,6 +351,7 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
 
   if [ ! -d "${CIZT_ZOWE_ROOT_DIR}/scripts" ]; then
     echo "[${SCRIPT_NAME}][error] installation is not successfully, ${CIZT_ZOWE_ROOT_DIR}/scripts doesn't exist."
+    echo "[${SCRIPT_NAME}][error] installation is not successfully, ${CIZT_ZOWE_ROOT_DIR}/scripts doesn't exist." >> "${INSTALL_ZOWE_LOG}"
     exit 1
   fi
   echo
@@ -352,6 +368,7 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
       EXIT_CODE=$?
       if [[ "$EXIT_CODE" != "0" ]]; then
         echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
+        echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed." >> "${INSTALL_ZOWE_LOG}"
         exit 1
       fi
     fi
@@ -369,6 +386,7 @@ else #not SMPE
     echo "[${SCRIPT_NAME}] $CI_ZOWE_PAX extracted."
   else
     echo "[${SCRIPT_NAME}][error] unpax Zowe failed."
+    echo "[${SCRIPT_NAME}][error] unpax Zowe failed." >> "${INSTALL_ZOWE_LOG}"
     exit 1
   fi
   echo
@@ -395,6 +413,7 @@ else #not SMPE
       EXIT_CODE=$?
       if [[ "$EXIT_CODE" != "0" ]]; then
         echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
+        echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed." >> "${INSTALL_ZOWE_LOG}"
         exit 1
       fi
     fi
@@ -405,11 +424,22 @@ else #not SMPE
   cd $FULL_EXTRACTED_ZOWE_FOLDER/install
   RUN_SCRIPT=zowe-check-prereqs.sh
   if [ -f "$RUN_SCRIPT" ]; then
-    run_script_with_timeout $RUN_SCRIPT 1800
+    OUTPUT=`run_script_with_timeout $RUN_SCRIPT 1800`
     EXIT_CODE=$?
     if [[ "$EXIT_CODE" != "0" ]]; then
       echo "[${SCRIPT_NAME}][warning] ${RUN_SCRIPT} failed."
+      echo "[${SCRIPT_NAME}][warning] ${RUN_SCRIPT} failed." >> "${INSTALL_ZOWE_LOG}"
     fi
+    echo "${RUN_SCRIPT} output was ${OUTPUT}"
+    EXPECTED_OUTPUTS="OK: opercmd is available\nOK: jobname ICSF or CSF is not running\nOK: Node is working\nOK: Node is at a supported version"
+    echo ${EXPECTED_OUTPUTS} | while read -r line
+    do
+      if [[ ${OUTPUT} != *${line}* ]]
+      then
+        echo "[${SCRIPT_NAME}][${RUN_SCRIPT}][warning] output didn't contain expected '${line}'."
+        echo "[${SCRIPT_NAME}][${RUN_SCRIPT}][warning] output didn't contain expected '${line}'." >> "${INSTALL_ZOWE_LOG}"
+      fi
+    done
   fi
   echo
 
@@ -427,6 +457,7 @@ else #not SMPE
     cat $CIZT_ZOWE_ROOT_DIR/install_log/* || true
     echo "[${SCRIPT_NAME}][error] log end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
     echo
+    echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed." >> "${INSTALL_ZOWE_LOG}"
     exit 1
   else
     echo "[${SCRIPT_NAME}] ${RUN_SCRIPT} succeeds."
@@ -450,6 +481,8 @@ run_script_with_timeout "$RUN_SCRIPT" 3600
 EXIT_CODE=$?
 if [[ "$EXIT_CODE" != "0" ]]; then
   echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
+  echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed." >> "${INSTALL_ZOWE_LOG}"
+  exit 1
 fi
 
 echo "calling zowe-install-xmem.sh with"
@@ -468,6 +501,7 @@ run_script_with_timeout "$RUN_SCRIPT \
 EXIT_CODE=$?
 if [[ "$EXIT_CODE" != "0" ]]; then
   echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
+  echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed." >> "${INSTALL_ZOWE_LOG}"
   echo
   exit 1
 else
@@ -488,6 +522,7 @@ run_script_with_timeout "${RUN_SCRIPT}" 300
 
 if [ $? -ne 0 ]; then
   echo "[${SCRIPT_NAME}][error] create the SAF definitions failed"
+  echo "[${SCRIPT_NAME}][error] create the SAF definitions failed" >> "${INSTALL_ZOWE_LOG}"
   exit 1
 fi
 
@@ -509,6 +544,7 @@ run_script_with_timeout "$RUN_SCRIPT \
 EXIT_CODE=$?
 if [[ "$EXIT_CODE" != "0" ]]; then
   echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed with exit code $EXIT_CODE."
+  echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed with exit code $EXIT_CODE." >> "${INSTALL_ZOWE_LOG}"
   echo
   exit 1
 else
@@ -563,6 +599,7 @@ cat ${INSTANCE_ENV}
 
 if [ ! -f ${CIZT_ZOWE_USER_DIR}"/bin/zowe-start.sh" ]; then
   echo "[${SCRIPT_NAME}][error] installation is not successfully, cannot find zowe-start.sh."
+  echo "[${SCRIPT_NAME}][error] installation is not successfully, cannot find zowe-start.sh." >> "${INSTALL_ZOWE_LOG}"
   exit 1
 fi
 
@@ -575,6 +612,7 @@ if [ "$CI_SKIP_TEMP_FIXES" != "yes" ]; then
     EXIT_CODE=$?
     if [[ "$EXIT_CODE" != "0" ]]; then
       echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
+      echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed." >> "${INSTALL_ZOWE_LOG}"
       exit 1
     fi
   fi
@@ -589,6 +627,7 @@ if [ -f "$RUN_SCRIPT" ]; then
   EXIT_CODE=$?
   if [[ "$EXIT_CODE" != "0" ]]; then
     echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
+    echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed." >> "${INSTALL_ZOWE_LOG}"
     exit 1
   fi
 fi
@@ -607,6 +646,7 @@ RUN_SCRIPT=${CIZT_ZOWE_USER_DIR}"/bin/zowe-start.sh"
 EXIT_CODE=$?
 if [[ "$EXIT_CODE" != "0" ]]; then
   echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
+  echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed." >> "${INSTALL_ZOWE_LOG}"
   exit 1
 fi
 echo

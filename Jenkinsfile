@@ -428,6 +428,27 @@ cd ${installDir} && \
   ${installDir}/${zoweArtifact} || { echo "[install-zowe.sh] failed"; exit 1; }
 echo "[install-zowe.sh] succeeds" && exit 0
 EOF"""
+            // download install-zowe.log
+            sh "SSHPASS=${PASSWORD} sshpass -e scp -o BatchMode=no -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -P ${SSH_PORT} ${USERNAME}@${SSH_HOST}:${installDir}/install-zowe.log ."
+            echo "================================== content of install-zowe.log starts =================================="
+            sh "cat install-zowe.log"
+            echo "================================== content of install-zowe.log ends =================================="
+            // has errors?
+            def foundErrors = sh(
+              script: "cat install-zowe.log | grep '[error]' || true",
+              returnStdout: true
+            ).trim()
+            if (foundErrors) {
+              error "install-zowe.sh failed with error: ${foundErrors}"
+            }
+            // has warnings?
+            def foundWarnings = sh(
+              script: "cat install-zowe.log | grep '[warning]' || true",
+              returnStdout: true
+            ).trim()
+            if (foundWarnings) {
+              currentBuild.result = 'UNSTABLE'
+            }
           } // end of timeout - run install-zowe.sh
 
           // wait for Zowe to be fully started
