@@ -445,7 +445,7 @@ echo "calling zowe-install-proc.sh with"
 echo "    ZOWE_DSN_PREFIX=${DATA_SET_PREFIX}"
 echo "    ZOWE_SERVER_PROCLIB_DSNAME=$CIZT_PROCLIB_DS"
 cd $CIZT_ZOWE_ROOT_DIR/scripts/utils
-RUN_SCRIPT="./zowe-install-proc.sh ${DATA_SET_PREFIX} $CIZT_PROCLIB_DS"
+RUN_SCRIPT="./zowe-install-proc.sh -d ${DATA_SET_PREFIX} -r $CIZT_PROCLIB_DS"
 run_script_with_timeout "$RUN_SCRIPT" 3600
 EXIT_CODE=$?
 if [[ "$EXIT_CODE" != "0" ]]; then
@@ -461,10 +461,10 @@ echo "  zss proclib   ${CIZT_ZSS_PROCLIB_DS_NAME}"
 RUN_SCRIPT=./zowe-install-xmem.sh
 echo "[${SCRIPT_NAME}] calling $RUN_SCRIPT from directory $(pwd)"
 run_script_with_timeout "$RUN_SCRIPT \
-  ${DATA_SET_PREFIX} \
-  ${CIZT_ZSS_LOADLIB_DS_NAME} \
-  ${CIZT_ZSS_PARMLIB_DS_NAME} \
-  ${CIZT_ZSS_PROCLIB_DS_NAME}" 1800
+  -d ${DATA_SET_PREFIX} \
+  -b ${CIZT_ZSS_LOADLIB_DS_NAME} \
+  -a ${CIZT_ZSS_PARMLIB_DS_NAME} \
+  -r ${CIZT_ZSS_PROCLIB_DS_NAME}" 1800
 EXIT_CODE=$?
 if [[ "$EXIT_CODE" != "0" ]]; then
   echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
