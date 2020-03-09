@@ -404,11 +404,12 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   if [[ ${CIZT_SMPE_SYSMOD1} != "" ]]
   then  
     # ensure FMID version is deleted, in order to verify that the SYSMOD is the software being tested ...
-    echo "[${SCRIPT_NAME}] Delete FMID version"
+    echo "[${SCRIPT_NAME}] Delete FMID version of Zowe from $CIZT_ZOWE_ROOT_DIR"
     (echo rm -fr $CIZT_ZOWE_ROOT_DIR/bin        | su) || true
     (echo rm -fr $CIZT_ZOWE_ROOT_DIR/scripts    | su) || true
     (echo rm -fr $CIZT_ZOWE_ROOT_DIR/components | su) || true
 
+    echo "[${SCRIPT_NAME}] The following entries remain after deletion:"
     ls -la ${CIZT_ZOWE_ROOT_DIR}    # show what's left
 
     echo "[${SCRIPT_NAME}] installing SYSMODs $CIZT_SMPE_SYSMOD1, $CIZT_SMPE_SYSMOD2 to $CIZT_ZOWE_ROOT_DIR ..."
