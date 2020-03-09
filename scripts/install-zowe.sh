@@ -405,9 +405,9 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   then  
     # ensure FMID version is deleted, in order to verify that the SYSMOD is the software being tested ...
     echo "[${SCRIPT_NAME}] Delete FMID version"
-    (echo rm -fr $CIZT_ZOWE_KEYSTORE_DIR |/bin        su) || true
-    (echo rm -fr $CIZT_ZOWE_KEYSTORE_DIR |/scripts    su) || true
-    (echo rm -fr $CIZT_ZOWE_KEYSTORE_DIR |/components su) || true
+    (echo rm -fr $CIZT_ZOWE_ROOT_DIR/bin        | su) || true
+    (echo rm -fr $CIZT_ZOWE_ROOT_DIR/scripts    | su) || true
+    (echo rm -fr $CIZT_ZOWE_ROOT_DIR/components | su) || true
 
     ls -la ${CIZT_ZOWE_ROOT_DIR}    # show what's left
 
