@@ -244,7 +244,7 @@ if [ $? -eq 0 ]; then
   CIZT_SMPE_SYSMOD1=
   CIZT_SMPE_SYSMOD2=
   # check for SYSMOD, PTF
-  ls ZOWE.${CI_SMPE_FMID}.[A-Z][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9]
+  ls -l ZOWE.${CI_SMPE_FMID}.[A-Z][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9]
   if [ $? -eq 0 ]
   then  
       echo "[${SCRIPT_NAME}][info] found some SYSMOD files"
@@ -405,7 +405,7 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   then  
     # ensure FMID version is deleted, in order to verify that the SYSMOD is the software being tested ...
     # echo "[${SCRIPT_NAME}] Delete FMID version of Zowe from $CIZT_ZOWE_ROOT_DIR"
-    echo "[${SCRIPT_NAME}] O NOT delete FMID version of Zowe from $CIZT_ZOWE_ROOT_DIR"
+    echo "[${SCRIPT_NAME}] DO NOT delete FMID version of Zowe from $CIZT_ZOWE_ROOT_DIR"
     # (echo rm -fr $CIZT_ZOWE_ROOT_DIR/bin        | su) || true
     # (echo rm -fr $CIZT_ZOWE_ROOT_DIR/scripts    | su) || true
     # (echo rm -fr $CIZT_ZOWE_ROOT_DIR/components | su) || true
