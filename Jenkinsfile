@@ -333,6 +333,11 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
           )
           dir('.tmp') {
             // extract zip file
+            sh "echo smpeReadmePattern == 'zip'"
+            sh 'echo show contents of .tmp dir `pwd`'
+            sh 'ls -l *'
+            sh 'rm AZWE001.htm AZWE001.pax.Z AZWE001.readme.txt'
+            sh "rm ZOWE.AZWE001.TMP0001 ZOWE.AZWE001.TMP0002 ZOWE.AZWE001.TMP0001.readme.htm"
             sh 'unzip $(ls -1 zowe-smpe-*.zip)'
             // should get AZWE001.pax.Z, AZWE001.readme.txt and AZWE001.htm for AZWE001.zip
             sh 'echo "after extracted:" && ls -l *'
@@ -376,6 +381,7 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
           )
           dir('.tmp') {
             // extract zip files
+            sh "echo smpeReadmePattern == 'sysmod'"
             sh 'echo show contents of .tmp dir `pwd`'
             sh 'ls -l *'
             sh 'echo 3xx extract zip files Thu 12 March'
