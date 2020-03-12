@@ -376,7 +376,9 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
           )
           dir('.tmp') {
             // extract zip files
-            sh 'echo 379 extract zip files Mon 9 March 14:09'
+            sh 'echo show contents of .tmp dir `pwd`'
+            sh 'ls -l *'
+            sh 'echo 3xx extract zip files Thu 12 March'
             // FMID is one of:
             //     AZWE*.zip
             //     zowe-smpe-*.zip
@@ -387,6 +389,7 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
             //  -> AZWE001.htm
             //  -> AZWE001.pax.Z
             //  -> AZWE001.readme.txt
+            sh 'rm AZWE001.htm AZWE001.pax.Z AZWE001.readme.txt'
             sh "ls zowe-smpe-*.zip 2>/dev/null 1>/dev/null && unzip zowe-smpe-*.zip"                         // pre-GA
             // sh "ls AZWE[0-9][0-9][1-9]-*.zip 2>/dev/null 1>/dev/null && unzip AZWE[0-9][0-9][1-9]-*.zip"  // post-GA
             def smpeFMID = sh(script: "ls -1 AZWE*.pax.Z", returnStdout: true).trim()
@@ -396,6 +399,7 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
             //  -> ZOWE.AZWE001.TMP0001
             //  -> ZOWE.AZWE001.TMP0002
             //  -> ZOWE.AZWE001.TMP0001.readme.htm
+            sh "rm ZOWE.AZWE001.TMP0001 ZOWE.AZWE001.TMP0002 ZOWE.AZWE001.TMP0001.readme.htm"
             sh "ls -l AZWE[0-9][0-9][1-9].[A-Z][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9]-*.zip && unzip AZWE[0-9][0-9][1-9].[A-Z][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9]-*.zip"
             sh 'echo "after extracted:" && ls -l *'
             def smpeSysmod1 = sh(script: "ls -1 ZOWE.AZWE[0-9][0-9][1-9].[A-Z][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9]|head -1", returnStdout: true).trim()
