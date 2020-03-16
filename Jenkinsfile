@@ -513,8 +513,8 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
           usernameVariable: 'USERNAME'
         )
       ]) {
-        // create INSTALL_DIR
-        sh "SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${SSH_PORT} ${USERNAME}@${SSH_HOST} 'mkdir -p ${installDir}'"
+        // remove old INSTALL_DIR and create new INSTALL_DIR 
+        sh "SSHPASS=${PASSWORD} sshpass -e ssh -tt -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -p ${SSH_PORT} ${USERNAME}@${SSH_HOST} 'rm -fr ${installDir} && mkdir -p ${installDir}'"
 
         // send file to test image host
         def allPuts = artifactsForUploadAndInstallation.collect {
