@@ -358,11 +358,11 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
             specContent : """
 {
   "files": [{
-    "pattern": "${params.ZOWE_ARTIFACTORY_PATTERN}",
-    "target": ".tmp/",
-    "flat": "true",
-    "build": "${params.ZOWE_ARTIFACTORY_BUILD}"
-  }, {
+  //   "pattern": "${params.ZOWE_ARTIFACTORY_PATTERN}",
+  //   "target": ".tmp/",
+  //   "flat": "true",
+  //   "build": "${params.ZOWE_ARTIFACTORY_BUILD}"
+  // }, {
     "pattern": "${params.SYSMOD_ARTIFACTORY_PATTERN}",
     "target": ".tmp/",
     "flat": "true",
@@ -375,7 +375,7 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
     "explode": "true"  }]
 }
 """,
-            expected    : 3
+            expected    : 2
           )
           dir('.tmp') {
             // extract zip files
@@ -388,15 +388,15 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
             //     zowe-smpe-*.zip
             //
             // sh "ls -1 AZWE*.zip"
-            sh "ls -1 zowe-smpe-*.zip"
+            // sh "ls -1 zowe-smpe-*.zip"
             // FMID extracts to:
             //  -> AZWE001.htm
             //  -> AZWE001.pax.Z
             //  -> AZWE001.readme.txt
-            sh "ls zowe-smpe-*.zip 2>/dev/null 1>/dev/null && unzip zowe-smpe-*.zip"                         // pre-GA
+            // sh "ls zowe-smpe-*.zip 2>/dev/null 1>/dev/null && unzip zowe-smpe-*.zip"                         // pre-GA
             // sh "ls AZWE[0-9][0-9][1-9]-*.zip 2>/dev/null 1>/dev/null && unzip AZWE[0-9][0-9][1-9]-*.zip"  // post-GA
-            def smpeFMID = sh(script: "ls -1 AZWE*.pax.Z", returnStdout: true).trim()
-            def smpeReadme = sh(script: "ls -1 AZWE*.readme.txt", returnStdout: true).trim()
+            // def smpeFMID = sh(script: "ls -1 AZWE*.pax.Z", returnStdout: true).trim()
+            // def smpeReadme = sh(script: "ls -1 AZWE*.readme.txt", returnStdout: true).trim()
             
             // PTF  =  AZWE001.TMP0001-*.zip extracts to:
             //  -> ZOWE.AZWE001.TMP0001
@@ -407,12 +407,12 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
             def smpeSysmod1 = sh(script: "ls -1 ZOWE.AZWE[0-9][0-9][1-9].[A-Z][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9]|head -1", returnStdout: true).trim()
             def smpeSysmod2 = sh(script: "ls -r ZOWE.AZWE[0-9][0-9][1-9].[A-Z][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9]|head -1", returnStdout: true).trim()
 
-            if (!smpeFMID) {
-              error "Failed to extract SMPE pax file from ${params.ZOWE_ARTIFACTORY_PATTERN}"
-            }
-            if (!smpeReadme) {
-              error "Failed to extract SMPE readme file from ${params.ZOWE_ARTIFACTORY_PATTERN}"
-            }
+            // if (!smpeFMID) {
+            //   error "Failed to extract SMPE pax file from ${params.ZOWE_ARTIFACTORY_PATTERN}"
+            // }
+            // if (!smpeReadme) {
+            //   error "Failed to extract SMPE readme file from ${params.ZOWE_ARTIFACTORY_PATTERN}"
+            // }
             if (!smpeSysmod1) {
               error "Failed to extract SMPE SYSMOD1 file from ${params.SYSMOD_ARTIFACTORY_PATTERN}"
             }
@@ -420,11 +420,11 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
               error "Failed to extract SMPE SYSMOD2 file from ${params.SYSMOD_ARTIFACTORY_PATTERN}"
             }
             
-            artifactsForUploadAndInstallation.add(".tmp/${smpeFMID}")
-            artifactsForUploadAndInstallation.add(".tmp/${smpeReadme}")
+            // artifactsForUploadAndInstallation.add(".tmp/${smpeFMID}")
+            // artifactsForUploadAndInstallation.add(".tmp/${smpeReadme}")
             artifactsForUploadAndInstallation.add(".tmp/${smpeSysmod1}")
             artifactsForUploadAndInstallation.add(".tmp/${smpeSysmod2}")
-            zoweArtifact = "${smpeFMID}"
+            zoweArtifact = "${smpeSysmod1}"
           }
           // end FMID+PTF processing
            
