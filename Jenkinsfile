@@ -358,11 +358,6 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
             specContent : """
 {
   "files": [{
-  //   "pattern": "${params.ZOWE_ARTIFACTORY_PATTERN}",
-  //   "target": ".tmp/",
-  //   "flat": "true",
-  //   "build": "${params.ZOWE_ARTIFACTORY_BUILD}"
-  // }, {
     "pattern": "${params.SYSMOD_ARTIFACTORY_PATTERN}",
     "target": ".tmp/",
     "flat": "true",
