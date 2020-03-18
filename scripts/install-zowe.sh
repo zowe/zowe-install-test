@@ -228,10 +228,17 @@ if [ ! -f "$CI_ZOWE_PAX" ]; then
 fi
 CI_IS_SMPE=no
 CI_SMPE_FMID=
-echo "${CI_ZOWE_PAX}" | grep -qE "pax.Z$"
+echo "${CI_ZOWE_PAX}" | grep -qE "AZWE" # does the package file name indicate SMP/E? # "pax.Z$"
 if [ $? -eq 0 ]; then
   CI_IS_SMPE=yes
   CI_SMPE_FMID=$(basename ${CI_ZOWE_PAX} | awk -F. '{print $1}')
+
+  if [ "$CI_SMPE_FMID" = "ZOWE" ]
+  then
+    echo "[${SCRIPT_NAME}][info] package is a SYSMOD"
+    CI_SMPE_FMID=$(basename ${CI_ZOWE_PAX} | awk -F. '{print $2}')
+  fi
+  
   if [ -z "$CI_SMPE_FMID" ]; then
     echo "[${SCRIPT_NAME}][error] cannot determine SMP/e FMID."
     exit 1
