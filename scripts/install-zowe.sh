@@ -228,7 +228,7 @@ if [ ! -f "$CI_ZOWE_PAX" ]; then
 fi
 CI_IS_SMPE=no
 CI_SMPE_FMID=
-echo "${CI_ZOWE_PAX}" | grep -qE "AZWE" # does the package file name indicate SMP/E? # "pax.Z$"
+echo "${CI_ZOWE_PAX}" | grep -qE "AZWE" # does the package file's name indicate SMP/E? # "pax.Z$"
 if [ $? -eq 0 ]; then
   CI_IS_SMPE=yes
   CI_SMPE_FMID=$(basename ${CI_ZOWE_PAX} | awk -F. '{print $1}')
@@ -237,16 +237,18 @@ if [ $? -eq 0 ]; then
   then
     echo "[${SCRIPT_NAME}][info] package is a SYSMOD"
     CI_SMPE_FMID=$(basename ${CI_ZOWE_PAX} | awk -F. '{print $2}')
+  else
+    echo "[${SCRIPT_NAME}][info] package is an FMID"
+    if [ -z "$CI_SMPE_FMID" ]; then
+      echo "[${SCRIPT_NAME}][error] cannot determine SMP/e FMID."
+      exit 1
+    fi
+    if [ ! -f "${CI_SMPE_FMID}.readme.txt" ]; then
+      echo "[${SCRIPT_NAME}][error] cannot find the SMP/e readme file."
+      exit 1
+    fi
   fi
   
-  if [ -z "$CI_SMPE_FMID" ]; then
-    echo "[${SCRIPT_NAME}][error] cannot determine SMP/e FMID."
-    exit 1
-  fi
-  if [ ! -f "${CI_SMPE_FMID}.readme.txt" ]; then
-    echo "[${SCRIPT_NAME}][error] cannot find the SMP/e readme file."
-    exit 1
-  fi
 
   CIZT_SMPE_SYSMOD1=
   CIZT_SMPE_SYSMOD2=
