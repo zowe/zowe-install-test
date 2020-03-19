@@ -391,14 +391,22 @@ rm -fr ${CIZT_INSTALL_DIR}/extracted && mkdir -p ${CIZT_INSTALL_DIR}/extracted
 if [[ "$CI_IS_SMPE" = "yes" ]]; then
   cd $CIZT_INSTALL_DIR
   # install SMP/e package ... 
-  
-  # The parameterised FMID is in directory CIZT_INSTALL_DIR
-  # echo "[${SCRIPT_NAME}] installing FMID from file $CIZT_INSTALL_DIR/$CI_ZOWE_PAX to $CIZT_ZOWE_ROOT_DIR ..."
-  # RUN_SCRIPT="./install-SMPE-PAX.sh ${CIZT_SMPE_HLQ_DSN} ${CIZT_SMPE_HLQ_CSI} ${CIZT_SMPE_HLQ_TZONE} ${CIZT_SMPE_HLQ_DZONE} ${CIZT_SMPE_PATH_PREFIX} ${CIZT_INSTALL_DIR} ${CIZT_INSTALL_DIR}/extracted ${CI_SMPE_FMID} ${CIZT_SMPE_REL_FILE_PREFIX} ${CIZT_SMPE_VOLSER}"
-  
-  # The fixed FMID is in directory $CIZT_SMPE_FMID_PATH
-  echo "[${SCRIPT_NAME}] installing FMID from file $CIZT_SMPE_FMID_PATH/$CI_ZOWE_PAX to $CIZT_ZOWE_ROOT_DIR ..."
-  RUN_SCRIPT="./install-SMPE-PAX.sh ${CIZT_SMPE_HLQ_DSN} ${CIZT_SMPE_HLQ_CSI} ${CIZT_SMPE_HLQ_TZONE} ${CIZT_SMPE_HLQ_DZONE} ${CIZT_SMPE_PATH_PREFIX} ${CIZT_SMPE_FMID_PATH} ${CIZT_INSTALL_DIR}/extracted ${CI_SMPE_FMID} ${CIZT_SMPE_REL_FILE_PREFIX} ${CIZT_SMPE_VOLSER}"
+
+  echo "[${SCRIPT_NAME}] showe pax from parm"
+  ls $CIZT_INSTALL_DIR/$CI_ZOWE_PAX
+  echo "[${SCRIPT_NAME}] showe pax from fixed"
+  ls $CIZT_SMPE_FMID_PATH/$CI_ZOWE_PAX
+
+  if [ -f $CIZT_INSTALL_DIR/$CI_ZOWE_PAX ]
+  then
+    # The parameterised FMID is in directory CIZT_INSTALL_DIR
+    echo "[${SCRIPT_NAME}] installing FMID from file $CIZT_INSTALL_DIR/$CI_ZOWE_PAX to $CIZT_ZOWE_ROOT_DIR ..."
+    RUN_SCRIPT="./install-SMPE-PAX.sh ${CIZT_SMPE_HLQ_DSN} ${CIZT_SMPE_HLQ_CSI} ${CIZT_SMPE_HLQ_TZONE} ${CIZT_SMPE_HLQ_DZONE} ${CIZT_SMPE_PATH_PREFIX} ${CIZT_INSTALL_DIR} ${CIZT_INSTALL_DIR}/extracted ${CI_SMPE_FMID} ${CIZT_SMPE_REL_FILE_PREFIX} ${CIZT_SMPE_VOLSER}"
+  else
+    # The fixed FMID is in directory $CIZT_SMPE_FMID_PATH
+    echo "[${SCRIPT_NAME}] installing FMID from file $CIZT_SMPE_FMID_PATH/$CI_ZOWE_PAX to $CIZT_ZOWE_ROOT_DIR ..."
+    RUN_SCRIPT="./install-SMPE-PAX.sh ${CIZT_SMPE_HLQ_DSN} ${CIZT_SMPE_HLQ_CSI} ${CIZT_SMPE_HLQ_TZONE} ${CIZT_SMPE_HLQ_DZONE} ${CIZT_SMPE_PATH_PREFIX} ${CIZT_SMPE_FMID_PATH} ${CIZT_INSTALL_DIR}/extracted ${CI_SMPE_FMID} ${CIZT_SMPE_REL_FILE_PREFIX} ${CIZT_SMPE_VOLSER}"
+  fi
 
   run_script_with_timeout "${RUN_SCRIPT}" 1800
 
