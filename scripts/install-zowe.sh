@@ -392,26 +392,30 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   cd $CIZT_INSTALL_DIR
   # install SMP/e package ... 
 
-  echo "[${SCRIPT_NAME}] showe pax from parm"
-  ls $CIZT_INSTALL_DIR/$CI_ZOWE_PAX
-  echo "[${SCRIPT_NAME}] showe pax from fixed"
-  ls $CIZT_SMPE_FMID_PATH/$CI_ZOWE_PAX
+  # First, install the FMID
+  
+  echo "[${SCRIPT_NAME}] show FMID files"
+  ls $CIZT_INSTALL_DIR/AZWE*
+  echo "[${SCRIPT_NAME}] show PTF files"
+  ls $CIZT_INSTALL_DIR/ZOWE.AZWE*
 
-  if [ -f $CIZT_INSTALL_DIR/$CI_ZOWE_PAX ]
+  # Has the FMID been placed in $CIZT_INSTALL_DIR ?
+  ls $CIZT_INSTALL_DIR/AZWE* 1> /dev/null 2> /dev/null 
+  if [ $? -eq 0 ]
   then
-    # The parameterised FMID is in directory CIZT_INSTALL_DIR
-    echo "[${SCRIPT_NAME}] installing FMID from file $CIZT_INSTALL_DIR/$CI_ZOWE_PAX to $CIZT_ZOWE_ROOT_DIR ..."
+    # The parameterised FMID is in directory CIZT_INSTALL_DIR, use that
+    echo "[${SCRIPT_NAME}] installing FMID $CI_ZOWE_PAX from directory $CIZT_INSTALL_DIR to $CIZT_ZOWE_ROOT_DIR ..."
     RUN_SCRIPT="./install-SMPE-PAX.sh ${CIZT_SMPE_HLQ_DSN} ${CIZT_SMPE_HLQ_CSI} ${CIZT_SMPE_HLQ_TZONE} ${CIZT_SMPE_HLQ_DZONE} ${CIZT_SMPE_PATH_PREFIX} ${CIZT_INSTALL_DIR} ${CIZT_INSTALL_DIR}/extracted ${CI_SMPE_FMID} ${CIZT_SMPE_REL_FILE_PREFIX} ${CIZT_SMPE_VOLSER}"
   else
-    # The fixed FMID is in directory $CIZT_SMPE_FMID_PATH
-    echo "[${SCRIPT_NAME}] installing FMID from file $CIZT_SMPE_FMID_PATH/$CI_ZOWE_PAX to $CIZT_ZOWE_ROOT_DIR ..."
+    # The fixed FMID is in directory $CIZT_SMPE_FMID_PATH, use that
+    echo "[${SCRIPT_NAME}] installing FMID $CI_ZOWE_PAX from directory $CIZT_SMPE_FMID_PATH to $CIZT_ZOWE_ROOT_DIR ..."
     RUN_SCRIPT="./install-SMPE-PAX.sh ${CIZT_SMPE_HLQ_DSN} ${CIZT_SMPE_HLQ_CSI} ${CIZT_SMPE_HLQ_TZONE} ${CIZT_SMPE_HLQ_DZONE} ${CIZT_SMPE_PATH_PREFIX} ${CIZT_SMPE_FMID_PATH} ${CIZT_INSTALL_DIR}/extracted ${CI_SMPE_FMID} ${CIZT_SMPE_REL_FILE_PREFIX} ${CIZT_SMPE_VOLSER}"
   fi
 
   run_script_with_timeout "${RUN_SCRIPT}" 1800
 
   if [ ! -d "${CIZT_ZOWE_ROOT_DIR}/scripts" ]; then
-    echo "[${SCRIPT_NAME}][error] installation is not successful, ${CIZT_ZOWE_ROOT_DIR}/scripts doesn't exist."
+    echo "[${SCRIPT_NAME}][error] FMID installation is not successful, ${CIZT_ZOWE_ROOT_DIR}/scripts doesn't exist."
     exit 1
   fi
 
