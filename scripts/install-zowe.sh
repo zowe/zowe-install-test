@@ -393,7 +393,7 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   # install SMP/e package ... 
 
   # First, install the FMID
-  
+
   echo "[${SCRIPT_NAME}] show FMID files"
   ls $CIZT_INSTALL_DIR/AZWE*
   echo "[${SCRIPT_NAME}] show PTF files"
@@ -404,11 +404,11 @@ if [[ "$CI_IS_SMPE" = "yes" ]]; then
   if [ $? -eq 0 ]
   then
     # The parameterised FMID is in directory CIZT_INSTALL_DIR, use that
-    echo "[${SCRIPT_NAME}] installing FMID $CI_ZOWE_PAX from directory $CIZT_INSTALL_DIR to $CIZT_ZOWE_ROOT_DIR ..."
+    echo "[${SCRIPT_NAME}] installing parm FMID from directory $CIZT_INSTALL_DIR to $CIZT_ZOWE_ROOT_DIR ..."
     RUN_SCRIPT="./install-SMPE-PAX.sh ${CIZT_SMPE_HLQ_DSN} ${CIZT_SMPE_HLQ_CSI} ${CIZT_SMPE_HLQ_TZONE} ${CIZT_SMPE_HLQ_DZONE} ${CIZT_SMPE_PATH_PREFIX} ${CIZT_INSTALL_DIR} ${CIZT_INSTALL_DIR}/extracted ${CI_SMPE_FMID} ${CIZT_SMPE_REL_FILE_PREFIX} ${CIZT_SMPE_VOLSER}"
   else
     # The fixed FMID is in directory $CIZT_SMPE_FMID_PATH, use that
-    echo "[${SCRIPT_NAME}] installing FMID $CI_ZOWE_PAX from directory $CIZT_SMPE_FMID_PATH to $CIZT_ZOWE_ROOT_DIR ..."
+    echo "[${SCRIPT_NAME}] installing fixed FMID from directory $CIZT_SMPE_FMID_PATH to $CIZT_ZOWE_ROOT_DIR ..."
     RUN_SCRIPT="./install-SMPE-PAX.sh ${CIZT_SMPE_HLQ_DSN} ${CIZT_SMPE_HLQ_CSI} ${CIZT_SMPE_HLQ_TZONE} ${CIZT_SMPE_HLQ_DZONE} ${CIZT_SMPE_PATH_PREFIX} ${CIZT_SMPE_FMID_PATH} ${CIZT_INSTALL_DIR}/extracted ${CI_SMPE_FMID} ${CIZT_SMPE_REL_FILE_PREFIX} ${CIZT_SMPE_VOLSER}"
   fi
 
