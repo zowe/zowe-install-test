@@ -228,7 +228,7 @@ if [ ! -f "$CI_ZOWE_PAX" ]; then
 fi
 CI_IS_SMPE=no
 CI_SMPE_FMID=
-echo "${CI_ZOWE_PAX}" | grep -qE "AZWE" # does the package file's name indicate SMP/E? # "pax.Z$"
+echo "${CI_ZOWE_PAX}" | grep -qE "AZWE" # does the package file's name indicate SMP/E? 
 if [ $? -eq 0 ]; then
   CI_IS_SMPE=yes
   CI_SMPE_FMID=$(basename ${CI_ZOWE_PAX} | awk -F. '{print $1}')
@@ -253,13 +253,8 @@ if [ $? -eq 0 ]; then
   CIZT_SMPE_SYSMOD1=
   CIZT_SMPE_SYSMOD2=
   # check for presence of SYSMOD, PTF
-  echo Directory is
-  pwd
 
-  echo Directory content is
-  ls -l *
-
-  echo ZOWE.fmid files are
+  echo "[${SCRIPT_NAME}][info] ZOWE.fmid files are"
   ls -l ZOWE.${CI_SMPE_FMID}.[A-Z][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9]
   if [ $? -eq 0 ]
   then  
@@ -286,7 +281,7 @@ if [ -z "$CI_HOSTNAME" ]; then
   echo "[${SCRIPT_NAME}][error] server hostname/IP is required."
   exit 1
 fi
-echo "convert encoding if those files uploaded"
+echo "[${SCRIPT_NAME}][info] convert encoding if those files uploaded"
 cd $CIZT_INSTALL_DIR
 if [ -f "temp-fixes-after-install.sh" ]; then
   ensure_script_encoding temp-fixes-after-install.sh
@@ -588,9 +583,9 @@ else #not SMPE
 fi #End SMPE if
 
 # Copy xmem server PROCLIB, PARMLIB and LOADLIB memers into targets
-echo "calling zowe-install-proc.sh with"
-echo "    ZOWE_DSN_PREFIX=${DATA_SET_PREFIX}"
-echo "    ZOWE_SERVER_PROCLIB_DSNAME=$CIZT_PROCLIB_DS"
+echo "[${SCRIPT_NAME}][info] calling zowe-install-proc.sh with"
+echo "[${SCRIPT_NAME}][info]     ZOWE_DSN_PREFIX=${DATA_SET_PREFIX}"
+echo "[${SCRIPT_NAME}][info]     ZOWE_SERVER_PROCLIB_DSNAME=$CIZT_PROCLIB_DS"
 cd $CIZT_ZOWE_ROOT_DIR/scripts/utils
 RUN_SCRIPT="./zowe-install-proc.sh ${DATA_SET_PREFIX} $CIZT_PROCLIB_DS"
 run_script_with_timeout "$RUN_SCRIPT" 3600
@@ -599,11 +594,11 @@ if [[ "$EXIT_CODE" != "0" ]]; then
   echo "[${SCRIPT_NAME}][error] ${RUN_SCRIPT} failed."
 fi
 
-echo "calling zowe-install-xmem.sh with"
-echo "  datasetprefix ${DATA_SET_PREFIX}"
-echo "  zss loadlib   ${CIZT_ZSS_LOADLIB_DS_NAME}"
-echo "  zss parmlib   ${CIZT_ZSS_PARMLIB_DS_NAME}"
-echo "  zss proclib   ${CIZT_ZSS_PROCLIB_DS_NAME}"
+echo "[${SCRIPT_NAME}][info] calling zowe-install-xmem.sh with"
+echo "[${SCRIPT_NAME}][info]   datasetprefix ${DATA_SET_PREFIX}"
+echo "[${SCRIPT_NAME}][info]   zss loadlib   ${CIZT_ZSS_LOADLIB_DS_NAME}"
+echo "[${SCRIPT_NAME}][info]   zss parmlib   ${CIZT_ZSS_PARMLIB_DS_NAME}"
+echo "[${SCRIPT_NAME}][info]   zss proclib   ${CIZT_ZSS_PROCLIB_DS_NAME}"
 
 RUN_SCRIPT=./zowe-install-xmem.sh
 echo "[${SCRIPT_NAME}] calling $RUN_SCRIPT from directory $(pwd)"
@@ -643,9 +638,9 @@ echo "[${SCRIPT_NAME}] Starting installing xmem server ..."
 
 echo "[${SCRIPT_NAME}] creating APF settings of ${CIZT_ZSS_LOADLIB_DS_NAME}(${CIZT_ZSS_LOADLIB_MEMBER}) ..."
 
-echo "calling zowe-xmem-apf.sh with"
-echo "  opercmd       ${CIZT_INSTALL_DIR}/opercmd"
-echo "  zss loadlib   ${CIZT_ZSS_LOADLIB_DS_NAME}"
+echo "[${SCRIPT_NAME}][info] calling zowe-xmem-apf.sh with"
+echo "[${SCRIPT_NAME}][info]   opercmd       ${CIZT_INSTALL_DIR}/opercmd"
+echo "[${SCRIPT_NAME}][info]   zss loadlib   ${CIZT_ZSS_LOADLIB_DS_NAME}"
 
 RUN_SCRIPT=./zowe-xmem-apf.sh
 cd $CIZT_INSTALL_DIR
@@ -663,7 +658,7 @@ else
   echo
 fi
 
-echo "Setting up certificate..."
+echo "[${SCRIPT_NAME}][info] Setting up certificate..."
 # Create a copy of the default environment
 TEMP_CERTIFICATE_ENV_LOCATION="/ZOWE/tmp/zowe-setup-certificates.env"
 cp ${CIZT_ZOWE_ROOT_DIR}/bin/zowe-setup-certificates.env ${TEMP_CERTIFICATE_ENV_LOCATION}
@@ -681,7 +676,7 @@ ${CIZT_ZOWE_ROOT_DIR}/bin/zowe-setup-certificates.sh -p ${TEMP_CERTIFICATE_ENV_L
 ls ${CIZT_ZOWE_KEYSTORE_DIR}
 rm ${TEMP_CERTIFICATE_ENV_LOCATION}
 
-echo "Creating zowe-instance..."
+echo "[${SCRIPT_NAME}][info] Creating zowe-instance..."
 ${CIZT_ZOWE_ROOT_DIR}/bin/zowe-configure-instance.sh -c ${CIZT_ZOWE_USER_DIR}
 # Update the instance.env with the custom parameters
 INSTANCE_ENV=${CIZT_ZOWE_USER_DIR}/instance.env

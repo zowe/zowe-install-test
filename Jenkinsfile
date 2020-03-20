@@ -271,8 +271,6 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
         } else {
           error "The Zowe SMP/e package pattern (ZOWE_ARTIFACTORY_PATTERN) should end with .pax.Z, .tar or .zip"
         }
-        // debug
-        sh "echo line 265 smpeReadmePattern = $smpeReadmePattern"
         if (smpeReadmePattern == 'tarball') {
           pipeline.artifactory.download(
             specContent : """
@@ -333,9 +331,6 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
           )
           dir('.tmp') {
             // extract zip file
-            sh "echo smpeReadmePattern == 'zip'"
-            sh 'echo show contents of .tmp dir `pwd`'
-            sh 'ls -l *'
             sh 'unzip $(ls -1 zowe-smpe-*.zip)'
             // should get AZWE001.pax.Z, AZWE001.readme.txt and AZWE001.htm for AZWE001.zip
             sh 'echo "after extracted:" && ls -l *'
@@ -352,7 +347,6 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
             zoweArtifact = "${smpePax}"
           }
         } else if (smpeReadmePattern == 'sysmod') {
-           sh 'echo "10:50 line 355 sysmod"'
            // begin FMID+PTF processing
           pipeline.artifactory.download(
             specContent : """
@@ -374,25 +368,14 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
           )
           dir('.tmp') {
             // extract zip files
-            sh "echo smpeReadmePattern == 'sysmod'"
-            sh 'echo show contents of .tmp dir `pwd`'
-            sh 'ls -l *'
-            sh 'echo 385 extract zip files Thu 12 March'
             // FMID is one of:
             //     AZWE*.zip
             //     zowe-smpe-*.zip
             //
-            // sh "ls -1 AZWE*.zip"
-            // sh "ls -1 zowe-smpe-*.zip"
             // FMID extracts to:
             //  -> AZWE001.htm
             //  -> AZWE001.pax.Z
             //  -> AZWE001.readme.txt
-            // sh "ls zowe-smpe-*.zip 2>/dev/null 1>/dev/null && unzip zowe-smpe-*.zip"                         // pre-GA
-            // sh "ls AZWE[0-9][0-9][1-9]-*.zip 2>/dev/null 1>/dev/null && unzip AZWE[0-9][0-9][1-9]-*.zip"  // post-GA
-            // def smpeFMID = sh(script: "ls -1 AZWE*.pax.Z", returnStdout: true).trim()
-            // def smpeReadme = sh(script: "ls -1 AZWE*.readme.txt", returnStdout: true).trim()
-            
             // PTF  =  AZWE001.TMP0001-*.zip extracts to:
             //  -> ZOWE.AZWE001.TMP0001
             //  -> ZOWE.AZWE001.TMP0002
@@ -402,12 +385,6 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
             def smpeSysmod1 = sh(script: "ls -1 ZOWE.AZWE[0-9][0-9][1-9].[A-Z][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9]|head -1", returnStdout: true).trim()
             def smpeSysmod2 = sh(script: "ls -r ZOWE.AZWE[0-9][0-9][1-9].[A-Z][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9]|head -1", returnStdout: true).trim()
 
-            // if (!smpeFMID) {
-            //   error "Failed to extract SMPE pax file from ${params.ZOWE_ARTIFACTORY_PATTERN}"
-            // }
-            // if (!smpeReadme) {
-            //   error "Failed to extract SMPE readme file from ${params.ZOWE_ARTIFACTORY_PATTERN}"
-            // }
             if (!smpeSysmod1) {
               error "Failed to extract SMPE SYSMOD1 file from ${params.SYSMOD_ARTIFACTORY_PATTERN}"
             }
@@ -415,8 +392,6 @@ cat scripts/install-config.sh | grep CIZT_ZOWE_ROOT_DIR
               error "Failed to extract SMPE SYSMOD2 file from ${params.SYSMOD_ARTIFACTORY_PATTERN}"
             }
             
-            // artifactsForUploadAndInstallation.add(".tmp/${smpeFMID}")
-            // artifactsForUploadAndInstallation.add(".tmp/${smpeReadme}")
             artifactsForUploadAndInstallation.add(".tmp/${smpeSysmod1}")
             artifactsForUploadAndInstallation.add(".tmp/${smpeSysmod2}")
             zoweArtifact = "${smpeSysmod1}"
@@ -575,12 +550,8 @@ echo "[temp-fixes-after-started.sh] succeeds" && exit 0
 EOF"""
           } // end of timeout - post install script
 
-          // pull job log
-          // sh "./scripts/show-job-logs.sh -d -H '${SSH_HOST}' -P '${zOsmfPort}' -u '${USERNAME}' -p '${PASSWORD}' -n 'Z*' -o '${USERNAME}' -a file-contents"
-          sh "./scripts/show-job-logs.sh -d -H '${SSH_HOST}' -P '${zOsmfPort}' -u '${USERNAME}' -p '${PASSWORD}' -n 'ZWE*' -o 'ZWES*' -a file-contents"
         } catch (e) {
           // pull job log
-          // sh "./scripts/show-job-logs.sh -d -H '${SSH_HOST}' -P '${zOsmfPort}' -u '${USERNAME}' -p '${PASSWORD}' -n 'Z*' -o '${USERNAME}' -a file-contents"
           sh "./scripts/show-job-logs.sh -d -H '${SSH_HOST}' -P '${zOsmfPort}' -u '${USERNAME}' -p '${PASSWORD}' -n 'ZWE*' -o 'ZWES*' -a file-contents"
           throw e
         } // end of try/catch
