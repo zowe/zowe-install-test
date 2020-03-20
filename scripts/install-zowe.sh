@@ -252,27 +252,28 @@ if [ $? -eq 0 ]; then
 
   CIZT_SMPE_SYSMOD1=
   CIZT_SMPE_SYSMOD2=
-  # check for SYSMOD, PTF
+  # check for presence of SYSMOD, PTF
   echo Directory is
   pwd
+
   echo Directory content is
   ls -l *
+
+  echo ZOWE.fmid files are
   ls -l ZOWE.${CI_SMPE_FMID}.[A-Z][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9]
   if [ $? -eq 0 ]
   then  
       echo "[${SCRIPT_NAME}][info] found some SYSMOD files"
       if [[ `ls ZOWE.${CI_SMPE_FMID}.[A-Z][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9] | wc -l` -eq 2 ]]
       then 
-        echo "[${SCRIPT_NAME}][info] found 2 SYSMOD files"
+        echo "[${SCRIPT_NAME}][info] found exactly 2 SYSMOD files"
         # extract the SYSMOD name, e.g. TMP0001, from the filename
-        # echo WARNING removing SYSMOD files just this once
-        # rm ZOWE.AZWE001.TMP0001 ZOWE.AZWE001.TMP0002
         CIZT_SMPE_SYSMOD1=`ls -1 ZOWE.AZWE[0-9][0-9][1-9].[A-Z][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9]|head -1\
           | sed 's/ZOWE.AZWE[0-9][0-9][1-9].\([A-Z][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9]\)/\1/'`
         CIZT_SMPE_SYSMOD2=`ls -r ZOWE.AZWE[0-9][0-9][1-9].[A-Z][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9]|head -1\
           | sed 's/ZOWE.AZWE[0-9][0-9][1-9].\([A-Z][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9]\)/\1/'`
       else 
-        echo "[${SCRIPT_NAME}][error] did not find 2 SYSMOD files"
+        echo "[${SCRIPT_NAME}][error] did not find exactly 2 SYSMOD files"
         exit 1
       fi 
   else
