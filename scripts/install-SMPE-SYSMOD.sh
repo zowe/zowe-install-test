@@ -102,6 +102,9 @@ echo $SCRIPT    SYSMOD2=$SYSMOD2
 echo $SCRIPT    volser=$volser
 echo $SCRIPT    install=$install
 
+echo "Before sysmod1 allocate: $(tsocmd listds "'${hlq}.ZOWE.${FMID}.$SYSMOD1'" history status members)"
+echo "Before sysmod2 allocate: $(tsocmd listds "'${hlq}.ZOWE.${FMID}.$SYSMOD2'" history status members)"
+
 csidsn=$csihlq.CSI
 
 for FMIDpath in \
@@ -328,12 +331,12 @@ do
     if [[ $smpejob = Z1ALLOC ]]
     then
         echo script $SCRIPT copying USS sysmod files to datasets
-        echo "Before sysmod1 copy: $(tsocmd listds "'${hlq}.ZOWE.${FMID}.$SYSMOD1'")"
-        echo "Before sysmod2 copy: $(tsocmd listds "'${hlq}.ZOWE.${FMID}.$SYSMOD2'")"
+        echo "Before sysmod1 copy: $(tsocmd listds "'${hlq}.ZOWE.${FMID}.$SYSMOD1'" history status members)"
+        echo "Before sysmod2 copy: $(tsocmd listds "'${hlq}.ZOWE.${FMID}.$SYSMOD2'" history status members)"
         cp $download_path/ZOWE.$FMID.$SYSMOD1 "//'${hlq}.ZOWE.${FMID}.$SYSMOD1'"
         cp $download_path/ZOWE.$FMID.$SYSMOD2 "//'${hlq}.ZOWE.${FMID}.$SYSMOD2'"
-        echo "After sysmod1 copy: $(tsocmd listds "'${hlq}.ZOWE.${FMID}.$SYSMOD1'")"
-        echo "After sysmod2 copy: $(tsocmd listds "'${hlq}.ZOWE.${FMID}.$SYSMOD2'")"
+        echo "After sysmod1 copy: $(tsocmd listds "'${hlq}.ZOWE.${FMID}.$SYSMOD1'" history status members)"
+        echo "After sysmod2 copy: $(tsocmd listds "'${hlq}.ZOWE.${FMID}.$SYSMOD2'" history status members)"
         tsocmd listds "'${proclib}'"
         echo script $SCRIPT copy complete
     fi
