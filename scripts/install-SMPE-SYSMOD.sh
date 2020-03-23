@@ -333,11 +333,12 @@ do
         echo script $SCRIPT copying USS sysmod files to datasets
         echo "Before sysmod1 copy: $(tsocmd listds "'${hlq}.ZOWE.${FMID}.$SYSMOD1'" history status members)"
         echo "Before sysmod2 copy: $(tsocmd listds "'${hlq}.ZOWE.${FMID}.$SYSMOD2'" history status members)"
+        echo "uss sysmod 1: $(ls -al $download_path/ZOWE.$FMID.$SYSMOD1")"
+        echo "uss sysmod 2: $(ls -al $download_path/ZOWE.$FMID.$SYSMOD2")"
         cp $download_path/ZOWE.$FMID.$SYSMOD1 "//'${hlq}.ZOWE.${FMID}.$SYSMOD1'"
         cp $download_path/ZOWE.$FMID.$SYSMOD2 "//'${hlq}.ZOWE.${FMID}.$SYSMOD2'"
         echo "After sysmod1 copy: $(tsocmd listds "'${hlq}.ZOWE.${FMID}.$SYSMOD1'" history status members)"
         echo "After sysmod2 copy: $(tsocmd listds "'${hlq}.ZOWE.${FMID}.$SYSMOD2'" history status members)"
-        tsocmd listds "'${proclib}'"
         echo script $SCRIPT copy complete
     fi
 
