@@ -115,12 +115,12 @@ function wrap_call {
 }
 
 # Clean up sysmod data sets
-wrap_call "tsocmd DELETE \"'${hlq}.ZOWE.${FMID}.$SYSMOD1'\""
-wrap_call "tsocmd DELETE \"'${hlq}.ZOWE.${FMID}.$SYSMOD2'\""
+wrap_call tsocmd delete "'${hlq}.ZOWE.${FMID}.$SYSMOD1'"
+wrap_call tsocmd delete "'${hlq}.ZOWE.${FMID}.$SYSMOD2'"
 
 echo "Before sysmod1 allocate:"
-wrap_call "tsocmd listds \"'${hlq}.ZOWE.${FMID}.$SYSMOD1'\" history status members"
-wrap_call "tsocmd listds \"'${hlq}.ZOWE.${FMID}.$SYSMOD2'\" history status members"
+wrap_call tsocmd listds "'${hlq}.ZOWE.${FMID}.$SYSMOD1'" history status members
+wrap_call tsocmd listds "'${hlq}.ZOWE.${FMID}.$SYSMOD2'" history status members
 
 csidsn=$csihlq.CSI
 
