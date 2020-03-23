@@ -102,6 +102,11 @@ echo $SCRIPT    SYSMOD2=$SYSMOD2
 echo $SCRIPT    volser=$volser
 echo $SCRIPT    install=$install
 
+# Clean up sysmod data sets
+
+wrap_call tsocmd DELETE "'${hlq}.ZOWE.${FMID}.$SYSMOD1'"
+wrap_call tsocmd DELETE "'${hlq}.ZOWE.${FMID}.$SYSMOD2'"
+
 echo "Before sysmod1 allocate: $(tsocmd listds "'${hlq}.ZOWE.${FMID}.$SYSMOD1'" history status members)"
 echo "Before sysmod2 allocate: $(tsocmd listds "'${hlq}.ZOWE.${FMID}.$SYSMOD2'" history status members)"
 
@@ -128,6 +133,18 @@ then
     echo $SCRIPT INFO: CWD is `pwd`
     exit 9
 fi
+
+################################################################################
+# Wrap call into $()
+#
+# NOTE: This function exists to solve the issue calling tsocmd/submit/cp directly
+#       in pipeline will not exit properly.
+################################################################################
+function wrap_call {
+  echo "[wrap_call] $@ >>>"
+  CALL_RESULT=$($@)
+  printf "%s\n[wrap_call] <<<\n" "$CALL_RESULT"
+}
 
 function runJob {
 
