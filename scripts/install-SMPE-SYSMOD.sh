@@ -230,7 +230,7 @@ function runJob {
         echo $SCRIPT ERROR: no return code for jobid $jobid PID=$$
         echo $SCRIPT DISPLAY JOB output was:
         cat $CIZT_TMP/dj.$$.cc
-        # do NOT ... return 3
+        return 3
     fi
     
     rc=`sed -n 's/.*RC=\([0-9]*\))/\1/p' $CIZT_TMP/dj.$$.cc`
@@ -239,7 +239,7 @@ function runJob {
     if [[ $rc -gt 4 ]]
     then
         echo $SCRIPT ERROR: job "$jobname(JOB$jobid)" failed, RC=$rc 
-        # do NOT ... return 4
+        return 4
     else
         echo $SCRIPT INFO: job "$jobname(JOB$jobid)" ended, RC=$rc
     fi
@@ -339,7 +339,9 @@ do
         # hlq was just $hlq before ... s/#hlq/${hlq}/; \
 
     runJob $CIZT_TMP/$smpejob.sed.jcl
-    if [[ $? -ne 0 ]]
+    # Z2ACCEPT step is ok to fail because we did it when install FMID
+    # otherwise any job failure should exit and stop the following steps
+    if [[ $? -ne 0 && $smpejob != Z2ACCEPT ]]
     then
         echo $SCRIPT ERROR: SMP/E JOB $smpejob failed
         exit 2
@@ -353,8 +355,16 @@ do
         wrap_call tsocmd listds "'${hlq}.ZOWE.${FMID}.$SYSMOD2'" history status members
         echo "uss sysmod 1: $(ls -al $download_path/ZOWE.$FMID.$SYSMOD1)"
         echo "uss sysmod 2: $(ls -al $download_path/ZOWE.$FMID.$SYSMOD2)"
-        wrap_call cp $download_path/ZOWE.$FMID.$SYSMOD1 "//'${hlq}.ZOWE.${FMID}.$SYSMOD1'"
-        wrap_call cp $download_path/ZOWE.$FMID.$SYSMOD2 "//'${hlq}.ZOWE.${FMID}.$SYSMOD2'"
+        cp -B $download_path/ZOWE.$FMID.$SYSMOD1 "//'${hlq}.ZOWE.${FMID}.$SYSMOD1'"
+        if [[ $? -ne 0 ]]; then
+          echo $SCRIPT ERROR: copy $SYSMOD1 failed
+          exit 3
+        fi
+        cp -B $download_path/ZOWE.$FMID.$SYSMOD2 "//'${hlq}.ZOWE.${FMID}.$SYSMOD2'"
+        if [[ $? -ne 0 ]]; then
+          echo $SCRIPT ERROR: copy $SYSMOD2 failed
+          exit 3
+        fi
         echo "After sysmod copy:"
         wrap_call tsocmd listds "'${hlq}.ZOWE.${FMID}.$SYSMOD1'" history status members
         wrap_call tsocmd listds "'${hlq}.ZOWE.${FMID}.$SYSMOD2'" history status members
